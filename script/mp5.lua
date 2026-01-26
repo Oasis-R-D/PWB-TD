@@ -1,3 +1,4 @@
+-- copy this for the most basic mag loaded weapon with alt fire
 #version 2
 
 #include "script/include/player.lua"

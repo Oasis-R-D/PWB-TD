@@ -1,3 +1,4 @@
+-- copy this for the most basic scoped mag loaded weapon
 #version 2
 
 #include "script/include/player.lua"
@@ -7,17 +8,18 @@
 -- Per weapon constants
 function createConstM40()
     return {
-		RELOAD_TIME = 2.0, -- seconds
+		RELOAD_TIME = 2.32, -- seconds
+		EMPTYRELOAD_TIME = 4.1 -- seconds
 		RELOAD_SOUND = "MOD/snd/m40R.ogg",
 		FIRESOUND = "MOD/snd/m40FR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/m40scp.ogg",
 		CLIP_SIZE = 5.0,
 		PICKUP_SIZE = 15.0,
-		RECOIL_AMNT = 0.2,
+		RECOIL_AMNT = 0.25,
 		FIRERATE = 2.0,
 		ALTFIRERATE = 0.5,
 		SCOPEFIREDELAY = 0.1,
-		DAMAGE = 0.35,
+		DAMAGE = 0.4, -- x5
 		MAX_RANGE = 200.0,
 		WPNID = "m40a1",
 		WPNNAME = "M40A1",
@@ -41,7 +43,7 @@ function createPlayerDataM40()
 end
 
 function server.initM40()
-	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/9mmar.xml", 3)
+	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/9mmar.xml", 4)
 	SetToolAmmoPickupAmount(M40const.WPNID, M40const.PICKUP_SIZE)
 end
 
@@ -71,8 +73,13 @@ function server.tickPlayerM40(p, dt)
 	local data = M40players[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
-		data.coolDown = M40const.RELOAD_TIME
-		data.altCoolDown = M40const.RELOAD_TIME
+		if data.clipamntM40 > 0 then
+			data.coolDown = M40const.RELOAD_TIME
+			data.altCoolDown = M40const.RELOAD_TIME
+		else
+			data.coolDown = M40const.EMPTYRELOAD_TIME
+			data.altCoolDown = M40const.EMPTYRELOAD_TIME
+		end
 		data.inreload = true
 	end
 	
@@ -101,12 +108,13 @@ function server.tickPlayerM40(p, dt)
 				spread = 0.00025/2
 			end
 			
-			if data.scoped == true then -- make fire from center of screen?
-				spread = 0
+			if not data.scoped == true then -- make fire from center of screen?
+				dir = VecAdd(dir, rndVec(spread))
 
-			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID)
-			
+			for i=0, 4 do -- this should make it penetrate stuff?
+				Shoot(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID)
+			end
+
 			data.recoil = M40const.RECOIL_AMNT
 			data.clipamntM40 = data.clipamntM40 - 1
 			
@@ -182,8 +190,13 @@ function client.tickPlayerM40(p, dt)
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
 		PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
-		data.coolDown = M40const.RELOAD_TIME
-		data.altCoolDown = M40const.RELOAD_TIME
+		if data.clipamntM40 > 0 then
+			data.coolDown = M40const.RELOAD_TIME
+			data.altCoolDown = M40const.RELOAD_TIME
+		else
+			data.coolDown = M40const.EMPTYRELOAD_TIME
+			data.altCoolDown = M40const.EMPTYRELOAD_TIME
+		end
 		data.inreload = true
 	end
 	
