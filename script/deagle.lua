@@ -283,7 +283,7 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if data.laseron = true then
+	if data.laseron = true then -- TO-DO: add laser vfx
 		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
 	end
 
