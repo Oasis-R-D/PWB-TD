@@ -1,8 +1,0 @@
-# The following patterns are always ignored:
-# *.exe
-# *.dll
-# *.com
-# *.scr
-# *.bat
-# *.jar
-# .git/*
