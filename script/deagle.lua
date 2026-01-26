@@ -1,4 +1,4 @@
--- copy this for the most basic scoped mag loaded weapon with slower empty reloads
+-- copy this for the most basic mag loaded weapon with slower empty reloads
 #version 2
 
 #include "script/include/player.lua"
@@ -6,79 +6,79 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstM40()
+function createConstDE357()
     return {
 		RELOAD_TIME = 2.32, -- seconds
 		EMPTYRELOAD_TIME = 4.1 -- seconds
-		RELOAD_SOUND = "MOD/snd/m40R.ogg",
-		FIRESOUND = "MOD/snd/m40FR.ogg", 
-		ALT_FIRESOUND = "MOD/snd/m40scp.ogg",
-		CLIP_SIZE = 5.0,
+		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
+		FIRESOUND = "MOD/snd/DeagFR.ogg", 
+		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
+		CLIP_SIZE = 7.0,
 		PICKUP_SIZE = 15.0,
 		RECOIL_AMNT = 0.25,
-		FIRERATE = 2.0,
+		FIRERATE = 0.22, -- laser off
+		LASERFIRERATE = 0.5, -- laser on
 		ALTFIRERATE = 0.5,
-		SCOPEFIREDELAY = 0.1,
 		DAMAGE = 0.4, -- x5
-		MAX_RANGE = 250.0,
-		WPNID = "m40a1",
-		WPNNAME = "M40A1",
+		MAX_RANGE = 100.0,
+		WPNID = "deagle",
+		WPNNAME = "Desert Eagle",
 	}
 end
 
 -- Per weapon data and const storers
-M40players = {}
-M40const = createConstM40()
+DE357players = {}
+DE357const = createConstDE357()
 
-function createPlayerDataM40()
+function createPlayerDataDE357()
     return {
-		clipamntM40 = M40const.CLIP_SIZE,
+		clipamntDE357 = DE357const.CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
-		scoped = false,
+		laseron = false,
 	}
 end
 
-function server.initM40()
-	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/m40a1.xml", 4)
-	SetToolAmmoPickupAmount(M40const.WPNID, M40const.PICKUP_SIZE)
+function server.initDE357()
+	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/DE357a1.xml", 4)
+	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
 end
 
-function server.tickM40(dt)
+function server.tickDE357(dt)
 	for p in PlayersAdded() do
-		M40players[p] = createPlayerDataM40()
-		SetToolEnabled(M40const.WPNID, true, p)
-		SetToolAmmo(M40const.WPNID, 250, p)
+		DE357players[p] = createPlayerDataDE357()
+		SetToolEnabled(DE357const.WPNID, true, p)
+		SetToolAmmo(DE357const.WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
-		M40players[p] = nil
+		DE357players[p] = nil
 	end
 
 	for p in Players() do
-		server.tickPlayerM40(p, dt)
+		server.tickPlayerDE357(p, dt)
 	end
 end
 
-function server.tickPlayerM40(p, dt)
+function server.tickPlayerDE357(p, dt)
 	
-	if GetPlayerTool(p) ~= M40const.WPNID then
+	if GetPlayerTool(p) ~= DE357const.WPNID then
 		return
 	end
 	
-	local ammo = GetToolAmmo(M40const.WPNID, p)
-	local data = M40players[p]
+	local ammo = GetToolAmmo(DE357const.WPNID, p)
+	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
-		if data.clipamntM40 > 0 then
-			data.coolDown = M40const.RELOAD_TIME
-			data.altCoolDown = M40const.RELOAD_TIME
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE then
+		if data.clipamntDE357 > 0 then
+			data.coolDown = DE357const.RELOAD_TIME
+			data.altCoolDown = DE357const.RELOAD_TIME
 		else
-			data.coolDown = M40const.EMPTYRELOAD_TIME
-			data.altCoolDown = M40const.EMPTYRELOAD_TIME
+			data.coolDown = DE357const.EMPTYRELOAD_TIME
+			data.altCoolDown = DE357const.EMPTYRELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -94,91 +94,90 @@ function server.tickPlayerM40(p, dt)
 		if data.coolDown < 0 then	
 			if data.inreload == true then
 				data.inreload = false
-				data.clipamntM40 = M40const.CLIP_SIZE
-				if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamntM40 = ammo
+				data.clipamntDE357 = DE357const.CLIP_SIZE
+				if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
+					data.clipamntDE357 = ammo
 				end
 			end
 			
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
 			
-			local spread = 0.0005/2 -- assuming spread is a radian value and this is the diameter of the cone
-			if crouch > 0.1 then
-				spread = 0.00025/2
-			end
-			
-			if not data.scoped == true then -- make fire from center of screen?
-				dir = VecAdd(dir, rndVec(spread))
-
-			for i=0, 4 do -- this should make it penetrate stuff?
-				Shoot(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID)
+			local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
+			if data.laseron == true then
+				spread = 0.001/2
 			end
 
-			data.recoil = M40const.RECOIL_AMNT
-			data.clipamntM40 = data.clipamntM40 - 1
+			dir = VecAdd(dir, rndVec(spread))
+			Shoot(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID)
+
+			data.recoil = DE357const.RECOIL_AMNT
+			data.clipamntDE357 = data.clipamntDE357 - 1
 			
-			if data.clipamntM40 > 0 then
-				data.coolDown = M40const.FIRERATE
-				data.altCoolDown = M40const.FIRERATE
+			if data.clipamntDE357 > 0 then
+				if data.laseron == true then
+					data.coolDown = DE357const.LASERFIRERATE
+					data.altCoolDown = DE357const.LASERFIRERATE
+				else
+					data.coolDown = DE357const.FIRERATE
+					data.altCoolDown = DE357const.FIRERATE
+				end
 			else
-				data.coolDown = M40const.EMPTYRELOAD_TIME
-				data.altCoolDown = M40const.EMPTYRELOAD_TIME
+				data.coolDown = DE357const.EMPTYRELOAD_TIME
+				data.altCoolDown = DE357const.EMPTYRELOAD_TIME
 				data.inreload =  true;
 			end
 			
 			
 			if ammo < 9999 then
-				SetToolAmmo(M40const.WPNID, ammo-1, p)
+				SetToolAmmo(DE357const.WPNID, ammo-1, p)
 			end
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
-			data.altCoolDown = M40const.ALTFIRERATE
-			data.coolDown = M40const.SCOPEFIREDELAY
-			data.scoped = true
+			data.altCoolDown = DE357const.ALTFIRERATE
+			data.coolDown = DE357const.ALTFIRERATE
+			data.laseron = not data.laseron
 		end
-	else
-		data.scoped = false
 	end
 	
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
 end
 
-function client.initM40()
+function client.initDE357()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(M40const.WPNID, toolHaptic);
+	SetToolHaptic(DE357const.WPNID, toolHaptic);
 end
 
-function client.tickM40(dt)
+function client.tickDE357(dt)
 	for p in PlayersAdded() do
-		M40players[p] = createPlayerDataM40();
+		DE357players[p] = createPlayerDataDE357();
 	end
 
 	for p in PlayersRemoved() do
-		M40players[p] = nil
+		DE357players[p] = nil
 	end
 
 	for p in Players() do
-		client.tickPlayerM40(p, dt)
+		client.tickPlayerDE357(p, dt)
 	end
 end
 
 CASING_ORG = Vec(0.02, 0.25, -0.25)		-- casing origin
 
-function client.tickPlayerM40(p, dt)
-	if GetPlayerTool(p) ~= M40const.WPNID then
+function client.tickPlayerDE357(p, dt)
+	if GetPlayerTool(p) ~= DE357const.WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(M40const.WPNID, p)
+	local ammo = GetToolAmmo(DE357const.WPNID, p)
 
 	if mt == nil then
 		return
@@ -186,16 +185,16 @@ function client.tickPlayerM40(p, dt)
 
 	-- Simulate coolDown as the server does
 	-- but only use them for rotating barrel + recoil.
-	local data = M40players[p]
+	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
-		PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
-		if data.clipamntM40 > 0 then
-			data.coolDown = M40const.RELOAD_TIME
-			data.altCoolDown = M40const.RELOAD_TIME
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE then
+		PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
+		if data.clipamntDE357 > 0 then
+			data.coolDown = DE357const.RELOAD_TIME
+			data.altCoolDown = DE357const.RELOAD_TIME
 		else
-			data.coolDown = M40const.EMPTYRELOAD_TIME
-			data.altCoolDown = M40const.EMPTYRELOAD_TIME
+			data.coolDown = DE357const.EMPTYRELOAD_TIME
+			data.altCoolDown = DE357const.EMPTYRELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -204,9 +203,9 @@ function client.tickPlayerM40(p, dt)
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
-					data.clipamntM40 = M40const.CLIP_SIZE
-					if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamntM40 = ammo
+					data.clipamntDE357 = DE357const.CLIP_SIZE
+					if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
+						data.clipamntDE357 = ammo
 					end
 				end
 				
@@ -252,18 +251,23 @@ function client.tickPlayerM40(p, dt)
 				
 				end
 					
-				data.clipamntM40 = data.clipamntM40 - 1
-				if data.clipamntM40 > 0 then
-					data.coolDown = M40const.FIRERATE
-					data.altCoolDown = M40const.FIRERATE
+				data.clipamntDE357 = data.clipamntDE357 - 1
+				if data.clipamntDE357 > 0 then
+					if data.laseron == true then
+						data.coolDown = DE357const.LASERFIRERATE
+						data.altCoolDown = DE357const.LASERFIRERATE
+					else
+						data.coolDown = DE357const.FIRERATE
+						data.altCoolDown = DE357const.FIRERATE
+					end
 				else
-					PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
-					data.coolDown = M40const.EMPTYRELOAD_TIME
-					data.altCoolDown = M40const.EMPTYRELOAD_TIME
+					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
+					data.coolDown = DE357const.RELOAD_TIME
+					data.altCoolDown = DE357const.RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = M40const.RECOIL_AMNT
+				data.recoil = DE357const.RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -271,16 +275,14 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape() == 0 then
+	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight -- make forced
 				
-			data.altCoolDown = M40const.ALTFIRERATE
-			data.coolDown = M40const.SCOPEFIREDELAY
-			data.scoped = true
+			data.altCoolDown = DE357const.ALTFIRERATE
+			data.coolDown = DE357const.SCOPEFIREDELAY
+			data.laseron = not data.laseron
 		end
-	else
-		data.scoped = false
 	end
 
 	-- decrease firing cooldown and recoil
