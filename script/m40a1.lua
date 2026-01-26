@@ -200,7 +200,7 @@ function client.tickPlayerM40(p, dt)
 		data.inreload = true
 	end
 	
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false

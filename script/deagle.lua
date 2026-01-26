@@ -18,8 +18,8 @@ function createConstDE357()
 		RECOIL_AMNT = 0.25,
 		FIRERATE = 0.22, -- laser off
 		LASERFIRERATE = 0.5, -- laser on
-		ALTFIRERATE = 0.5,
-		DAMAGE = 0.4, -- x5
+		ALTFIRERATE = 0.125,
+		DAMAGE = 0.6,
 		MAX_RANGE = 100.0,
 		WPNID = "deagle",
 		WPNNAME = "Desert Eagle",
@@ -43,7 +43,7 @@ function createPlayerDataDE357()
 end
 
 function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/DE357a1.xml", 4)
+	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 4)
 	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
 end
 
@@ -84,7 +84,7 @@ function server.tickPlayerDE357(p, dt)
 	end
 	
 	--Check if firing
-	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -275,14 +275,16 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
-			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight -- make forced
-				
 			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.SCOPEFIREDELAY
+			data.coolDown = DE357const.ALTFIRERATE
 			data.laseron = not data.laseron
 		end
+	end
+
+	if data.laseron = true then
+		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
 	end
 
 	-- decrease firing cooldown and recoil
