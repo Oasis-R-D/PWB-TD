@@ -1,4 +1,4 @@
--- copy this for the most basic scoped mag loaded weapon
+-- copy this for the most basic scoped mag loaded weapon with slower empty reloads
 #version 2
 
 #include "script/include/player.lua"
@@ -20,7 +20,7 @@ function createConstM40()
 		ALTFIRERATE = 0.5,
 		SCOPEFIREDELAY = 0.1,
 		DAMAGE = 0.4, -- x5
-		MAX_RANGE = 200.0,
+		MAX_RANGE = 250.0,
 		WPNID = "m40a1",
 		WPNNAME = "M40A1",
 	}

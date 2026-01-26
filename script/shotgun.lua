@@ -18,7 +18,7 @@ function createConstSG()
 		FIRERATE = 0.75,
 		ALTFIRERATE = 1.5,
 		DAMAGE = 0.3,
-		MAX_RANGE = 50.0,
+		MAX_RANGE = 60.0,
 		WPNID = "hlShotgun",
 		WPNNAME = "Assault Shotgun",
 	}
