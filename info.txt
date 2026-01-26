@@ -1,0 +1,6 @@
+name = [PWB] Half-Life: 1 weapons
+author = PackMan09
+description = [noupload]Collection of firearms from Half-Life: 1 and it's expansions
+tags = Tool
+version = 2
+preview_image = preview.png
