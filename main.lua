@@ -4,6 +4,7 @@
 #include "script/mp5.lua"
 #include "script/shotgun.lua"
 #include "script/m40a1.lua"
+
 function server.init()
 	server.initMp5()
 	server.initM40()
@@ -24,7 +25,7 @@ end
 
 function client.init()
 	client.initMp5()
-	server.initM40()
+	client.initM40()
 	client.initSG()
 end
 

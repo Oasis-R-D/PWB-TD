@@ -1,4 +1,3 @@
--- use this for whatever, I do NOT care -PM09
 #version 2
 
 #include "script/include/player.lua"
@@ -9,8 +8,9 @@
 function createConstM40()
     return {
 		RELOAD_TIME = 2.0, -- seconds
-		RELOAD_SOUND = "MOD/snd/hkr.ogg",
-		ALT_FIRESOUND = "MOD/snd/hkgl.ogg",
+		RELOAD_SOUND = "MOD/snd/m40R.ogg",
+		FIRESOUND = "MOD/snd/m40FR.ogg", 
+		ALT_FIRESOUND = "MOD/snd/m40scp.ogg",
 		CLIP_SIZE = 5.0,
 		PICKUP_SIZE = 15.0,
 		RECOIL_AMNT = 0.2,
@@ -30,7 +30,7 @@ M40const = createConstM40()
 
 function createPlayerDataM40()
     return {
-		clipamnt = M40const.CLIP_SIZE,
+		clipamntM40 = M40const.CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -70,7 +70,7 @@ function server.tickPlayerM40(p, dt)
 	local ammo = GetToolAmmo(M40const.WPNID, p)
 	local data = M40players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamnt < M40const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
 		data.coolDown = M40const.RELOAD_TIME
 		data.altCoolDown = M40const.RELOAD_TIME
 		data.inreload = true
@@ -87,9 +87,9 @@ function server.tickPlayerM40(p, dt)
 		if data.coolDown < 0 then	
 			if data.inreload == true then
 				data.inreload = false
-				data.clipamnt = M40const.CLIP_SIZE
-				if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamnt = ammo
+				data.clipamntM40 = M40const.CLIP_SIZE
+				if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
+					data.clipamntM40 = ammo
 				end
 			end
 			
@@ -108,9 +108,9 @@ function server.tickPlayerM40(p, dt)
 			Shoot(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID)
 			
 			data.recoil = M40const.RECOIL_AMNT
-			data.clipamnt = data.clipamnt - 1
+			data.clipamntM40 = data.clipamntM40 - 1
 			
-			if data.clipamnt > 0 then
+			if data.clipamntM40 > 0 then
 				data.coolDown = M40const.FIRERATE
 				data.altCoolDown = M40const.FIRERATE
 			else
@@ -141,11 +141,6 @@ function server.tickPlayerM40(p, dt)
 end
 
 function client.initM40()
-	shootSnd = {}
-	for i=0, 2 do
-		shootSnd[i] = LoadSound("MOD/snd/hks"..i..".ogg")
-	end
-
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(M40const.WPNID, toolHaptic);
@@ -185,7 +180,7 @@ function client.tickPlayerM40(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M40players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamnt < M40const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
 		PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
 		data.coolDown = M40const.RELOAD_TIME
 		data.altCoolDown = M40const.RELOAD_TIME
@@ -196,15 +191,15 @@ function client.tickPlayerM40(p, dt)
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
-					data.clipamnt = M40const.CLIP_SIZE
-					if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamnt = ammo
+					data.clipamntM40 = M40const.CLIP_SIZE
+					if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
+						data.clipamntM40 = ammo
 					end
 				end
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(shootSnd[math.random(0,#shootSnd)], pt.pos)
+				PlaySound(LoadSound(FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -244,8 +239,8 @@ function client.tickPlayerM40(p, dt)
 				
 				end
 					
-				data.clipamnt = data.clipamnt - 1
-				if data.clipamnt > 0 then
+				data.clipamntM40 = data.clipamntM40 - 1
+				if data.clipamntM40 > 0 then
 					data.coolDown = M40const.FIRERATE
 					data.altCoolDown = M40const.FIRERATE
 				else

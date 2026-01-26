@@ -1,4 +1,3 @@
--- use this for whatever, I do NOT care -PM09
 #version 2
 
 #include "script/include/player.lua"
@@ -30,7 +29,7 @@ SGconst = createConstSG()
 	
 function createPlayerDataSG()
     return {
-		clipamnt = SGconst.CLIP_SIZE,
+		clipamntSG = SGconst.CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -69,10 +68,10 @@ function server.tickPlayerSG(p, dt)
 	local ammo = GetToolAmmo(SGconst.WPNID, p)
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamnt < SGconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE then
 		local reloadtime = 0
-		if data.clipamnt > 0 then
-			reloadtime = SGconst.RELOAD_TIME / data.clipamnt
+		if data.clipamntSG > 0 then
+			reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
 		else
 			reloadtime = SGconst.RELOAD_TIME + 0.8
 		end
@@ -92,9 +91,9 @@ function server.tickPlayerSG(p, dt)
 		if data.coolDown < 0 then
 			if data.inreload == true then
 				data.inreload = false
-				data.clipamnt = SGconst.CLIP_SIZE
-				if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamnt = ammo
+				data.clipamntSG = SGconst.CLIP_SIZE
+				if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
+					data.clipamntSG = ammo
 				end
 			end
 			
@@ -112,15 +111,15 @@ function server.tickPlayerSG(p, dt)
 			end
 			
 			data.recoil = SGconst.RECOIL_AMNT
-			data.clipamnt = data.clipamnt - 1
+			data.clipamntSG = data.clipamntSG - 1
 			
-			if data.clipamnt > 0 then
+			if data.clipamntSG > 0 then
 				data.coolDown = SGconst.FIRERATE
 				data.altCoolDown = SGconst.FIRERATE
 			else
 				local reloadtime = 0
-				if data.clipamnt > 0 then
-					reloadtime = SGconst.RELOAD_TIME / data.clipamnt
+				if data.clipamntSG > 0 then
+					reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
 				else
 					reloadtime = SGconst.RELOAD_TIME + 0.8
 				end
@@ -145,9 +144,9 @@ function server.tickPlayerSG(p, dt)
 		if data.altCoolDown < 0 then
 			if data.inreload == true then
 				data.inreload = false
-				data.clipamnt = SGconst.CLIP_SIZE
-				if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamnt = ammo
+				data.clipamntSG = SGconst.CLIP_SIZE
+				if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
+					data.clipamntSG = ammo
 				end
 			end
 			
@@ -165,15 +164,15 @@ function server.tickPlayerSG(p, dt)
 			end
 			
 			data.recoil = 1.5 * SGconst.RECOIL_AMNT
-			data.clipamnt = data.clipamnt - 2
+			data.clipamntSG = data.clipamntSG - 2
 			
-			if data.clipamnt > 0 then
+			if data.clipamntSG > 0 then
 				data.coolDown = SGconst.ALTFIRERATE
 				data.altCoolDown = SGconst.ALTFIRERATE
 			else
 				local reloadtime = 0
-				if data.clipamnt > 0 then
-					reloadtime = SGconst.RELOAD_TIME / data.clipamnt
+				if data.clipamntSG > 0 then
+					reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
 				else
 					reloadtime = SGconst.RELOAD_TIME + 0.8
 				end
@@ -232,11 +231,11 @@ function client.tickPlayerSG(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamnt < SGconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE then
 		PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 		local reloadtime = 0
-		if data.clipamnt > 0 then
-			reloadtime = SGconst.RELOAD_TIME / data.clipamnt
+		if data.clipamntSG > 0 then
+			reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
 		else
 			reloadtime = SGconst.RELOAD_TIME + 0.8
 		end
@@ -249,9 +248,9 @@ function client.tickPlayerSG(p, dt)
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
-					data.clipamnt = SGconst.CLIP_SIZE
-					if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamnt = ammo
+					data.clipamntSG = SGconst.CLIP_SIZE
+					if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
+						data.clipamntSG = ammo
 					end
 				end
 				
@@ -297,15 +296,15 @@ function client.tickPlayerSG(p, dt)
 				
 				end
 					
-				data.clipamnt = data.clipamnt - 1
-				if data.clipamnt > 0 then
+				data.clipamntSG = data.clipamntSG - 1
+				if data.clipamntSG > 0 then
 					data.altCoolDown = SGconst.FIRERATE
 					data.coolDown = SGconst.FIRERATE
 				else
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
-					if data.clipamnt > 0 then
-						reloadtime = SGconst.RELOAD_TIME / data.clipamnt
+					if data.clipamntSG > 0 then
+						reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
 					else
 						reloadtime = SGconst.RELOAD_TIME + 0.8
 					end
@@ -326,9 +325,9 @@ function client.tickPlayerSG(p, dt)
 			if data.altCoolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
-					data.clipamnt = SGconst.CLIP_SIZE
-					if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamnt = ammo
+					data.clipamntSG = SGconst.CLIP_SIZE
+					if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
+						data.clipamntSG = ammo
 					end
 				end
 				
@@ -378,15 +377,15 @@ function client.tickPlayerSG(p, dt)
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 				
-				data.clipamnt = data.clipamnt - 2
-				if data.clipamnt > 0 then
+				data.clipamntSG = data.clipamntSG - 2
+				if data.clipamntSG > 0 then
 					data.altCoolDown = SGconst.ALTFIRERATE
 					data.coolDown = SGconst.ALTFIRERATE
 				else
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
-					if data.clipamnt > 0 then
-						reloadtime = SGconst.RELOAD_TIME / data.clipamnt
+					if data.clipamntSG > 0 then
+						reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
 					else
 						reloadtime = SGconst.RELOAD_TIME + 0.8
 					end

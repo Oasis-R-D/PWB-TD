@@ -1,4 +1,3 @@
--- use this for whatever, I do NOT care -PM09
 #version 2
 
 #include "script/include/player.lua"
@@ -29,7 +28,7 @@ MP5const = createConstMP5()
 
 function createPlayerDataMP5()
     return {
-		clipamnt = MP5const.CLIP_SIZE,
+		clipamntMP5 = MP5const.CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -68,7 +67,7 @@ function server.tickPlayerMp5(p, dt)
 	local ammo = GetToolAmmo(MP5const.WPNID, p)
 	local data = MP5players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamnt < MP5const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE then
 		data.coolDown = MP5const.RELOAD_TIME
 		data.altCoolDown = MP5const.RELOAD_TIME
 		data.inreload = true
@@ -85,9 +84,9 @@ function server.tickPlayerMp5(p, dt)
 		if data.coolDown < 0 then	
 			if data.inreload == true then
 				data.inreload = false
-				data.clipamnt = MP5const.CLIP_SIZE
-				if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamnt = ammo
+				data.clipamntMP5 = MP5const.CLIP_SIZE
+				if data.clipamntMP5 > ammo then -- make sure the clip cannot be higher than ammo
+					data.clipamntMP5 = ammo
 				end
 			end
 			
@@ -103,9 +102,9 @@ function server.tickPlayerMp5(p, dt)
 			Shoot(pos, dir, "bullet", MP5const.DAMAGE, MP5const.MAX_RANGE, p, MP5const.WPNID)
 			
 			data.recoil = MP5const.RECOIL_AMNT
-			data.clipamnt = data.clipamnt - 1
+			data.clipamntMP5 = data.clipamntMP5 - 1
 			
-			if data.clipamnt > 0 then
+			if data.clipamntMP5 > 0 then
 				data.coolDown = MP5const.FIRERATE
 				data.altCoolDown = MP5const.FIRERATE
 			else
@@ -196,7 +195,7 @@ function client.tickPlayerMp5(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = MP5players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamnt < MP5const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE then
 		PlaySound(LoadSound(MP5const.RELOAD_SOUND), pt.pos)
 		data.coolDown = MP5const.RELOAD_TIME
 		data.altCoolDown = MP5const.RELOAD_TIME
@@ -207,9 +206,9 @@ function client.tickPlayerMp5(p, dt)
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
-					data.clipamnt = MP5const.CLIP_SIZE
-					if data.clipamnt > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamnt = ammo
+					data.clipamntMP5 = MP5const.CLIP_SIZE
+					if data.clipamntMP5 > ammo then -- make sure the clip cannot be higher than ammo
+						data.clipamntMP5 = ammo
 					end
 				end
 				
@@ -255,8 +254,8 @@ function client.tickPlayerMp5(p, dt)
 				
 				end
 					
-				data.clipamnt = data.clipamnt - 1
-				if data.clipamnt > 0 then
+				data.clipamntMP5 = data.clipamntMP5 - 1
+				if data.clipamntMP5 > 0 then
 					data.coolDown = MP5const.FIRERATE
 					data.altCoolDown = MP5const.FIRERATE
 				else
