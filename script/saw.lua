@@ -37,7 +37,7 @@ function createPlayerDataM249()
 end
 
 function server.initM249()
-	RegisterTool(M249const.WPNID, M249const.WPNNAME, "MOD/prefab/9mmar.xml", 4)
+	RegisterTool(M249const.WPNID, M249const.WPNNAME, "MOD/prefab/saw.xml", 4)
 	SetToolAmmoPickupAmount(M249const.WPNID, M249const.PICKUP_SIZE)
 end
 

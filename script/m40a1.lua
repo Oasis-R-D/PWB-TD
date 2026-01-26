@@ -43,7 +43,7 @@ function createPlayerDataM40()
 end
 
 function server.initM40()
-	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/9mmar.xml", 4)
+	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/m40a1.xml", 4)
 	SetToolAmmoPickupAmount(M40const.WPNID, M40const.PICKUP_SIZE)
 end
 
