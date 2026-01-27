@@ -1,4 +1,4 @@
--- copy this for the most basic mag loaded weapon with alt fire
+-- just copy the Mp5 instead (also this has modified recoil to make the arm dislocation less noticeable)
 #version 2
 
 #include "script/include/player.lua"
@@ -20,6 +20,7 @@ function createConstM727()
 		MAX_RANGE = 100.0,
 		WPNID = "coltar",
 		WPNNAME = "Colt M727",
+		CASING_ORG = Vec(0.02, 0.0, 0.1),
 	}
 end
 
@@ -177,8 +178,6 @@ function client.tickM727(dt)
 	end
 end
 
-CASING_ORG = Vec(0.02, 0.25, -0.25)		-- casing origin
-
 function client.tickPlayerM727(p, dt)
 	if GetPlayerTool(p) ~= M727const.WPNID then
 		return
@@ -222,7 +221,7 @@ function client.tickPlayerM727(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(M727const.CASING_ORG[1],M727const.CASING_ORG[2],M727const.CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -327,9 +326,9 @@ function client.tickPlayerM727(p, dt)
 	
 	-- RECOIL
 	if data.recoil > 0 then
-		local recoil = math.max(0, data.recoil)
+		local recoil = math.max(0, data.recoil / 2)
 		local siderecoil = recoil * 0.25
-		local recoilvert = math.max(0, data.recoil)
+		local recoilvert = math.max(0, data.recoil * 1.5)
 		
 		local inversesiderecoil = rnd(0, 1)
 		if inversesiderecoil > 0.5 then

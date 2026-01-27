@@ -20,6 +20,7 @@ function createConstMP5()
 		MAX_RANGE = 100.0,
 		WPNID = "9mmAR",
 		WPNNAME = "9mmAR",
+		CASING_ORG = Vec(0.02, 0.25, -0.25),		-- casing origin
 	}
 end
 
@@ -177,8 +178,6 @@ function client.tickMp5(dt)
 	end
 end
 
-CASING_ORG = Vec(0.02, 0.25, -0.25)		-- casing origin
-
 function client.tickPlayerMp5(p, dt)
 	if GetPlayerTool(p) ~= MP5const.WPNID then
 		return
@@ -222,7 +221,7 @@ function client.tickPlayerMp5(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(MP5const.CASING_ORG[1],MP5const.CASING_ORG[2],MP5const.CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					

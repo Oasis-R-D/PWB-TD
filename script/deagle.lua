@@ -23,6 +23,7 @@ function createConstDE357()
 		MAX_RANGE = 100.0,
 		WPNID = "deagle",
 		WPNNAME = "Desert Eagle",
+		CASING_ORG = Vec(0.02, 0.25, -0.25)
 	}
 end
 
@@ -167,8 +168,6 @@ function client.tickDE357(dt)
 	end
 end
 
-CASING_ORG = Vec(0.02, 0.25, -0.25)		-- casing origin
-
 function client.tickPlayerDE357(p, dt)
 	if GetPlayerTool(p) ~= DE357const.WPNID then
 		return
@@ -216,7 +215,7 @@ function client.tickPlayerDE357(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(DE357const.CASING_ORG[1],DE357const.CASING_ORG[2],DE357const.CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					

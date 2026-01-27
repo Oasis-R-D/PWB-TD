@@ -23,6 +23,7 @@ function createConstM40()
 		MAX_RANGE = 250.0,
 		WPNID = "m40a1",
 		WPNNAME = "M40A1",
+		CASING_ORG = Vec(0.02, 0.25, -0.25),
 	}
 end
 
@@ -169,8 +170,6 @@ function client.tickM40(dt)
 	end
 end
 
-CASING_ORG = Vec(0.02, 0.25, -0.25)		-- casing origin
-
 function client.tickPlayerM40(p, dt)
 	if GetPlayerTool(p) ~= M40const.WPNID then
 		return
@@ -218,7 +217,7 @@ function client.tickPlayerM40(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(M40const.CASING_ORG[1],M40const.CASING_ORG[2],M40const.CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					

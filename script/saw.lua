@@ -18,6 +18,7 @@ function createConstM249()
 		MAX_RANGE = 125.0,
 		WPNID = "m249_saw",
 		WPNNAME = "M249 SAW",
+		CASING_ORG = Vec(0.02, 0.25, -0.25),
 	}
 end
 
@@ -145,8 +146,6 @@ function client.tickM249(dt)
 	end
 end
 
-CASING_ORG = Vec(0.02, 0.25, -0.25)		-- casing origin
-
 function client.tickPlayerM249(p, dt)
 	if GetPlayerTool(p) ~= M249const.WPNID then
 		return
@@ -189,7 +188,7 @@ function client.tickPlayerM249(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(M249const.CASING_ORG[1],M249const.CASING_ORG[2],M249const.CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					

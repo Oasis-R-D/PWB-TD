@@ -22,6 +22,7 @@ function createConstSG()
 		MAX_RANGE = 60.0,
 		WPNID = "hlShotgun",
 		WPNNAME = "Assault Shotgun",
+		CASING_ORG = Vec(0.02, 0.1, 0.075),
 	}
 end
 
@@ -222,8 +223,6 @@ function client.tickSG(dt)
 	end
 end
 
-CASING_ORG = Vec(0.02, 0.25, 0.25)		-- casing origin
-
 function client.tickPlayerSG(p, dt)
 	if GetPlayerTool(p) ~= SGconst.WPNID then
 		return
@@ -275,9 +274,6 @@ function client.tickPlayerSG(p, dt)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
 					-- shell ejection
@@ -348,9 +344,6 @@ function client.tickPlayerSG(p, dt)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
 					-- shell ejection
@@ -445,7 +438,7 @@ function client.tickPlayerSG(p, dt)
 			local toolBody = GetToolBody(p)
 			if toolBody ~= 0 then 
 				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_origin = TransformToParentPoint(transform, Vec(SGconst.CASING_ORG[1],SGconst.CASING_ORG[2],SGconst.CASING_ORG[3]))
 				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 				local playervel = GetPlayerVelocity(p)
 				
