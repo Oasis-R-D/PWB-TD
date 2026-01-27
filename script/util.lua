@@ -4,7 +4,6 @@
 #include "script/include/player.lua"
 #include "script/toolanimation.lua"
 
-
 --Return a random vector of desired length
 function rndVec(length)
 	local v = VecNormalize(Vec(math.random(-100,100), math.random(-100,100), math.random(-100,100)))
@@ -13,4 +12,9 @@ end
 
 function rnd(mi, ma)
 	return math.random(1000)/1000*(ma-mi) + mi
+end
+
+-- Returns true if the server is MP
+function IsMP()
+	return Players() > 1
 end

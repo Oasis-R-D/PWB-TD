@@ -6,80 +6,74 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstDE357()
+function createConstPYTH()
     return {
-		RELOAD_TIME = 2.32, -- seconds
-		EMPTYRELOAD_TIME = 4.1, -- seconds
+		RELOAD_TIME = 2.0, -- seconds
 		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
-		PRIM_FIRESOUND = "MOD/snd/DeagFR.ogg", 
+		PRIM_FIRESOUND = "MOD/snd/357FR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
-		CLIP_SIZE = 7.0,
-		PICKUP_SIZE = 15.0,
+		CLIP_SIZE = 6.0,
+		PICKUP_SIZE = 6.0,
 		RECOIL_AMNT = 0.25,
-		FIRERATE = 0.22, -- laser off
-		LASERFIRERATE = 0.5, -- laser on
+		FIRERATE = 0.75,
 		ALTFIRERATE = 0.125,
 		DAMAGE = 0.6,
 		MAX_RANGE = 150.0,
-		WPNID = "deagle",
-		WPNNAME = "Desert Eagle",
+		WPNID = "aaaaaaaa", -- TO-DO: see if this is how weapons are sorted in the inventory (to force the game to have our weapons first)
+		WPNNAME = "Colt Python",
 		CASING_ORG = Vec(0.02, 0.25, -0.25)
 	}
 end
 
 -- Per weapon data and const storers
-DE357players = {}
-DE357const = createConstDE357()
+PYTHplayers = {}
+PYTHconst = createConstPYTH()
 
-function createPlayerDataDE357()
+function createPlayerDataPYTH()
     return {
-		clipamntDE357 = DE357const.CLIP_SIZE,
+		clipamntPYTH = PYTHconst.CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
-		laseron = false,
 	}
 end
 
-function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 2)
-	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
+function server.initPYTH()
+	RegisterTool(PYTHconst.WPNID, PYTHconst.WPNNAME, "MOD/prefab/deagle.xml", 2)
+	SetToolAmmoPickupAmount(PYTHconst.WPNID, PYTHconst.PICKUP_SIZE)
 end
 
-function server.tickDE357(dt)
+function server.tickPYTH(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerDataDE357()
-		SetToolEnabled(DE357const.WPNID, true, p)
-		SetToolAmmo(DE357const.WPNID, 250, p)
+		PYTHplayers[p] = createPlayerDataPYTH()
+		SetToolEnabled(PYTHconst.WPNID, true, p)
+		SetToolAmmo(PYTHconst.WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
-		DE357players[p] = nil
+		PYTHplayers[p] = nil
 	end
 
 	for p in Players() do
-		server.tickPlayerDE357(p, dt)
+		server.tickPlayerPYTH(p, dt)
 	end
 end
 
-function server.tickPlayerDE357(p, dt)
+function server.tickPlayerPYTH(p, dt)
 	
-	if GetPlayerTool(p) ~= DE357const.WPNID then
+	if GetPlayerTool(p) ~= PYTHconst.WPNID then
 		return
 	end
 	
-	local ammo = GetToolAmmo(DE357const.WPNID, p)
-	local data = DE357players[p]
+	local ammo = GetToolAmmo(PYTHconst.WPNID, p)
+	local data = PYTHplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE then
-		if data.clipamntDE357 > 0 then
-			data.coolDown = DE357const.RELOAD_TIME
-			data.altCoolDown = DE357const.RELOAD_TIME
-		else
-			data.coolDown = DE357const.EMPTYRELOAD_TIME
-			data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE then
+		if data.clipamntPYTH > 0 then
+			data.coolDown = PYTHconst.RELOAD_TIME
+			data.altCoolDown = PYTHconst.RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -95,9 +89,9 @@ function server.tickPlayerDE357(p, dt)
 		if data.coolDown < 0 then	
 			if data.inreload == true then
 				data.inreload = false
-				data.clipamntDE357 = DE357const.CLIP_SIZE
-				if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamntDE357 = ammo
+				data.clipamntPYTH = PYTHconst.CLIP_SIZE
+				if data.clipamntPYTH > ammo then -- make sure the clip cannot be higher than ammo
+					data.clipamntPYTH = ammo
 				end
 			end
 			
@@ -105,42 +99,33 @@ function server.tickPlayerDE357(p, dt)
 			local crouch = GetPlayerCrouch(p)
 			
 			local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
-			if data.laseron == true then
-				spread = 0.001/2
-			end
 
 			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID)
+			Shoot(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID)
 
-			data.recoil = DE357const.RECOIL_AMNT
-			data.clipamntDE357 = data.clipamntDE357 - 1
+			data.recoil = PYTHconst.RECOIL_AMNT
+			data.clipamntPYTH = data.clipamntPYTH - 1
 			
-			if data.clipamntDE357 > 0 then
-				if data.laseron == true then
-					data.coolDown = DE357const.LASERFIRERATE
-					data.altCoolDown = DE357const.LASERFIRERATE
-				else
-					data.coolDown = DE357const.FIRERATE
-					data.altCoolDown = DE357const.FIRERATE
-				end
+			if data.clipamntPYTH > 0 then
+				data.coolDown = PYTHconst.FIRERATE
+				data.altCoolDown = PYTHconst.FIRERATE
 			else
-				data.coolDown = DE357const.EMPTYRELOAD_TIME
-				data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+				data.coolDown = PYTHconst.RELOAD_TIME
+				data.altCoolDown = PYTHconst.RELOAD_TIME
 				data.inreload =  true;
 			end
 			
 			
 			if ammo < 9999 then
-				SetToolAmmo(DE357const.WPNID, ammo-1, p)
+				SetToolAmmo(PYTHconst.WPNID, ammo-1, p)
 			end
 		end
 	end
 	
 	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
-			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.ALTFIRERATE
-			data.laseron = not data.laseron
+			data.altCoolDown = PYTHconst.ALTFIRERATE
+			data.coolDown = PYTHconst.ALTFIRERATE
 		end
 	end
 	
@@ -148,35 +133,35 @@ function server.tickPlayerDE357(p, dt)
 	data.altCoolDown = data.altCoolDown - dt
 end
 
-function client.initDE357()
+function client.initPYTH()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(DE357const.WPNID, toolHaptic);
+	SetToolHaptic(PYTHconst.WPNID, toolHaptic);
 end
 
-function client.tickDE357(dt)
+function client.tickPYTH(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerDataDE357();
+		PYTHplayers[p] = createPlayerDataPYTH();
 	end
 
 	for p in PlayersRemoved() do
-		DE357players[p] = nil
+		PYTHplayers[p] = nil
 	end
 
 	for p in Players() do
-		client.tickPlayerDE357(p, dt)
+		client.tickPlayerPYTH(p, dt)
 	end
 end
 
-function client.tickPlayerDE357(p, dt)
-	if GetPlayerTool(p) ~= DE357const.WPNID then
+function client.tickPlayerPYTH(p, dt)
+	if GetPlayerTool(p) ~= PYTHconst.WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(DE357const.WPNID, p)
+	local ammo = GetToolAmmo(PYTHconst.WPNID, p)
 
 	if mt == nil then
 		return
@@ -184,16 +169,13 @@ function client.tickPlayerDE357(p, dt)
 
 	-- Simulate coolDown as the server does
 	-- but only use them for rotating barrel + recoil.
-	local data = DE357players[p]
+	local data = PYTHplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE then
-		PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
-		if data.clipamntDE357 > 0 then
-			data.coolDown = DE357const.RELOAD_TIME
-			data.altCoolDown = DE357const.RELOAD_TIME
-		else
-			data.coolDown = DE357const.EMPTYRELOAD_TIME
-			data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE then
+		PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
+		if data.clipamntPYTH > 0 then
+			data.coolDown = PYTHconst.RELOAD_TIME
+			data.altCoolDown = PYTHconst.RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -202,9 +184,9 @@ function client.tickPlayerDE357(p, dt)
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
-					data.clipamntDE357 = DE357const.CLIP_SIZE
-					if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamntDE357 = ammo
+					data.clipamntPYTH = PYTHconst.CLIP_SIZE
+					if data.clipamntPYTH > ammo then -- make sure the clip cannot be higher than ammo
+						data.clipamntPYTH = ammo
 					end
 				end
 				
@@ -215,7 +197,7 @@ function client.tickPlayerDE357(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(DE357const.CASING_ORG[1],DE357const.CASING_ORG[2],DE357const.CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(PYTHconst.CASING_ORG[1],PYTHconst.CASING_ORG[2],PYTHconst.CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -250,23 +232,18 @@ function client.tickPlayerDE357(p, dt)
 				
 				end
 					
-				data.clipamntDE357 = data.clipamntDE357 - 1
-				if data.clipamntDE357 > 0 then
-					if data.laseron == true then
-						data.coolDown = DE357const.LASERFIRERATE
-						data.altCoolDown = DE357const.LASERFIRERATE
-					else
-						data.coolDown = DE357const.FIRERATE
-						data.altCoolDown = DE357const.FIRERATE
-					end
+				data.clipamntPYTH = data.clipamntPYTH - 1
+				if data.clipamntPYTH > 0 then
+					data.coolDown = PYTHconst.FIRERATE
+					data.altCoolDown = PYTHconst.FIRERATE
 				else
-					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
-					data.coolDown = DE357const.EMPTYRELOAD_TIME
-					data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+					PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
+					data.coolDown = PYTHconst.RELOAD_TIME
+					data.altCoolDown = PYTHconst.RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = DE357const.RECOIL_AMNT
+				data.recoil = PYTHconst.RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -276,17 +253,11 @@ function client.tickPlayerDE357(p, dt)
 
 	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
-			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.ALTFIRERATE
-			data.laseron = not data.laseron
+			data.altCoolDown = PYTHconst.ALTFIRERATE
+			data.coolDown = PYTHconst.ALTFIRERATE
 		end
 	end
 	
-	-- TO-DO: add laser vfx
-	if data.laseron == true then
-		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
-	end
-
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
