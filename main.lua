@@ -9,6 +9,7 @@
 #include "script/saw.lua"
 #include "script/deagle.lua"
 #include "script/python.lua"
+#include "script/glock.lua"
 
 -- this file calls all weapon functions. To add your weapon just add it's functions here.
 -- To remove a weapon, remove it's lua file, xml file and function calls from this file
@@ -21,6 +22,7 @@ function server.init()
    server.initM249()
    server.initDE357()
    server.initPYTH()
+   server.initPIST9MM()
    server.initSG()
 end
 
@@ -32,6 +34,7 @@ function server.tick(dt)
    server.tickM249(dt)
    server.tickDE357(dt)
    server.tickPYTH(dt)
+   server.tickPIST9MM(dt)
    server.tickSG(dt)
 end
 
@@ -43,6 +46,7 @@ function server.tickPlayer(p, dt)
    server.tickPlayerM249(p, dt)
    server.tickPlayerDE357(p, dt)
    server.tickPlayerPYTH(p, dt)
+   server.tickPlayerPIST9MM(p, dt)
    server.tickPlayerSG(p, dt)
 end
 
@@ -54,6 +58,7 @@ function client.init()
    client.initM249()
    client.initDE357()
    client.initPYTH()
+   client.initPIST9MM()
    client.initSG()
 end
 
@@ -65,6 +70,7 @@ function client.tick(dt)
    client.tickM249(dt)
    client.tickDE357(dt)
    client.tickPYTH(dt)
+   client.tickPIST9MM(dt)
    client.tickSG(dt)
 end
 
@@ -76,6 +82,7 @@ function client.tickPlayer(p, dt)
    client.tickPlayerM249(p, dt)
    client.tickPlayerDE357(p, dt)
    client.tickPlayerPYTH(p, dt)
+   client.tickPlayerPIST9MM(p, dt)
    client.tickPlayerSG(p, dt)
 end
 
