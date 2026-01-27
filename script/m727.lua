@@ -75,7 +75,15 @@ function server.tickPlayerM727(p, dt)
 		data.altCoolDown = M727const.RELOAD_TIME
 		data.inreload = true
 	end
-	
+
+	if data.coolDown < 0 and data.inreload == true then	
+		data.inreload = false
+		data.clipamntM727 = M727const.CLIP_SIZE
+		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
+			data.clipamntM727 = ammo
+		end
+	end
+
 	--Check if firing
 	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
@@ -85,14 +93,6 @@ function server.tickPlayerM727(p, dt)
 		end
 
 		if data.coolDown < 0 then	
-			if data.inreload == true then
-				data.inreload = false
-				data.clipamntM727 = M727const.CLIP_SIZE
-				if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamntM727 = ammo
-				end
-			end
-			
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
 			
@@ -200,16 +200,16 @@ function client.tickPlayerM727(p, dt)
 		data.inreload = true
 	end
 	
+	if data.coolDown < 0 and data.inreload == true then	
+		data.inreload = false
+		data.clipamntM727 = M727const.CLIP_SIZE
+		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
+			data.clipamntM727 = ammo
+		end
+	end
+
 	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
-			if data.coolDown < 0 then
-				if data.inreload == true then
-					data.inreload = false
-					data.clipamntM727 = M727const.CLIP_SIZE
-					if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamntM727 = ammo
-					end
-				end
-				
+			if data.coolDown < 0 then		
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				StopSound(data.firesound)

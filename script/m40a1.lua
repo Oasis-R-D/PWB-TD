@@ -84,6 +84,14 @@ function server.tickPlayerM40(p, dt)
 		data.inreload = true
 	end
 	
+	if data.coolDown < 0 and data.inreload == true then	
+		data.inreload = false
+		data.clipamntM40 = M40const.CLIP_SIZE
+		if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
+			data.clipamntM40 = ammo
+		end
+	end
+
 	--Check if firing
 	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
@@ -92,15 +100,7 @@ function server.tickPlayerM40(p, dt)
 			return
 		end
 
-		if data.coolDown < 0 then	
-			if data.inreload == true then
-				data.inreload = false
-				data.clipamntM40 = M40const.CLIP_SIZE
-				if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamntM40 = ammo
-				end
-			end
-			
+		if data.coolDown < 0 then		
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
 			
@@ -200,16 +200,16 @@ function client.tickPlayerM40(p, dt)
 		data.inreload = true
 	end
 	
+	if data.coolDown < 0 and data.inreload == true then	
+		data.inreload = false
+		data.clipamntM40 = M40const.CLIP_SIZE
+		if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
+			data.clipamntM40 = ammo
+		end
+	end
+
 	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
-			if data.coolDown < 0 then
-				if data.inreload == true then
-					data.inreload = false
-					data.clipamntM40 = M40const.CLIP_SIZE
-					if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamntM40 = ammo
-					end
-				end
-				
+			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				PlaySound(LoadSound(M40const.PRIM_FIRESOUND), pt.pos)
