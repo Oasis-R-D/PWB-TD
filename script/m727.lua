@@ -154,10 +154,7 @@ function server.tickPlayerM727(p, dt)
 end
 
 function client.initM727()
-	M727shootSnd = {}
-	for i=0, 2 do
-		M727shootSnd[i] = LoadSound("MOD/snd/727_fr"..i..".ogg")
-	end
+	M727shootSnd = LoadSound("MOD/snd/727_fr0.ogg")
 
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
@@ -216,7 +213,7 @@ function client.tickPlayerM727(p, dt)
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				StopSound(data.firesound)
-				data.firesound = PlaySound(M727shootSnd[math.random(0,#M727shootSnd)], pt.pos)
+				data.firesound = PlaySound(M727shootSnd, pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

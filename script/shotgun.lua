@@ -414,8 +414,9 @@ function client.tickPlayerSG(p, dt)
 			PlaySound(SGloadSnd[math.random(0,#SGloadSnd)], pt.pos)
 			data.shellinserttime = 0.8
 			data.shellstoload = data.shellstoload - 1
-			data.clipamntSG = data.clipamntSG + 1
-			--if data.clipamntSG > SGconst.CLIP_SIZE then -- TO-DO: reimplement
+			data.recoil = 0.1
+			--data.clipamntSG = data.clipamntSG + 1 -- TO-DO: reimplement
+			--if data.clipamntSG > SGconst.CLIP_SIZE then 
 				--DebugPrint("SHELL LOADING IS FORKED")
 		end
 		

@@ -154,10 +154,7 @@ function server.tickPlayerMp5(p, dt)
 end
 
 function client.initMp5()
-	MP5shootSnd = {}
-	for i=0, 2 do
-		MP5shootSnd[i] = LoadSound("MOD/snd/hks"..i..".ogg")
-	end
+	MP5shootSnd = LoadSound("MOD/snd/hks0.ogg")
 
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
@@ -216,7 +213,7 @@ function client.tickPlayerMp5(p, dt)
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				StopSound(data.firesound)
-				data.firesound = PlaySound(MP5shootSnd[math.random(0,#MP5shootSnd)], pt.pos)
+				data.firesound = PlaySound(MP5shootSnd, pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
