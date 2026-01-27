@@ -219,7 +219,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
 					local eject_origin = TransformToParentPoint(transform, Vec(PIST9MMconst.CASING_ORG[1],PIST9MMconst.CASING_ORG[2],PIST9MMconst.CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
+					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
 					-- shell ejection
