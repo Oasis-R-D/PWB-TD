@@ -8,10 +8,11 @@
 -- Per weapon constants
 function createConstSG()
     return {
-		RELOAD_TIME = 5.6, -- seconds
-		RELOAD_SOUND = "MOD/snd/hkr.ogg",
+		RELOAD_TIME = 6.4, -- seconds
+		RELOAD_SOUND = nil,
 		FIRESOUND = "MOD/snd/sbarrel.ogg", 
 		ALT_FIRESOUND = "MOD/snd/dbarrel.ogg",
+		PUMP_SOUND = "MOD/snd/sgcock.ogg",
 		CLIP_SIZE = 8,
 		PICKUP_SIZE = 12,
 		RECOIL_AMNT = 0.2,
@@ -36,6 +37,10 @@ function createPlayerDataSG()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		pumptime = nil, -- time until pump sound is played (and animations if those are ever added)
+		shellinserttime = nil,
+		shellstoload = 0,
+		shellstopump = 0.0,
 	}
 end
 
@@ -72,9 +77,9 @@ function server.tickPlayerSG(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE then
 		local reloadtime = 0
 		if data.clipamntSG > 0 then
-			reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
+			reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
 		else
-			reloadtime = SGconst.RELOAD_TIME + 0.8
+			reloadtime = SGconst.RELOAD_TIME + 0.3
 		end
 		data.coolDown = reloadtime
 		data.altCoolDown = reloadtime
@@ -120,9 +125,9 @@ function server.tickPlayerSG(p, dt)
 			else
 				local reloadtime = 0
 				if data.clipamntSG > 0 then
-					reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
+					reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
 				else
-					reloadtime = SGconst.RELOAD_TIME + 0.8
+					reloadtime = SGconst.RELOAD_TIME + 0.3
 				end
 				data.coolDown = reloadtime
 				data.altCoolDown = reloadtime
@@ -173,9 +178,9 @@ function server.tickPlayerSG(p, dt)
 			else
 				local reloadtime = 0
 				if data.clipamntSG > 0 then
-					reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
+					reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
 				else
-					reloadtime = SGconst.RELOAD_TIME + 0.8
+					reloadtime = SGconst.RELOAD_TIME + 0.3
 				end
 				data.coolDown = reloadtime
 				data.altCoolDown = reloadtime
@@ -193,6 +198,11 @@ function server.tickPlayerSG(p, dt)
 end
 
 function client.initSG()
+	SGloadSnd = {}
+	for i=0, 1 do
+		SGloadSnd[i] = LoadSound("MOD/snd/sgshellin"..i..".ogg")
+	end
+	
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(SGconst.WPNID, toolHaptic);
@@ -236,12 +246,16 @@ function client.tickPlayerSG(p, dt)
 		PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 		local reloadtime = 0
 		if data.clipamntSG > 0 then
-			reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
+			reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
+			data.shellstoload = (reloadtime / 8) * 10
 		else
-			reloadtime = SGconst.RELOAD_TIME + 0.8
+			reloadtime = SGconst.RELOAD_TIME + 0.3
+			data.pumptime = reloadtime - 0.25
+			data.shellstoload = ((reloadtime - 0.3) / 8) * 10
 		end
 		data.coolDown = reloadtime
 		data.altCoolDown = reloadtime
+		data.shellinserttime = 0.8
 		data.inreload = true
 	end
 	
@@ -267,16 +281,7 @@ function client.tickPlayerSG(p, dt)
 					local playervel = GetPlayerVelocity(p)
 					
 					-- shell ejection
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.1, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+					data.shellstopump = 1.0
 					
 					-- muzzleflash
 					for i=0, 3 do
@@ -301,16 +306,21 @@ function client.tickPlayerSG(p, dt)
 				if data.clipamntSG > 0 then
 					data.altCoolDown = SGconst.FIRERATE
 					data.coolDown = SGconst.FIRERATE
+					data.pumptime = SGconst.FIRERATE - 0.25 -- 0.5
 				else
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					if data.clipamntSG > 0 then
-						reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
+						reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
+						data.shellstoload = (reloadtime / 8) * 10
 					else
-						reloadtime = SGconst.RELOAD_TIME + 0.8
+						reloadtime = SGconst.RELOAD_TIME + 0.3
+						data.pumptime = reloadtime - 0.25
+						data.shellstoload = ((reloadtime - 0.3) / 8) * 10
 					end
 					data.coolDown = reloadtime
 					data.altCoolDown = reloadtime
+					data.shellinserttime = 0.8
 					data.inreload = true
 				end
 				
@@ -344,18 +354,7 @@ function client.tickPlayerSG(p, dt)
 					local playervel = GetPlayerVelocity(p)
 					
 					-- shell ejection
-					for i=0, 1 do
-						ParticleReset()
-						ParticleGravity(rnd(-2, -8))
-						ParticleRadius(0.02)
-						ParticleAlpha(1)
-						ParticleColor(0.8, 0.1, 0)
-						ParticleTile(6)
-						ParticleDrag(0.125)
-						ParticleSticky(0.5)
-						ParticleCollide(1)
-						SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					end
+					data.shellstopump = 2
 					
 					-- muzzleflash
 					for i=0, 4 do
@@ -382,16 +381,21 @@ function client.tickPlayerSG(p, dt)
 				if data.clipamntSG > 0 then
 					data.altCoolDown = SGconst.ALTFIRERATE
 					data.coolDown = SGconst.ALTFIRERATE
+					data.pumptime = SGconst.ALTFIRERATE - 0.25
 				else
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					if data.clipamntSG > 0 then
-						reloadtime = SGconst.RELOAD_TIME / data.clipamntSG
+						reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
+						data.shellstoload = (reloadtime / 8) * 10
 					else
-						reloadtime = SGconst.RELOAD_TIME + 0.8
+						reloadtime = SGconst.RELOAD_TIME + 0.3
+						data.pumptime = reloadtime - 0.25
+						data.shellstoload = ((reloadtime - 0.3) / 8) * 10
 					end
 					data.coolDown = reloadtime
 					data.altCoolDown = reloadtime
+					data.shellinserttime = 0.8
 					data.inreload = true
 				end
 				
@@ -407,6 +411,61 @@ function client.tickPlayerSG(p, dt)
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
+	
+	-- SHELL LOADING
+	if data.shellinserttime == nil then
+	else
+		data.shellinserttime = data.shellinserttime - dt
+		
+		if data.shellinserttime < 0 and data.shellstoload >= 0.5 then
+			PlaySound(SGloadSnd[math.random(0,#SGloadSnd)], pt.pos)
+			data.shellinserttime = 0.8
+			data.shellstoload = data.shellstoload - 1
+			data.clipamntSG = data.clipamntSG + 1
+			--if data.clipamntSG > SGconst.CLIP_SIZE then -- TO-DO: reimplement
+				--DebugPrint("SHELL LOADING IS FORKED")
+		end
+		
+		if data.shellstoload <= 0 then
+			data.shellinserttime = nil
+		end
+	end
+	-- END SHELL LOADING
+	
+	-- PUMPING
+	if data.pumptime == nil then
+	else
+		data.pumptime = data.pumptime - dt
+	
+		-- pump the gun
+		if data.pumptime < 0 then
+			PlaySound(LoadSound(SGconst.PUMP_SOUND), pt.pos)
+			data.pumptime = nil
+			-- SHELL EJECT
+			local toolBody = GetToolBody(p)
+			if toolBody ~= 0 then 
+				local transform = GetBodyTransform(toolBody)
+				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
+				local playervel = GetPlayerVelocity(p)
+				
+				for i=1, data.shellstopump do
+					ParticleReset()
+					ParticleGravity(rnd(-2, -8))
+					ParticleRadius(0.02)
+					ParticleAlpha(1)
+					ParticleColor(0.8, 0.1, 0)
+					ParticleTile(6)
+					ParticleDrag(0.125)
+					ParticleSticky(0.5)
+					ParticleCollide(1)
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+				end
+			end
+			-- SHELL EJECT END
+		end
+	end
+	-- END PUMPING
 	
 	-- RECOIL
 	if data.recoil > 0 then

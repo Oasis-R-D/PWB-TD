@@ -17,7 +17,7 @@ function createConstM249()
 		DAMAGE = 0.33,
 		MAX_RANGE = 125.0,
 		WPNID = "m249_saw",
-		WPNNAME = "M249",
+		WPNNAME = "M249 SAW",
 	}
 end
 
@@ -33,6 +33,7 @@ function createPlayerDataM249()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		alteject = false, -- M249 ejects both the belt bits and bullets (alternating between them in opfor tho)
+		firesound = nil,
 	}
 end
 
@@ -120,6 +121,11 @@ function server.tickPlayerM249(p, dt)
 end
 
 function client.initM249()
+	M249shootSnd = {}
+	for i=0, 2 do
+		M249shootSnd[i] = LoadSound("MOD/snd/249_fr"..i..".ogg")
+	end
+	
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(M249const.WPNID, toolHaptic);
@@ -177,7 +183,8 @@ function client.tickPlayerM249(p, dt)
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(shootSnd[math.random(0,#shootSnd)], pt.pos)
+				StopSound(data.firesound)
+				data.firesound = PlaySound(M249shootSnd[math.random(0,#M249shootSnd)], pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

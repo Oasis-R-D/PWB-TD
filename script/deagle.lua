@@ -9,7 +9,7 @@
 function createConstDE357()
     return {
 		RELOAD_TIME = 2.32, -- seconds
-		EMPTYRELOAD_TIME = 4.1 -- seconds
+		EMPTYRELOAD_TIME = 4.1, -- seconds
 		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
 		FIRESOUND = "MOD/snd/DeagFR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
@@ -43,7 +43,7 @@ function createPlayerDataDE357()
 end
 
 function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 4)
+	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 2)
 	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
 end
 
@@ -262,8 +262,8 @@ function client.tickPlayerDE357(p, dt)
 					end
 				else
 					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
-					data.coolDown = DE357const.RELOAD_TIME
-					data.altCoolDown = DE357const.RELOAD_TIME
+					data.coolDown = DE357const.EMPTYRELOAD_TIME
+					data.altCoolDown = DE357const.EMPTYRELOAD_TIME
 					data.inreload = true
 				end
 				
@@ -282,8 +282,9 @@ function client.tickPlayerDE357(p, dt)
 			data.laseron = not data.laseron
 		end
 	end
-
-	if data.laseron = true then -- TO-DO: add laser vfx
+	
+	-- TO-DO: add laser vfx
+	if data.laseron == true then
 		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
 	end
 

@@ -9,8 +9,8 @@
 function createConstM40()
     return {
 		RELOAD_TIME = 2.32, -- seconds
-		EMPTYRELOAD_TIME = 4.1 -- seconds
-		RELOAD_SOUND = "MOD/snd/m40R.ogg",
+		EMPTYRELOAD_TIME = 4.1, -- seconds
+		RELOAD_SOUND = "MOD/snd/m40R.ogg", -- TO-DO: make
 		FIRESOUND = "MOD/snd/m40FR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/m40scp.ogg",
 		CLIP_SIZE = 5.0,
@@ -110,7 +110,8 @@ function server.tickPlayerM40(p, dt)
 			
 			if not data.scoped == true then -- make fire from center of screen?
 				dir = VecAdd(dir, rndVec(spread))
-
+			end
+			
 			for i=0, 4 do -- this should make it penetrate stuff?
 				Shoot(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID)
 			end
@@ -134,14 +135,14 @@ function server.tickPlayerM40(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
-			data.altCoolDown = M40const.ALTFIRERATE
-			data.coolDown = M40const.SCOPEFIREDELAY
+			if data.scoped == false then
+				data.altCoolDown = M40const.ALTFIRERATE
+				data.coolDown = M40const.SCOPEFIREDELAY
+			end
 			data.scoped = true
 		end
-	else
-		data.scoped = false
 	end
 	
 	data.coolDown = data.coolDown - dt
@@ -212,7 +213,7 @@ function client.tickPlayerM40(p, dt)
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(FIRESOUND), pt.pos)
+				PlaySound(LoadSound(M40const.FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -271,16 +272,17 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+		data.toolAnimator.forceActionPose = true
 		if data.altCoolDown < 0 then
-			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight -- make forced
-				
-			data.altCoolDown = M40const.ALTFIRERATE
-			data.coolDown = M40const.SCOPEFIREDELAY
+			if data.scoped == false then
+				data.altCoolDown = M40const.ALTFIRERATE
+				data.coolDown = M40const.SCOPEFIREDELAY
+			end
 			data.scoped = true
 		end
 	else
-		data.scoped = false
+		data.toolAnimator.forceActionPose = false
 	end
 
 	-- decrease firing cooldown and recoil

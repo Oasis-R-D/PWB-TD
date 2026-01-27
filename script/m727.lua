@@ -13,13 +13,13 @@ function createConstM727()
 		ALT_FIRESOUND = "MOD/snd/hkgl.ogg",
 		CLIP_SIZE = 50,
 		PICKUP_SIZE = 50,
-		RECOIL_AMNT = 0.22,
+		RECOIL_AMNT = 0.185,
 		FIRERATE = 0.1,
 		ALTFIRERATE = 1,
 		DAMAGE = 0.35,
 		MAX_RANGE = 100.0,
-		WPNID = "9mmAR",
-		WPNNAME = "9mmAR",
+		WPNID = "coltar",
+		WPNNAME = "Colt M727",
 	}
 end
 
@@ -35,6 +35,7 @@ function createPlayerDataM727()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		firesound = nil,
 	}
 end
 
@@ -152,9 +153,9 @@ function server.tickPlayerM727(p, dt)
 end
 
 function client.initM727()
-	shootSnd = {}
+	M727shootSnd = {}
 	for i=0, 2 do
-		shootSnd[i] = LoadSound("MOD/snd/727_fr"..i..".ogg")
+		M727shootSnd[i] = LoadSound("MOD/snd/727_fr"..i..".ogg")
 	end
 
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
@@ -215,7 +216,8 @@ function client.tickPlayerM727(p, dt)
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(shootSnd[math.random(0,#shootSnd)], pt.pos)
+				StopSound(data.firesound)
+				data.firesound = PlaySound(M727shootSnd[math.random(0,#M727shootSnd)], pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -284,7 +286,7 @@ function client.tickPlayerM727(p, dt)
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local playervel = GetPlayerVelocity(p)
-					local vectuh = VecAdd(mt.pos, Vec(0, -0.25, 0))
+					local vectuh = VecAdd(mt.pos, Vec(0.15, -0.2, 0))
 					-- muzzleflash
 					for i=0, 4 do
 						ParticleReset()
