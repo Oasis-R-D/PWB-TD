@@ -11,7 +11,7 @@ function createConstM40()
 		RELOAD_TIME = 2.32, -- seconds
 		EMPTYRELOAD_TIME = 4.1, -- seconds
 		RELOAD_SOUND = "MOD/snd/m40R.ogg", -- TO-DO: make
-		FIRESOUND = "MOD/snd/m40FR.ogg", 
+		PRIM_FIRESOUND = "MOD/snd/m40FR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/m40scp.ogg",
 		CLIP_SIZE = 5.0,
 		PICKUP_SIZE = 15.0,
@@ -212,7 +212,7 @@ function client.tickPlayerM40(p, dt)
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(M40const.FIRESOUND), pt.pos)
+				PlaySound(LoadSound(M40const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

@@ -10,7 +10,7 @@ function createConstSG()
     return {
 		RELOAD_TIME = 6.4, -- seconds
 		RELOAD_SOUND = nil,
-		FIRESOUND = "MOD/snd/sbarrel.ogg", 
+		PRIM_FIRESOUND = "MOD/snd/sbarrel.ogg", 
 		ALT_FIRESOUND = "MOD/snd/dbarrel.ogg",
 		PUMP_SOUND = "MOD/snd/sgcock.ogg",
 		CLIP_SIZE = 8,
@@ -270,7 +270,7 @@ function client.tickPlayerSG(p, dt)
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(SGconst.FIRESOUND), pt.pos)
+				PlaySound(LoadSound(SGconst.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

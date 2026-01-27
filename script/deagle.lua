@@ -11,7 +11,7 @@ function createConstDE357()
 		RELOAD_TIME = 2.32, -- seconds
 		EMPTYRELOAD_TIME = 4.1, -- seconds
 		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
-		FIRESOUND = "MOD/snd/DeagFR.ogg", 
+		PRIM_FIRESOUND = "MOD/snd/DeagFR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
 		CLIP_SIZE = 7.0,
 		PICKUP_SIZE = 15.0,
@@ -210,7 +210,7 @@ function client.tickPlayerDE357(p, dt)
 				
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(FIRESOUND), pt.pos)
+				PlaySound(LoadSound(PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
