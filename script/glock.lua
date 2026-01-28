@@ -1,4 +1,4 @@
--- copy this for the most basic mag loaded weapon with slower empty reloads
+-- copy this for a basic pistol with separate sounds when not fired by the client
 #version 2
 
 #include "script/include/player.lua"
@@ -11,7 +11,7 @@ function createConstPIST9MM()
 		RELOAD_TIME = 1.5, -- seconds
 		RELOAD_SOUND = "MOD/snd/glockR.ogg",
 		PRIM_FIRESOUND = "MOD/snd/glockFR.ogg", 
-		NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg", 
+		NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg", -- glock has diff sounds when shot by NPCs (in this case, other players)
 		CLIP_SIZE = 17.0,
 		PICKUP_SIZE = 34.0, -- should be 17 but idc
 		RECOIL_AMNT = 0.17,
