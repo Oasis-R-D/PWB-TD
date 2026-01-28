@@ -138,11 +138,9 @@ function server.tickPlayerM40(p, dt)
 	
 	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
-			if data.scoped == false then
-				data.altCoolDown = M40const.ALTFIRERATE
-				data.coolDown = M40const.SCOPEFIREDELAY
-			end
-			data.scoped = true
+			data.altCoolDown = M40const.ALTFIRERATE
+			data.coolDown = M40const.SCOPEFIREDELAY
+			data.scoped = not data.scoped
 		end
 	end
 	
@@ -272,15 +270,16 @@ function client.tickPlayerM40(p, dt)
 	end
 
 	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
-		data.toolAnimator.forceActionPose = true
 		if data.altCoolDown < 0 then
-			if data.scoped == false then
-				data.altCoolDown = M40const.ALTFIRERATE
-				data.coolDown = M40const.SCOPEFIREDELAY
-			end
-			data.scoped = true
+			data.toolAnimator.forceActionPose = true
+			PlaySound(LoadSound(M40const.ALT_FIRESOUND), pt.pos)
+			data.altCoolDown = M40const.ALTFIRERATE
+			data.coolDown = M40const.SCOPEFIREDELAY
+			data.scoped = not data.scoped
 		end
-	else
+	end
+
+	if data.scoped == false then
 		data.toolAnimator.forceActionPose = false
 	end
 
