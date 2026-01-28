@@ -19,7 +19,7 @@ function createConstPYTH()
 		ALTFIRERATE = 0.125,
 		DAMAGE = 1,
 		MAX_RANGE = 150.0,
-		WPNID = "python", -- TO-DO: see if this is how weapons are sorted in the inventory (to force the game to have our weapons first)
+		WPNID = "python",
 		WPNNAME = "Colt Python",
 		CASING_ORG = Vec(0.02, 0.25, -0.25),
 	}

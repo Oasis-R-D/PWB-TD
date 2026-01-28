@@ -16,7 +16,7 @@ function createConstM249()
 		FIRERATE = 0.067, -- NO
 		DAMAGE = 0.4,
 		MAX_RANGE = 125.0,
-		WPNID = "m249_saw",
+		WPNID = "opform249_saw",
 		WPNNAME = "M249 SAW",
 		CASING_ORG = Vec(0.02, 0.25, -0.25),
 	}

@@ -19,7 +19,7 @@ function createConstPIST9MM()
 		ALTFIRERATE = 0.2,
 		DAMAGE = 0.6,
 		MAX_RANGE = 125.0,
-		WPNID = "aaabbbbbb", -- TO-DO: see if this is how weapons are sorted in the inventory (to force the game to have our weapons first)
+		WPNID = "hlglock",
 		WPNNAME = "9mm HandGun",
 		CASING_ORG = Vec(0.02, 0.25, 0.1),
 	}

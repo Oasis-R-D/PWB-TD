@@ -18,7 +18,7 @@ function createConstMP5()
 		ALTFIRERATE = 1,
 		DAMAGE = 0.45,
 		MAX_RANGE = 100.0,
-		WPNID = "9mmAR",
+		WPNID = "hl9mmAR",
 		WPNNAME = "9mmAR",
 		CASING_ORG = Vec(0.02, 0.25, -0.25),		-- casing origin
 	}

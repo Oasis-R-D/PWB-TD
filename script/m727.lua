@@ -18,7 +18,7 @@ function createConstM727()
 		ALTFIRERATE = 1,
 		DAMAGE = 0.45,
 		MAX_RANGE = 100.0,
-		WPNID = "coltar",
+		WPNID = "hlM727",
 		WPNNAME = "Colt M727",
 		CASING_ORG = Vec(0.02, 0.0, 0.1),
 	}

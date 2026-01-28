@@ -21,7 +21,7 @@ function createConstM40()
 		SCOPEFIREDELAY = 0.1,
 		DAMAGE = 0.6, -- x5
 		MAX_RANGE = 250.0,
-		WPNID = "m40a1",
+		WPNID = "opform40a1",
 		WPNNAME = "M40A1",
 		CASING_ORG = Vec(0.02, 0.25, -0.25),
 	}

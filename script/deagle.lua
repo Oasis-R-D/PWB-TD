@@ -21,7 +21,7 @@ function createConstDE357()
 		ALTFIRERATE = 0.125,
 		DAMAGE = 1,
 		MAX_RANGE = 150.0,
-		WPNID = "deagle",
+		WPNID = "opfordeagle",
 		WPNNAME = "Desert Eagle",
 		CASING_ORG = Vec(0.02, 0.25, 0.1),
 	}
