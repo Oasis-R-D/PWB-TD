@@ -277,12 +277,18 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
+			data.toolAnimator.forceActionPose = true
+			PlaySound(LoadSound(DE357const.ALT_FIRESOUND), pt.pos)
 			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.ALTFIRERATE
+			data.coolDown = DE357const.SCOPEFIREDELAY
 			data.laseron = not data.laseron
 		end
+	end
+
+	if data.laseron == false then
+		data.toolAnimator.forceActionPose = false
 	end
 	
 	-- TO-DO: add laser vfx
