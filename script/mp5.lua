@@ -140,7 +140,7 @@ function server.tickPlayerMp5(p, dt)
 			end
 			
 			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "rocket", MP5const.DAMAGE * 1.5, MP5const.MAX_RANGE * 2, p, MP5const.WPNID)
+			Shoot(pos, dir, "rocket", MP5const.DAMAGE, MP5const.MAX_RANGE * 2, p, MP5const.WPNID)
 			
 			data.recoil = 1.5 * MP5const.RECOIL_AMNT
 			

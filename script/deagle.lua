@@ -45,7 +45,7 @@ function createPlayerDataDE357()
 end
 
 function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/glock.xml", 2)
+	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 2)
 	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
 end
 
