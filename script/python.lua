@@ -10,18 +10,18 @@ function createConstPYTH()
     return {
 		RELOAD_TIME = 2.0, -- seconds
 		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
-		PRIM_FIRESOUND = "MOD/snd/357FR.ogg", 
+		PRIM_FIRESOUND = "MOD/snd/357FR0.ogg", 
 		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
 		CLIP_SIZE = 6.0,
 		PICKUP_SIZE = 6.0,
 		RECOIL_AMNT = 0.25,
 		FIRERATE = 0.75,
 		ALTFIRERATE = 0.125,
-		DAMAGE = 0.6,
+		DAMAGE = 1,
 		MAX_RANGE = 150.0,
-		WPNID = "aaaaaaaa", -- TO-DO: see if this is how weapons are sorted in the inventory (to force the game to have our weapons first)
+		WPNID = "python", -- TO-DO: see if this is how weapons are sorted in the inventory (to force the game to have our weapons first)
 		WPNNAME = "Colt Python",
-		CASING_ORG = Vec(0.02, 0.25, -0.25)
+		CASING_ORG = Vec(0.02, 0.25, -0.25),
 	}
 end
 
@@ -37,11 +37,12 @@ function createPlayerDataPYTH()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		firesound = nil,
 	}
 end
 
 function server.initPYTH()
-	RegisterTool(PYTHconst.WPNID, PYTHconst.WPNNAME, "MOD/prefab/deagle.xml", 2)
+	RegisterTool(PYTHconst.WPNID, PYTHconst.WPNNAME, "MOD/prefab/glock.xml", 2)
 	SetToolAmmoPickupAmount(PYTHconst.WPNID, PYTHconst.PICKUP_SIZE)
 end
 
@@ -98,7 +99,7 @@ function server.tickPlayerPYTH(p, dt)
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
 			
-			local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
+			local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 			dir = VecAdd(dir, rndVec(spread))
 			Shoot(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID)
@@ -192,7 +193,9 @@ function client.tickPlayerPYTH(p, dt)
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(PRIM_FIRESOUND), pt.pos)
+				
+				StopSound(data.firesound)
+				data.firesound = PlaySound(LoadSound(PYTHconst.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

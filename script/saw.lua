@@ -14,7 +14,7 @@ function createConstM249()
 		PICKUP_SIZE = 200,
 		RECOIL_AMNT = 0.2,
 		FIRERATE = 0.067, -- NO
-		DAMAGE = 0.33,
+		DAMAGE = 0.4,
 		MAX_RANGE = 125.0,
 		WPNID = "m249_saw",
 		WPNNAME = "M249 SAW",

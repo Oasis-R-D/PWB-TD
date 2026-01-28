@@ -16,7 +16,7 @@ function createConstM727()
 		RECOIL_AMNT = 0.185,
 		FIRERATE = 0.1,
 		ALTFIRERATE = 1,
-		DAMAGE = 0.35,
+		DAMAGE = 0.45,
 		MAX_RANGE = 100.0,
 		WPNID = "coltar",
 		WPNNAME = "Colt M727",

@@ -19,11 +19,11 @@ function createConstDE357()
 		FIRERATE = 0.22, -- laser off
 		LASERFIRERATE = 0.5, -- laser on
 		ALTFIRERATE = 0.125,
-		DAMAGE = 0.6,
+		DAMAGE = 1,
 		MAX_RANGE = 150.0,
 		WPNID = "deagle",
 		WPNNAME = "Desert Eagle",
-		CASING_ORG = Vec(0.02, 0.25, -0.25)
+		CASING_ORG = Vec(0.02, 0.25, 0.1),
 	}
 end
 
@@ -40,11 +40,12 @@ function createPlayerDataDE357()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		laseron = false,
+		firesound = nil,
 	}
 end
 
 function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 2)
+	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/glock.xml", 2)
 	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
 end
 
@@ -210,7 +211,9 @@ function client.tickPlayerDE357(p, dt)
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(PRIM_FIRESOUND), pt.pos)
+				
+				StopSound(data.firesound)
+				data.firesound = PlaySound(LoadSound(DE357const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

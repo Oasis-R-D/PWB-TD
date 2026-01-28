@@ -19,7 +19,7 @@ function createConstM40()
 		FIRERATE = 2.0,
 		ALTFIRERATE = 0.5,
 		SCOPEFIREDELAY = 0.1,
-		DAMAGE = 0.4, -- x5
+		DAMAGE = 0.6, -- x5
 		MAX_RANGE = 250.0,
 		WPNID = "m40a1",
 		WPNNAME = "M40A1",

@@ -9,7 +9,7 @@
 function createConstSG()
     return {
 		RELOAD_TIME = 6.4, -- seconds
-		RELOAD_SOUND = nil,
+		RELOAD_SOUND = "MOD/snd/sgreloadstart.ogg",
 		PRIM_FIRESOUND = "MOD/snd/sbarrel.ogg", 
 		ALT_FIRESOUND = "MOD/snd/dbarrel.ogg",
 		PUMP_SOUND = "MOD/snd/sgcock.ogg",
@@ -18,7 +18,7 @@ function createConstSG()
 		RECOIL_AMNT = 0.2,
 		FIRERATE = 0.75,
 		ALTFIRERATE = 1.5,
-		DAMAGE = 0.3,
+		DAMAGE = 0.35,
 		MAX_RANGE = 60.0,
 		WPNID = "hlShotgun",
 		WPNNAME = "Assault Shotgun",

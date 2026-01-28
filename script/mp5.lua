@@ -16,7 +16,7 @@ function createConstMP5()
 		RECOIL_AMNT = 0.2,
 		FIRERATE = 0.1,
 		ALTFIRERATE = 1,
-		DAMAGE = 0.35,
+		DAMAGE = 0.45,
 		MAX_RANGE = 100.0,
 		WPNID = "9mmAR",
 		WPNNAME = "9mmAR",

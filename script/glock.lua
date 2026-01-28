@@ -11,16 +11,17 @@ function createConstPIST9MM()
 		RELOAD_TIME = 1.5, -- seconds
 		RELOAD_SOUND = "MOD/snd/glockR.ogg",
 		PRIM_FIRESOUND = "MOD/snd/glockFR.ogg", 
+		NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg", 
 		CLIP_SIZE = 17.0,
 		PICKUP_SIZE = 34.0, -- should be 17 but idc
 		RECOIL_AMNT = 0.17,
 		FIRERATE = 0.3,
 		ALTFIRERATE = 0.2,
-		DAMAGE = 0.4,
+		DAMAGE = 0.6,
 		MAX_RANGE = 125.0,
 		WPNID = "aaabbbbbb", -- TO-DO: see if this is how weapons are sorted in the inventory (to force the game to have our weapons first)
 		WPNNAME = "9mm HandGun",
-		CASING_ORG = Vec(0.02, 0.25, -0.25)
+		CASING_ORG = Vec(0.02, 0.25, 0.1),
 	}
 end
 
@@ -36,11 +37,12 @@ function createPlayerDataPIST9MM()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		firesound = nil,
 	}
 end
 
 function server.initPIST9MM()
-	RegisterTool(PIST9MMconst.WPNID, PIST9MMconst.WPNNAME, "MOD/prefab/deagle.xml", 2)
+	RegisterTool(PIST9MMconst.WPNID, PIST9MMconst.WPNNAME, "MOD/prefab/glock.xml", 2)
 	SetToolAmmoPickupAmount(PIST9MMconst.WPNID, PIST9MMconst.PICKUP_SIZE)
 end
 
@@ -121,7 +123,13 @@ function server.tickPlayerPIST9MM(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+		local mt = GetToolLocationWorldTransform("muzzle", p)
+
+		if mt == nil then
+			return
+		end
+		
 		if data.altCoolDown < 0 then
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
@@ -213,7 +221,82 @@ function client.tickPlayerPIST9MM(p, dt)
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(PRIM_FIRESOUND), pt.pos)
+				
+				StopSound(data.firesound)
+				if IsPlayerLocal(p) then
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), pt.pos)
+				else
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), pt.pos)
+				end
+				
+				local toolBody = GetToolBody(p)
+				if toolBody ~= 0 then
+					local transform = GetBodyTransform(toolBody)
+					local eject_origin = TransformToParentPoint(transform, Vec(PIST9MMconst.CASING_ORG[1],PIST9MMconst.CASING_ORG[2],PIST9MMconst.CASING_ORG[3]))
+					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
+					local playervel = GetPlayerVelocity(p)
+					
+					-- shell ejection
+					ParticleReset()
+					ParticleGravity(rnd(-2, -8))
+					ParticleRadius(0.02)
+					ParticleAlpha(1)
+					ParticleColor(0.8, 0.6, 0)
+					ParticleTile(6)
+					ParticleDrag(0.125)
+					ParticleSticky(0.5)
+					ParticleCollide(1)
+                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+					
+					-- muzzleflash
+					for i=0, 2 do
+						ParticleReset()
+						ParticleGravity(0)
+						ParticleRadius(rnd(0.08, 0.13), 0.3)
+						ParticleAlpha(1, 0)
+						ParticleColor(0.8, 0.6, 0)
+						ParticleTile(5)
+						ParticleDrag(0)
+						ParticleRotation(rnd(10, -10), 0)
+						ParticleSticky(0)
+						ParticleEmissive(5, 1)
+						ParticleCollide(0)
+						ParticleColor(1,0.5,0, 1,0,0)
+						SpawnParticle(mt.pos, playervel, 0.125)
+					end
+				
+				end
+					
+				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
+				if data.clipamntPIST9MM > 0 then
+					data.coolDown = PIST9MMconst.FIRERATE
+					data.altCoolDown = PIST9MMconst.FIRERATE
+				else
+					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
+					data.coolDown = PIST9MMconst.RELOAD_TIME
+					data.altCoolDown = PIST9MMconst.RELOAD_TIME
+					data.inreload = true
+				end
+				
+				data.recoil = PIST9MMconst.RECOIL_AMNT
+			end
+
+		if IsPlayerLocal(p) then
+			PlayHaptic(shootHaptic, 1)
+		end
+	end
+
+	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+		if data.altCoolDown < 0 then
+				--Light, particles and sound
+				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+				
+				StopSound(data.firesound)
+				if IsPlayerLocal(p) then
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), pt.pos)
+				else
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), pt.pos)
+				end
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -252,11 +335,13 @@ function client.tickPlayerPIST9MM(p, dt)
 					end
 				
 				end
-					
+				
+				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
+				
 				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
 				if data.clipamntPIST9MM > 0 then
-					data.coolDown = PIST9MMconst.FIRERATE
-					data.altCoolDown = PIST9MMconst.FIRERATE
+					data.coolDown = PIST9MMconst.ALTFIRERATE
+					data.altCoolDown = PIST9MMconst.ALTFIRERATE
 				else
 					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PIST9MMconst.RELOAD_TIME
@@ -269,13 +354,6 @@ function client.tickPlayerPIST9MM(p, dt)
 
 		if IsPlayerLocal(p) then
 			PlayHaptic(shootHaptic, 1)
-		end
-	end
-
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
-		if data.altCoolDown < 0 then
-			data.altCoolDown = PIST9MMconst.ALTFIRERATE
-			data.coolDown = PIST9MMconst.ALTFIRERATE
 		end
 	end
 	
