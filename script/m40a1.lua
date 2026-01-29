@@ -317,7 +317,6 @@ function client.drawM40()
 	
 	UiAlign("center")
 	UiTranslate(Uicenter(), Uicenter())
-	UiImage("scope.png")
-
+	UiImage("MOD/scope.png")
 	client.drawAmmo(5, M40const.CLIP_SIZE)
 end
