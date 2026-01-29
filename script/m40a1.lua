@@ -44,7 +44,7 @@ function createPlayerDataM40()
 end
 
 function server.initM40()
-	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/m40a1.xml", 4)
+	RegisterTool(M40const.WPNID, M40const.WPNNAME, "MOD/prefab/m40a1.xml", 6)
 	SetToolAmmoPickupAmount(M40const.WPNID, M40const.PICKUP_SIZE)
 end
 
@@ -237,14 +237,13 @@ function client.tickPlayerM40(p, dt)
 						ParticleGravity(0)
 						ParticleRadius(rnd(0.1, 0.15), 0.33)
 						ParticleAlpha(1, 0)
-						ParticleColor(0.8, 0.6, 0)
 						ParticleTile(5)
 						ParticleDrag(0)
 						ParticleRotation(rnd(10, -10), 0)
 						ParticleSticky(0)
 						ParticleEmissive(5, 1)
 						ParticleCollide(0)
-						ParticleColor(1,0.5,0, 1,0,0)
+						ParticleColor(1,0.35,0, 1,0,0)
 						SpawnParticle(mt.pos, playervel, 0.125)
 					end
 				

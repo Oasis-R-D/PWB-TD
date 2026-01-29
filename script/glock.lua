@@ -42,7 +42,7 @@ function createPlayerDataPIST9MM()
 end
 
 function server.initPIST9MM()
-	RegisterTool(PIST9MMconst.WPNID, PIST9MMconst.WPNNAME, "MOD/prefab/glock.xml", 2)
+	RegisterTool(PIST9MMconst.WPNID, PIST9MMconst.WPNNAME, "MOD/prefab/glock.xml", 3)
 	SetToolAmmoPickupAmount(PIST9MMconst.WPNID, PIST9MMconst.PICKUP_SIZE)
 end
 
@@ -254,14 +254,13 @@ function client.tickPlayerPIST9MM(p, dt)
 						ParticleGravity(0)
 						ParticleRadius(rnd(0.08, 0.13), 0.3)
 						ParticleAlpha(1, 0)
-						ParticleColor(0.8, 0.6, 0)
 						ParticleTile(5)
 						ParticleDrag(0)
 						ParticleRotation(rnd(10, -10), 0)
 						ParticleSticky(0)
 						ParticleEmissive(5, 1)
 						ParticleCollide(0)
-						ParticleColor(1,0.5,0, 1,0,0)
+						ParticleColor(1,0.35,0, 1,0,0)
 						SpawnParticle(mt.pos, playervel, 0.125)
 					end
 				
@@ -323,14 +322,13 @@ function client.tickPlayerPIST9MM(p, dt)
 						ParticleGravity(0)
 						ParticleRadius(rnd(0.1, 0.15), 0.33)
 						ParticleAlpha(1, 0)
-						ParticleColor(0.8, 0.6, 0)
 						ParticleTile(5)
 						ParticleDrag(0)
 						ParticleRotation(rnd(10, -10), 0)
 						ParticleSticky(0)
 						ParticleEmissive(5, 1)
 						ParticleCollide(0)
-						ParticleColor(1,0.5,0, 1,0,0)
+						ParticleColor(1,0.35,0, 1,0,0)
 						SpawnParticle(mt.pos, playervel, 0.125)
 					end
 				

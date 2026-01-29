@@ -12,7 +12,8 @@ function createConstDE357()
 		EMPTYRELOAD_TIME = 4.1, -- seconds
 		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
 		PRIM_FIRESOUND = "MOD/snd/DeagFR.ogg", 
-		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
+		LASERONSFX = "MOD/snd/DeagLaser.ogg",
+		LASEROFFSFX = "MOD/snd/DeagLaserOff.ogg",
 		CLIP_SIZE = 7.0,
 		PICKUP_SIZE = 15.0,
 		RECOIL_AMNT = 0.25,
@@ -41,11 +42,12 @@ function createPlayerDataDE357()
 		toolAnimator = ToolAnimator(),
 		laseron = false,
 		firesound = nil,
+		laserrefresh = 0.0,
 	}
 end
 
 function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 2)
+	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 3)
 	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
 end
 
@@ -240,14 +242,13 @@ function client.tickPlayerDE357(p, dt)
 						ParticleGravity(0)
 						ParticleRadius(rnd(0.1, 0.15), 0.33)
 						ParticleAlpha(1, 0)
-						ParticleColor(0.8, 0.6, 0)
 						ParticleTile(5)
 						ParticleDrag(0)
 						ParticleRotation(rnd(10, -10), 0)
 						ParticleSticky(0)
 						ParticleEmissive(5, 1)
 						ParticleCollide(0)
-						ParticleColor(1,0.5,0, 1,0,0)
+						ParticleColor(1,0.35,0, 1,0,0)
 						SpawnParticle(mt.pos, playervel, 0.125)
 					end
 				
@@ -280,15 +281,38 @@ function client.tickPlayerDE357(p, dt)
 	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
-			PlaySound(LoadSound(DE357const.ALT_FIRESOUND), pt.pos)
+			if data.laseron == false then
+				PlaySound(LoadSound(DE357const.LASERONSFX), pt.pos)
+			else
+				PlaySound(LoadSound(DE357const.LASEROFFSFX), pt.pos)
+			end
 			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.SCOPEFIREDELAY
+			data.coolDown = DE357const.ALTFIRERATE
 			data.laseron = not data.laseron
 		end
 	end
 
 	if data.laseron == false then
 		data.toolAnimator.forceActionPose = false
+	else
+		if IsPlayerLocal(p) and data.laserrefresh <= 0 then
+			for i=0, 1 do
+				local playervel = GetPlayerVelocity(p)
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(0.1)
+				ParticleAlpha(0.75, 0)
+				ParticleColor(1.0, 0.0, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5)
+				ParticleCollide(0)
+				SpawnParticle(VecSub(mt.pos, Vec(0.0, 0.15, 0.0)), playervel, 0.05)
+			end
+			data.laserrefresh = 0.02
+		end
 	end
 	
 	-- TO-DO: add laser vfx
@@ -300,6 +324,7 @@ function client.tickPlayerDE357(p, dt)
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
+	data.laserrefresh = data.laserrefresh - dt
 	
 	-- RECOIL
 	if data.recoil > 0 then
