@@ -8,8 +8,7 @@
 -- Per weapon constants
 function createConstDE357()
     return {
-		RELOAD_TIME = 2.32, -- seconds
-		EMPTYRELOAD_TIME = 4.1, -- seconds
+		RELOAD_TIME = 1.5, -- seconds
 		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
 		PRIM_FIRESOUND = "MOD/snd/DeagFR.ogg", 
 		LASERONSFX = "MOD/snd/DeagLaser.ogg",
@@ -81,8 +80,8 @@ function server.tickPlayerDE357(p, dt)
 			data.coolDown = DE357const.RELOAD_TIME
 			data.altCoolDown = DE357const.RELOAD_TIME
 		else
-			data.coolDown = DE357const.EMPTYRELOAD_TIME
-			data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+			data.coolDown = DE357const.RELOAD_TIME
+			data.altCoolDown = DE357const.RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -127,8 +126,8 @@ function server.tickPlayerDE357(p, dt)
 					data.altCoolDown = DE357const.FIRERATE
 				end
 			else
-				data.coolDown = DE357const.EMPTYRELOAD_TIME
-				data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+				data.coolDown = DE357const.RELOAD_TIME
+				data.altCoolDown = DE357const.RELOAD_TIME
 				data.inreload =  true;
 			end
 			
@@ -195,8 +194,8 @@ function client.tickPlayerDE357(p, dt)
 			data.coolDown = DE357const.RELOAD_TIME
 			data.altCoolDown = DE357const.RELOAD_TIME
 		else
-			data.coolDown = DE357const.EMPTYRELOAD_TIME
-			data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+			data.coolDown = DE357const.RELOAD_TIME
+			data.altCoolDown = DE357const.RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -265,8 +264,8 @@ function client.tickPlayerDE357(p, dt)
 					end
 				else
 					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
-					data.coolDown = DE357const.EMPTYRELOAD_TIME
-					data.altCoolDown = DE357const.EMPTYRELOAD_TIME
+					data.coolDown = DE357const.RELOAD_TIME
+					data.altCoolDown = DE357const.RELOAD_TIME
 					data.inreload = true
 				end
 				

@@ -8,15 +8,13 @@
 -- Per weapon constants
 function createConstPYTH()
     return {
-		RELOAD_TIME = 2.0, -- seconds
-		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
+		RELOAD_TIME = 3.0, -- seconds -- this is bugged in HL1 where it's 2 instead of 3 (3 is the length of anim)
+		RELOAD_SOUND = "MOD/snd/357R.ogg",
 		PRIM_FIRESOUND = "MOD/snd/357FR0.ogg", 
-		ALT_FIRESOUND = "MOD/snd/DeagLaser.ogg",
 		CLIP_SIZE = 6.0,
 		PICKUP_SIZE = 6.0,
 		RECOIL_AMNT = 0.25,
 		FIRERATE = 0.75,
-		ALTFIRERATE = 0.125,
 		DAMAGE = 1,
 		MAX_RANGE = 150.0,
 		WPNID = "python",
@@ -34,7 +32,6 @@ function createPlayerDataPYTH()
 		clipamntPYTH = PYTHconst.CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
@@ -74,7 +71,6 @@ function server.tickPlayerPYTH(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE then
 		if data.clipamntPYTH > 0 then
 			data.coolDown = PYTHconst.RELOAD_TIME
-			data.altCoolDown = PYTHconst.RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -109,10 +105,8 @@ function server.tickPlayerPYTH(p, dt)
 			
 			if data.clipamntPYTH > 0 then
 				data.coolDown = PYTHconst.FIRERATE
-				data.altCoolDown = PYTHconst.FIRERATE
 			else
 				data.coolDown = PYTHconst.RELOAD_TIME
-				data.altCoolDown = PYTHconst.RELOAD_TIME
 				data.inreload =  true;
 			end
 			
@@ -123,15 +117,7 @@ function server.tickPlayerPYTH(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
-		if data.altCoolDown < 0 then
-			data.altCoolDown = PYTHconst.ALTFIRERATE
-			data.coolDown = PYTHconst.ALTFIRERATE
-		end
-	end
-	
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 end
 
 function client.initPYTH()
@@ -176,7 +162,6 @@ function client.tickPlayerPYTH(p, dt)
 		PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
 		if data.clipamntPYTH > 0 then
 			data.coolDown = PYTHconst.RELOAD_TIME
-			data.altCoolDown = PYTHconst.RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -237,11 +222,9 @@ function client.tickPlayerPYTH(p, dt)
 				data.clipamntPYTH = data.clipamntPYTH - 1
 				if data.clipamntPYTH > 0 then
 					data.coolDown = PYTHconst.FIRERATE
-					data.altCoolDown = PYTHconst.FIRERATE
 				else
 					PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PYTHconst.RELOAD_TIME
-					data.altCoolDown = PYTHconst.RELOAD_TIME
 					data.inreload = true
 				end
 				
@@ -252,17 +235,9 @@ function client.tickPlayerPYTH(p, dt)
 			PlayHaptic(shootHaptic, 1)
 		end
 	end
-
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
-		if data.altCoolDown < 0 then
-			data.altCoolDown = PYTHconst.ALTFIRERATE
-			data.coolDown = PYTHconst.ALTFIRERATE
-		end
-	end
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	
 	-- RECOIL
