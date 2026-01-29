@@ -1,4 +1,4 @@
--- copy this for the most basic mag loaded weapon with slower empty reloads
+-- copy this for the most basic mag loaded weapon (INCLUDES LASER)
 #version 2
 
 #include "script/include/player.lua"

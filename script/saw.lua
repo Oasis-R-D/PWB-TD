@@ -1,4 +1,4 @@
--- copy this for the most basic mag loaded weapon
+-- copy this for the most basic mag loaded weapon (INCLUDES PUSHBACK ON FIRE)
 #version 2
 
 #include "script/include/player.lua"
@@ -90,6 +90,13 @@ function server.tickPlayerM249(p, dt)
 		end
 
 		if data.coolDown < 0 then		
+			if IsPlayerGrounded(p) and GetPlayerCrouch(p) < 0.1 then
+				local playertrans = GetPlayerTransform(p)
+				local playerdir = TransformToParentVec(playertrans, Vec(0, 0, 1))
+				local newplayervel = VecScale(VecNormalize(playerdir), 2)
+				SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
+			end
+			
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
 			

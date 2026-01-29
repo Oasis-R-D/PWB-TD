@@ -1,4 +1,4 @@
--- copy this for the most basic scoped mag loaded weapon with slower empty reloads
+-- copy this for the most basic scoped mag loaded weapon with slower empty reloads (INCLUDES SCOPE)
 #version 2
 
 #include "script/include/player.lua"
