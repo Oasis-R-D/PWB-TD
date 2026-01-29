@@ -306,3 +306,16 @@ function client.tickPlayerM40(p, dt)
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 end
+
+function client.drawM40()
+	if GetPlayerTool() ~= M40const.WPNID then -- shouldn't need the player pointer since this runs on client
+		return
+	end
+	if not IsPlayerLocal() then
+		return
+	end
+	
+	UiAlign("center")
+	UiTranslate(Uicenter(), Uicenter())
+	UiImage("scope.png")
+end
