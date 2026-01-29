@@ -280,6 +280,8 @@ function client.tickPlayerM40(p, dt)
 
 	if data.scoped == false then
 		data.toolAnimator.forceActionPose = false
+	else
+		SetCameraFov(18)
 	end
 
 	-- decrease firing cooldown and recoil
