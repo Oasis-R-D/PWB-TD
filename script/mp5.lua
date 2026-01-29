@@ -11,6 +11,7 @@ function createConstMP5()
 		RELOAD_TIME = 1.5, -- seconds
 		RELOAD_SOUND = "MOD/snd/hkr.ogg",
 		ALT_FIRESOUND = "MOD/snd/hkgl.ogg",
+		PRIM_FIRESOUND = "MOD/snd/hks0.ogg",
 		CLIP_SIZE = 50,
 		PICKUP_SIZE = 50,
 		RECOIL_AMNT = 0.2,
@@ -18,7 +19,7 @@ function createConstMP5()
 		ALTFIRERATE = 1,
 		DAMAGE = 0.45,
 		MAX_RANGE = 100.0,
-		WPNID = "hl9mmAR",
+		WPNID = "hl9mmar",
 		WPNNAME = "9mmAR",
 		CASING_ORG = Vec(0.02, 0.25, -0.25),		-- casing origin
 	}
@@ -154,8 +155,6 @@ function server.tickPlayerMp5(p, dt)
 end
 
 function client.initMp5()
-	MP5shootSnd = LoadSound("MOD/snd/hks0.ogg")
-
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(MP5const.WPNID, toolHaptic);
@@ -213,7 +212,7 @@ function client.tickPlayerMp5(p, dt)
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				StopSound(data.firesound)
-				data.firesound = PlaySound(MP5shootSnd, pt.pos)
+				data.firesound = PlaySound(LoadSound(MP5const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

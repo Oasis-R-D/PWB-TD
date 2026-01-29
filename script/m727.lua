@@ -11,6 +11,7 @@ function createConstM727()
 		RELOAD_TIME = 1.5, -- seconds
 		RELOAD_SOUND = "MOD/snd/hkr.ogg",
 		ALT_FIRESOUND = "MOD/snd/hkgl.ogg",
+		PRIM_FIRESOUND = "MOD/snd/727_fr0.ogg",
 		CLIP_SIZE = 50,
 		PICKUP_SIZE = 50,
 		RECOIL_AMNT = 0.185,
@@ -18,7 +19,7 @@ function createConstM727()
 		ALTFIRERATE = 1,
 		DAMAGE = 0.45,
 		MAX_RANGE = 100.0,
-		WPNID = "hlM727",
+		WPNID = "hlm727",
 		WPNNAME = "Colt M727",
 		CASING_ORG = Vec(0.02, 0.0, 0.1),
 	}
@@ -154,8 +155,6 @@ function server.tickPlayerM727(p, dt)
 end
 
 function client.initM727()
-	M727shootSnd = LoadSound("MOD/snd/727_fr0.ogg")
-
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(M727const.WPNID, toolHaptic);
@@ -213,7 +212,7 @@ function client.tickPlayerM727(p, dt)
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				StopSound(data.firesound)
-				data.firesound = PlaySound(M727shootSnd, pt.pos)
+				data.firesound = PlaySound(LoadSound(M727const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

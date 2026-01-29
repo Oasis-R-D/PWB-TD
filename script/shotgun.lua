@@ -20,7 +20,7 @@ function createConstSG()
 		ALTFIRERATE = 1.5,
 		DAMAGE = 0.35,
 		MAX_RANGE = 60.0,
-		WPNID = "hlShotgun",
+		WPNID = "hlshotgun",
 		WPNNAME = "Assault Shotgun",
 		CASING_ORG = Vec(0.02, 0.1, 0.075),
 	}
@@ -199,11 +199,6 @@ function server.tickPlayerSG(p, dt)
 end
 
 function client.initSG()
-	SGloadSnd = {}
-	for i=0, 1 do
-		SGloadSnd[i] = LoadSound("MOD/snd/sgshellin"..i..".ogg")
-	end
-	
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(SGconst.WPNID, toolHaptic);
@@ -409,7 +404,7 @@ function client.tickPlayerSG(p, dt)
 		data.shellinserttime = data.shellinserttime - dt
 		
 		if data.shellinserttime < 0 and data.shellstoload >= 0.5 then
-			PlaySound(SGloadSnd[math.random(0,#SGloadSnd)], pt.pos)
+			PlaySound(LoadSound("MOD/snd/sgshellin0.ogg"), pt.pos)
 			data.shellinserttime = 0.8
 			data.shellstoload = data.shellstoload - 1
 			data.recoil = 0.1
