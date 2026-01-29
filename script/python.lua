@@ -1,9 +1,10 @@
--- copy this for the most basic mag loaded weapon with slower empty reloads
+-- copy this for the most basic revolver
 #version 2
 
 #include "script/include/player.lua"
 #include "script/toolanimation.lua"
 #include "script/util.lua"
+
 
 -- Per weapon constants
 function createConstPYTH()
@@ -228,7 +229,7 @@ function client.tickPlayerPYTH(p, dt)
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
 	
-	-- SHELL LOADING
+	-- SHELL EJECT
 	if data.timeuntileject == nil then
 	else
 		data.timeuntileject = data.timeuntileject - dt
@@ -257,7 +258,7 @@ function client.tickPlayerPYTH(p, dt)
 			data.timeuntileject = nil
 		end
 	end
-	-- END SHELL LOADING
+	-- END SHELL EJECT
 
 	-- RECOIL
 	if data.recoil > 0 then
