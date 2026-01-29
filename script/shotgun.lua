@@ -88,7 +88,7 @@ function server.tickPlayerSG(p, dt)
 	end
 	
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -141,7 +141,7 @@ function server.tickPlayerSG(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0  then
+	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0  then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -253,7 +253,7 @@ function client.tickPlayerSG(p, dt)
 		data.inreload = true
 	end
 	
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false
@@ -322,7 +322,7 @@ function client.tickPlayerSG(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
 				if data.inreload == true then
 					data.inreload = false

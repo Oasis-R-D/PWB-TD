@@ -13,7 +13,7 @@ function createConstPYTH()
 		PRIM_FIRESOUND = "MOD/snd/357FR0.ogg", 
 		CLIP_SIZE = 6.0,
 		PICKUP_SIZE = 6.0,
-		RECOIL_AMNT = 0.25,
+		RECOIL_AMNT = 0.3,
 		FIRERATE = 0.75,
 		DAMAGE = 1,
 		MAX_RANGE = 150.0,
@@ -39,7 +39,7 @@ function createPlayerDataPYTH()
 end
 
 function server.initPYTH()
-	RegisterTool(PYTHconst.WPNID, PYTHconst.WPNNAME, "MOD/prefab/glock.xml", 6)
+	RegisterTool(PYTHconst.WPNID, PYTHconst.WPNNAME, "MOD/prefab/python.xml", 3)
 	SetToolAmmoPickupAmount(PYTHconst.WPNID, PYTHconst.PICKUP_SIZE)
 end
 
@@ -84,7 +84,7 @@ function server.tickPlayerPYTH(p, dt)
 	end
 
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -174,7 +174,7 @@ function client.tickPlayerPYTH(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
@@ -244,7 +244,7 @@ function client.tickPlayerPYTH(p, dt)
 	if data.recoil > 0 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
-		local recoilvert = math.max(0, data.recoil)
+		local recoilvert = math.max(0, data.recoil * 1.2)
 		
 		local inversesiderecoil = rnd(0, 1)
 		if inversesiderecoil > 0.5 then

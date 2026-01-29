@@ -93,7 +93,7 @@ function server.tickPlayerM40(p, dt)
 	end
 
 	--Check if firing
-	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -136,7 +136,7 @@ function server.tickPlayerM40(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.altCoolDown = M40const.ALTFIRERATE
 			data.coolDown = M40const.SCOPEFIREDELAY
@@ -206,7 +206,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
@@ -268,7 +268,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape() == 0 then
+	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
 			PlaySound(LoadSound(M40const.ALT_FIRESOUND), pt.pos)
