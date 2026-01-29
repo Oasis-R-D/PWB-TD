@@ -114,7 +114,7 @@ function server.tickPlayerSG(p, dt)
 			for i=0, 5 do
 				local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 				dir = VecAdd(dir, rndVec(spread))
-				Shoot(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
+				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
 			end
 			
 			data.recoil = SGconst.RECOIL_AMNT
@@ -167,7 +167,7 @@ function server.tickPlayerSG(p, dt)
 			for i=0, 11 do
 				local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 				dir = VecAdd(dir, rndVec(spread))
-				Shoot(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
+				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
 			end
 			
 			data.recoil = 1.5 * SGconst.RECOIL_AMNT

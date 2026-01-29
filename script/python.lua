@@ -100,7 +100,7 @@ function server.tickPlayerPYTH(p, dt)
 			local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID)
+			ShootHook(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID)
 
 			data.recoil = PYTHconst.RECOIL_AMNT
 			data.clipamntPYTH = data.clipamntPYTH - 1

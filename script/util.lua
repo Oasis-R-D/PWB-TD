@@ -27,3 +27,16 @@ function client.drawAmmo(curclip, maxclip)
 		UiText(curclip .. "/" .. maxclip)
 	UiPop()
 end
+
+function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
+	times = times or 0
+	for i=0, times do
+		Shoot(pos, dir, shoottype, damage, range, player, weaponid)
+	end
+
+	local hit, dist, joint = QueryRaycastRope(pos, dir, range)
+	if hit then
+		local breakPoint = vecAdd(pos, VecScale(dir, dist))
+		BreakRope(joint, breakPoint)
+	then
+end

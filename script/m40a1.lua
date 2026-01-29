@@ -113,9 +113,7 @@ function server.tickPlayerM40(p, dt)
 				dir = VecAdd(dir, rndVec(spread))
 			end
 			
-			for i=0, 4 do -- this should make it penetrate stuff?
-				Shoot(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID)
-			end
+			ShootHook(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID, 4)
 
 			data.recoil = M40const.RECOIL_AMNT
 			data.clipamntM40 = data.clipamntM40 - 1

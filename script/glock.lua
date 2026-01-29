@@ -102,7 +102,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID)
+			ShootHook(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID)
 
 			data.recoil = PIST9MMconst.RECOIL_AMNT
 			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
@@ -137,7 +137,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID)
+			ShootHook(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID)
 
 			data.recoil = PIST9MMconst.RECOIL_AMNT
 			data.clipamntPIST9MM = data.clipamntPIST9MM - 1

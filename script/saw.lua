@@ -106,7 +106,7 @@ function server.tickPlayerM249(p, dt)
 			end
 			
 			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "bullet", M249const.DAMAGE, M249const.MAX_RANGE, p, M249const.WPNID)
+			ShootHook(pos, dir, "bullet", M249const.DAMAGE, M249const.MAX_RANGE, p, M249const.WPNID)
 			
 			data.recoil = M249const.RECOIL_AMNT
 			data.clipamntM249 = data.clipamntM249 - 1
