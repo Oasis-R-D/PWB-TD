@@ -19,3 +19,11 @@ end
 function IsMP()
 	return GetMaxPlayers() > 1
 end
+
+function client.drawAmmo(curclip, maxclip)
+	UiPush()
+		UiAlign("center")
+		UiTranslate(Uicenter(), Uicenter())
+		UiText(curclip .. "/" .. maxclip)
+	UiPop()
+end
