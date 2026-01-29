@@ -28,6 +28,7 @@ function client.drawAmmo(curclip, maxclip)
 	UiPop()
 end
 
+-- hook the Shoot func to add rope damaging (would adding this to the actual function really be THAT hard???)
 function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 	times = times or 0
 	for i=0, times do

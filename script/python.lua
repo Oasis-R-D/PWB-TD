@@ -16,7 +16,7 @@ function createConstPYTH()
 		PICKUP_SIZE = 6.0,
 		RECOIL_AMNT = 0.3,
 		FIRERATE = 0.75,
-		DAMAGE = 1,
+		DAMAGE = 0.5,
 		MAX_RANGE = 150.0,
 		WPNID = "hlpython",
 		WPNNAME = "Colt Python",
@@ -100,7 +100,7 @@ function server.tickPlayerPYTH(p, dt)
 			local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID)
+			ShootHook(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID, 3)
 
 			data.recoil = PYTHconst.RECOIL_AMNT
 			data.clipamntPYTH = data.clipamntPYTH - 1

@@ -19,7 +19,7 @@ function createConstDE357()
 		FIRERATE = 0.22, -- laser off
 		LASERFIRERATE = 0.5, -- laser on
 		ALTFIRERATE = 0.125,
-		DAMAGE = 1,
+		DAMAGE = 0.5,
 		MAX_RANGE = 150.0,
 		WPNID = "opfordeagle",
 		WPNNAME = "Desert Eagle",
@@ -112,7 +112,7 @@ function server.tickPlayerDE357(p, dt)
 			end
 
 			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID)
+			ShootHook(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID, 3)
 
 			data.recoil = DE357const.RECOIL_AMNT
 			data.clipamntDE357 = data.clipamntDE357 - 1
