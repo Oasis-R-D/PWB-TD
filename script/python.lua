@@ -19,7 +19,7 @@ function createConstPYTH()
 		MAX_RANGE = 150.0,
 		WPNID = "python",
 		WPNNAME = "Colt Python",
-		CASING_ORG = Vec(0.02, 0.25, -0.25),
+		CASING_ORG = Vec(-0.02, 0.25, -0.25),
 	}
 end
 
