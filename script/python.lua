@@ -17,7 +17,7 @@ function createConstPYTH()
 		FIRERATE = 0.75,
 		DAMAGE = 1,
 		MAX_RANGE = 150.0,
-		WPNID = "python",
+		WPNID = "hlpython",
 		WPNNAME = "Colt Python",
 		CASING_ORG = Vec(-0.02, 0.25, -0.25),
 	}
