@@ -33,6 +33,7 @@ function createPlayerDataPYTH()
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
+		timeuntileject = nil,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
 	}
@@ -162,6 +163,7 @@ function client.tickPlayerPYTH(p, dt)
 		PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
 		if data.clipamntPYTH > 0 then
 			data.coolDown = PYTHconst.RELOAD_TIME
+			data.timeuntileject = 1.35
 		end
 		data.inreload = true
 	end
@@ -184,23 +186,8 @@ function client.tickPlayerPYTH(p, dt)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(PYTHconst.CASING_ORG[1],PYTHconst.CASING_ORG[2],PYTHconst.CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.6, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
+
 					-- muzzleflash
 					for i=0, 3 do
 						ParticleReset()
@@ -225,6 +212,7 @@ function client.tickPlayerPYTH(p, dt)
 				else
 					PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PYTHconst.RELOAD_TIME
+					data.timeuntileject = 1.35
 					data.inreload = true
 				end
 				
@@ -240,6 +228,37 @@ function client.tickPlayerPYTH(p, dt)
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
 	
+	-- SHELL LOADING
+	if data.timeuntileject == nil then
+	else
+		data.timeuntileject = data.timeuntileject - dt
+		
+		if data.timeuntileject <= 0 then
+			local transform = GetBodyTransform(toolBody)
+			local eject_origin = TransformToParentPoint(transform, Vec(PYTHconst.CASING_ORG[1],PYTHconst.CASING_ORG[2],PYTHconst.CASING_ORG[3]))
+			local eject_direction=TransformToParentVec(transform, Vec(0, 1, 0))
+			local playervel = GetPlayerVelocity(p)
+			
+			-- shell ejection
+			for i=0, 5 do
+				ParticleReset()
+				ParticleGravity(rnd(-2, -8))
+				ParticleRadius(0.02)
+				ParticleAlpha(1)
+				ParticleColor(0.8, 0.6, 0)
+				ParticleTile(6)
+				ParticleDrag(0.125)
+				ParticleSticky(0.5)
+				ParticleCollide(1)
+				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+			end
+
+			data.recoil = 0.1
+			data.timeuntileject = nil
+		end
+	end
+	-- END SHELL LOADING
+
 	-- RECOIL
 	if data.recoil > 0 then
 		local recoil = math.max(0, data.recoil)
