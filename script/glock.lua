@@ -17,7 +17,7 @@ function createConstPIST9MM()
 		RECOIL_AMNT = 0.17,
 		FIRERATE = 0.3,
 		ALTFIRERATE = 0.2,
-		DAMAGE = 0.45,
+		DAMAGE = 0.4,
 		MAX_RANGE = 125.0,
 		WPNID = "hlglock",
 		WPNNAME = "9mm HandGun",
@@ -102,7 +102,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID, 2)
+			ShootHook(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID, 1)
 
 			data.recoil = PIST9MMconst.RECOIL_AMNT
 			data.clipamntPIST9MM = data.clipamntPIST9MM - 1

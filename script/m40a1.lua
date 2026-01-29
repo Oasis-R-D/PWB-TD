@@ -166,6 +166,8 @@ function client.tickM40(dt)
 	end
 end
 
+scopeddraw = false
+
 function client.tickPlayerM40(p, dt)
 	if GetPlayerTool(p) ~= M40const.WPNID then
 		return
@@ -278,8 +280,14 @@ function client.tickPlayerM40(p, dt)
 
 	if data.scoped == false then
 		data.toolAnimator.forceActionPose = false
+		if IsPlayerLocal(p) then
+			scopeddraw = false
+		end
 	else
-		SetCameraFov(18)
+		if IsPlayerLocal(p) then
+			scopeddraw = true
+			SetCameraFov(18)
+		end
 	end
 
 	-- decrease firing cooldown and recoil
@@ -306,15 +314,12 @@ function client.tickPlayerM40(p, dt)
 end
 
 function client.drawM40()
-	if GetPlayerTool() ~= M40const.WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
-	if not IsPlayerLocal() then
+	if GetPlayerTool() ~= M40const.WPNID or scopeddraw ~= true then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 	
-	UiAlign("center")
-	UiTranslate(Uicenter(), Uicenter())
+	UiTranslate(UiCenter(), UiMiddle())
+	UiAlign("center middle")
 	UiImage("MOD/scope.png")
 	client.drawAmmo(5, M40const.CLIP_SIZE)
 end

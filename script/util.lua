@@ -37,7 +37,7 @@ function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 
 	local hit, dist, joint = QueryRaycastRope(pos, dir, range)
 	if hit then
-		local breakPoint = vecAdd(pos, VecScale(dir, dist))
+		local breakPoint = VecAdd(pos, VecScale(dir, dist))
 		BreakRope(joint, breakPoint)
-	then
+	end
 end

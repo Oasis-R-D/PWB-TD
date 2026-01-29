@@ -20,7 +20,7 @@ function createConstPYTH()
 		MAX_RANGE = 150.0,
 		WPNID = "hlpython",
 		WPNNAME = "Colt Python",
-		CASING_ORG = Vec(-0.02, 0.25, -0.25),
+		CASING_ORG = Vec(-0.1, 0.25, 0.15),
 	}
 end
 
@@ -185,26 +185,22 @@ function client.tickPlayerPYTH(p, dt)
 				StopSound(data.firesound)
 				data.firesound = PlaySound(LoadSound(PYTHconst.PRIM_FIRESOUND), pt.pos)
 				
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local playervel = GetPlayerVelocity(p)
+				local playervel = GetPlayerVelocity(p)
 
-					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.1, 0.15), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
-				
+				-- muzzleflash
+				for i=0, 3 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.1, 0.15), 0.33)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 					
 				data.clipamntPYTH = data.clipamntPYTH - 1
@@ -235,25 +231,27 @@ function client.tickPlayerPYTH(p, dt)
 		data.timeuntileject = data.timeuntileject - dt
 		
 		if data.timeuntileject <= 0 then
-			local transform = GetBodyTransform(toolBody)
-			local eject_origin = TransformToParentPoint(transform, Vec(PYTHconst.CASING_ORG[1],PYTHconst.CASING_ORG[2],PYTHconst.CASING_ORG[3]))
-			local eject_direction=TransformToParentVec(transform, Vec(0, 1, 0))
-			local playervel = GetPlayerVelocity(p)
-			
-			-- shell ejection
-			for i=0, 5 do
-				ParticleReset()
-				ParticleGravity(rnd(-2, -8))
-				ParticleRadius(0.02)
-				ParticleAlpha(1)
-				ParticleColor(0.8, 0.6, 0)
-				ParticleTile(6)
-				ParticleDrag(0.125)
-				ParticleSticky(0.5)
-				ParticleCollide(1)
-				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+			local toolBody = GetToolBody(p)
+			if toolBody ~= 0 then
+				local transform = GetBodyTransform(toolBody)
+				local eject_origin = TransformToParentPoint(transform, Vec(PYTHconst.CASING_ORG[1],PYTHconst.CASING_ORG[2],PYTHconst.CASING_ORG[3]))
+				local playervel = GetPlayerVelocity(p)
+				
+				-- shell ejection
+				for i=0, 5 do
+					local eject_direction=TransformToParentVec(transform, Vec(rnd(-0.025, 0.025), -0.2, rnd(-0.025, 0.025)))
+					ParticleReset()
+					ParticleGravity(rnd(-2, -8))
+					ParticleRadius(0.02)
+					ParticleAlpha(1)
+					ParticleColor(0.8, 0.6, 0)
+					ParticleTile(6)
+					ParticleDrag(0.125)
+					ParticleSticky(0.5)
+					ParticleCollide(1)
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+				end
 			end
-
 			data.recoil = 0.1
 			data.timeuntileject = nil
 		end
