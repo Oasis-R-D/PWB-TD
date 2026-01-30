@@ -8,7 +8,7 @@
 -- Per weapon constants
 function createConstSG()
     return {
-		RELOAD_TIME = 6.4, -- seconds
+		RELOAD_TIME = 0.8, -- seconds
 		RELOAD_SOUND = "MOD/snd/sgreloadstart.ogg",
 		PRIM_FIRESOUND = "MOD/snd/sbarrel.ogg", 
 		ALT_FIRESOUND = "MOD/snd/dbarrel.ogg",
@@ -78,9 +78,17 @@ function server.tickPlayerSG(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0 and data.clipamntSG ~= ammo then
 		local reloadtime = 0
 		if data.clipamntSG > 0 then
-			reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
+			local shellsneedingloading = 8 - data.clipamntSG
+			if shellsneedingloading > ammo then
+				shellsneedingloading = ammo
+			end
+			reloadtime = SGconst.RELOAD_TIME * shellsneedingloading
 		else
-			reloadtime = SGconst.RELOAD_TIME + 0.3
+			local shellsneedingloading = 8 - data.clipamntSG
+			if shellsneedingloading > ammo then
+				shellsneedingloading = ammo
+			end
+			reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
 		end
 		data.coolDown = reloadtime
 		data.altCoolDown = reloadtime
@@ -88,7 +96,7 @@ function server.tickPlayerSG(p, dt)
 	end
 	
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -126,12 +134,11 @@ function server.tickPlayerSG(p, dt)
 				data.coolDown = SGconst.FIRERATE
 				data.altCoolDown = SGconst.FIRERATE
 			elseif ammo > 0 then
-				local reloadtime = 0
-				if data.clipamntSG > 0 then
-					reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
-				else
-					reloadtime = SGconst.RELOAD_TIME + 0.3
+				local shellsneedingloading = 8
+				if shellsneedingloading > ammo then
+					shellsneedingloading = ammo
 				end
+				reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
 				data.coolDown = reloadtime
 				data.altCoolDown = reloadtime
 				data.inreload =  true;
@@ -143,7 +150,7 @@ function server.tickPlayerSG(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo > 1 and data.clipamntSG > 1.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -181,12 +188,11 @@ function server.tickPlayerSG(p, dt)
 				data.coolDown = SGconst.ALTFIRERATE
 				data.altCoolDown = SGconst.ALTFIRERATE
 			elseif ammo > 0 then
-				local reloadtime = 0
-				if data.clipamntSG > 0 then
-					reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
-				else
-					reloadtime = SGconst.RELOAD_TIME + 0.3
+				local shellsneedingloading = 8
+				if shellsneedingloading > ammo then
+					shellsneedingloading = ammo
 				end
+				reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
 				data.coolDown = reloadtime
 				data.altCoolDown = reloadtime
 				data.inreload =  true;
@@ -243,13 +249,17 @@ function client.tickPlayerSG(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 		local reloadtime = 0
+		local shellsneedingloading = 8 - data.clipamntSG
+		if shellsneedingloading > ammo then
+			shellsneedingloading = ammo
+		end
 		if data.clipamntSG > 0 then
-			reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
-			data.shellstoload = (reloadtime / 8) * 10
+			reloadtime = SGconst.RELOAD_TIME * shellsneedingloading
+			data.shellstoload = shellsneedingloading
 		else
-			reloadtime = SGconst.RELOAD_TIME + 0.3
+			reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
 			data.pumptime = reloadtime - 0.25
-			data.shellstoload = ((reloadtime - 0.3) / 8) * 10
+			data.shellstoload = shellsneedingloading
 		end
 		data.coolDown = reloadtime
 		data.altCoolDown = reloadtime
@@ -302,14 +312,13 @@ function client.tickPlayerSG(p, dt)
 				elseif ammo > 0 then
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
-					if data.clipamntSG > 0 then
-						reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
-						data.shellstoload = (reloadtime / 8) * 10
-					else
-						reloadtime = SGconst.RELOAD_TIME + 0.3
-						data.pumptime = reloadtime - 0.25
-						data.shellstoload = ((reloadtime - 0.3) / 8) * 10
+					local shellsneedingloading = 8 - data.clipamntSG
+					if shellsneedingloading > ammo then
+						shellsneedingloading = ammo
 					end
+					reloadtime = (shellsneedingloading * SGconst.RELOAD_TIME) + 0.3
+					data.pumptime = reloadtime - 0.25
+					data.shellstoload = shellsneedingloading
 					data.coolDown = reloadtime
 					data.altCoolDown = reloadtime
 					data.shellinserttime = 0.8
@@ -371,14 +380,13 @@ function client.tickPlayerSG(p, dt)
 				elseif ammo > 0 then
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
-					if data.clipamntSG > 0 then
-						reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
-						data.shellstoload = (reloadtime / 8) * 10
-					else
-						reloadtime = SGconst.RELOAD_TIME + 0.3
-						data.pumptime = reloadtime - 0.25
-						data.shellstoload = ((reloadtime - 0.3) / 8) * 10
+					local shellsneedingloading = 8 - data.clipamntSG
+					if shellsneedingloading > ammo then
+						shellsneedingloading = ammo
 					end
+					reloadtime = (shellsneedingloading * SGconst.RELOAD_TIME) + 0.3
+					data.pumptime = reloadtime - 0.25
+					data.shellstoload = shellsneedingloading
 					data.coolDown = reloadtime
 					data.altCoolDown = reloadtime
 					data.shellinserttime = 0.8
