@@ -71,7 +71,7 @@ function server.tickPlayerMp5(p, dt)
 	local ammo = GetToolAmmo(MP5const.WPNID, p)
 	local data = MP5players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE and ammo > 0 and data.clipamntMP5 ~= ammo then
 		data.coolDown = MP5const.RELOAD_TIME
 		data.altCoolDown = MP5const.RELOAD_TIME
 		data.inreload = true
@@ -105,13 +105,16 @@ function server.tickPlayerMp5(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			ShootHook(pos, dir, "bullet", MP5const.DAMAGE, MP5const.MAX_RANGE, p, MP5const.WPNID)
 			
+			StopSound(data.firesound)
+			data.firesound = PlaySound(LoadSound(MP5const.PRIM_FIRESOUND), mt.pos)
+			
 			data.recoil = MP5const.RECOIL_AMNT
 			data.clipamntMP5 = data.clipamntMP5 - 1
 			
 			if data.clipamntMP5 > 0 then
 				data.coolDown = MP5const.FIRERATE
 				data.altCoolDown = MP5const.FIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = MP5const.RELOAD_TIME
 				data.altCoolDown = MP5const.RELOAD_TIME
 				data.inreload =  true;
@@ -143,6 +146,8 @@ function server.tickPlayerMp5(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			Shoot(pos, dir, "rocket", MP5const.DAMAGE, MP5const.MAX_RANGE * 2, p, MP5const.WPNID)
 			
+			PlaySound(LoadSound(MP5const.ALT_FIRESOUND), mt.pos)
+				
 			data.recoil = 1.5 * MP5const.RECOIL_AMNT
 			
 			data.altCoolDown = MP5const.ALTFIRERATE
@@ -192,7 +197,7 @@ function client.tickPlayerMp5(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = MP5players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE and ammo > 0 and data.clipamntMP5 ~= ammo then
 		PlaySound(LoadSound(MP5const.RELOAD_SOUND), pt.pos)
 		data.coolDown = MP5const.RELOAD_TIME
 		data.altCoolDown = MP5const.RELOAD_TIME
@@ -209,10 +214,7 @@ function client.tickPlayerMp5(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				StopSound(data.firesound)
-				data.firesound = PlaySound(LoadSound(MP5const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -255,7 +257,7 @@ function client.tickPlayerMp5(p, dt)
 				if data.clipamntMP5 > 0 then
 					data.coolDown = MP5const.FIRERATE
 					data.altCoolDown = MP5const.FIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(MP5const.RELOAD_SOUND), pt.pos)
 					data.coolDown = MP5const.RELOAD_TIME
 					data.altCoolDown = MP5const.RELOAD_TIME
@@ -272,10 +274,7 @@ function client.tickPlayerMp5(p, dt)
 
 	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
-				
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(MP5const.ALT_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

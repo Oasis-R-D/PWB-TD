@@ -10,6 +10,7 @@ function createConstM249()
     return {
 		RELOAD_TIME = 3.8, -- seconds
 		RELOAD_SOUND = "MOD/snd/m249r.ogg",
+		PRIM_FIRESOUND = "MOD/snd/249_fr0.ogg",
 		CLIP_SIZE = 50,
 		PICKUP_SIZE = 200,
 		RECOIL_AMNT = 0.2,
@@ -68,7 +69,7 @@ function server.tickPlayerM249(p, dt)
 	local ammo = GetToolAmmo(M249const.WPNID, p)
 	local data = M249players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0 and data.clipamntM249 ~= ammo then
 		data.coolDown = M249const.RELOAD_TIME
 		data.inreload = true
 	end
@@ -108,12 +109,15 @@ function server.tickPlayerM249(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			ShootHook(pos, dir, "bullet", M249const.DAMAGE, M249const.MAX_RANGE, p, M249const.WPNID)
 			
+			StopSound(data.firesound)
+			data.firesound = PlaySound(LoadSound(M249const.PRIM_FIRESOUND), mt.pos)
+				
 			data.recoil = M249const.RECOIL_AMNT
 			data.clipamntM249 = data.clipamntM249 - 1
 			
 			if data.clipamntM249 > 0 then
 				data.coolDown = M249const.FIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = M249const.RELOAD_TIME
 				data.inreload =  true;
 			end
@@ -129,8 +133,6 @@ function server.tickPlayerM249(p, dt)
 end
 
 function client.initM249()
-	M249shootSnd = LoadSound("MOD/snd/249_fr0.ogg")
-	
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(M249const.WPNID, toolHaptic);
@@ -168,7 +170,7 @@ function client.tickPlayerM249(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M249players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0 and data.clipamntM249 ~= ammo then
 		PlaySound(LoadSound(M249const.RELOAD_SOUND), pt.pos)
 		data.coolDown = M249const.RELOAD_TIME
 		data.inreload = true
@@ -184,10 +186,7 @@ function client.tickPlayerM249(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				StopSound(data.firesound)
-				data.firesound = PlaySound(M249shootSnd, pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -235,7 +234,7 @@ function client.tickPlayerM249(p, dt)
 				data.clipamntM249 = data.clipamntM249 - 1
 				if data.clipamntM249 > 0 then
 					data.coolDown = M249const.FIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(M249const.RELOAD_SOUND), pt.pos)
 					data.coolDown = M249const.RELOAD_TIME
 					data.inreload = true

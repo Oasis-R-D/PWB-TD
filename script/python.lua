@@ -70,7 +70,7 @@ function server.tickPlayerPYTH(p, dt)
 	local ammo = GetToolAmmo(PYTHconst.WPNID, p)
 	local data = PYTHplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE and ammo > 0 and data.clipamntPYTH ~= ammo then
 		if data.clipamntPYTH > 0 then
 			data.coolDown = PYTHconst.RELOAD_TIME
 		end
@@ -102,12 +102,15 @@ function server.tickPlayerPYTH(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			ShootHook(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID, 3)
 
+			StopSound(data.firesound)
+			data.firesound = PlaySound(LoadSound(PYTHconst.PRIM_FIRESOUND), mt.pos)
+				
 			data.recoil = PYTHconst.RECOIL_AMNT
 			data.clipamntPYTH = data.clipamntPYTH - 1
 			
 			if data.clipamntPYTH > 0 then
 				data.coolDown = PYTHconst.FIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = PYTHconst.RELOAD_TIME
 				data.inreload =  true;
 			end
@@ -160,7 +163,7 @@ function client.tickPlayerPYTH(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = PYTHplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE and ammo > 0 and data.clipamntPYTH ~= ammo then
 		PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
 		if data.clipamntPYTH > 0 then
 			data.coolDown = PYTHconst.RELOAD_TIME
@@ -179,11 +182,7 @@ function client.tickPlayerPYTH(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
-				StopSound(data.firesound)
-				data.firesound = PlaySound(LoadSound(PYTHconst.PRIM_FIRESOUND), pt.pos)
 				
 				local playervel = GetPlayerVelocity(p)
 
@@ -206,7 +205,7 @@ function client.tickPlayerPYTH(p, dt)
 				data.clipamntPYTH = data.clipamntPYTH - 1
 				if data.clipamntPYTH > 0 then
 					data.coolDown = PYTHconst.FIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(PYTHconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PYTHconst.RELOAD_TIME
 					data.timeuntileject = 1.35

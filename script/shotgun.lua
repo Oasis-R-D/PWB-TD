@@ -75,7 +75,7 @@ function server.tickPlayerSG(p, dt)
 	local ammo = GetToolAmmo(SGconst.WPNID, p)
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0 and data.clipamntSG ~= ammo then
 		local reloadtime = 0
 		if data.clipamntSG > 0 then
 			reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
@@ -117,13 +117,15 @@ function server.tickPlayerSG(p, dt)
 				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
 			end
 			
+			PlaySound(LoadSound(SGconst.PRIM_FIRESOUND), mt.pos)
+			
 			data.recoil = SGconst.RECOIL_AMNT
 			data.clipamntSG = data.clipamntSG - 1
 			
 			if data.clipamntSG > 0 then
 				data.coolDown = SGconst.FIRERATE
 				data.altCoolDown = SGconst.FIRERATE
-			else
+			elseif ammo > 0 then
 				local reloadtime = 0
 				if data.clipamntSG > 0 then
 					reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
@@ -141,7 +143,7 @@ function server.tickPlayerSG(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0  then
+	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -170,13 +172,15 @@ function server.tickPlayerSG(p, dt)
 				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
 			end
 			
+			PlaySound(LoadSound(SGconst.ALT_FIRESOUND), mt.pos)
+			
 			data.recoil = 1.5 * SGconst.RECOIL_AMNT
 			data.clipamntSG = data.clipamntSG - 2
 			
 			if data.clipamntSG > 0 then
 				data.coolDown = SGconst.ALTFIRERATE
 				data.altCoolDown = SGconst.ALTFIRERATE
-			else
+			elseif ammo > 0 then
 				local reloadtime = 0
 				if data.clipamntSG > 0 then
 					reloadtime = SGconst.RELOAD_TIME - (0.8 * data.clipamntSG)
@@ -236,7 +240,7 @@ function client.tickPlayerSG(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 		local reloadtime = 0
 		if data.clipamntSG > 0 then
@@ -263,9 +267,7 @@ function client.tickPlayerSG(p, dt)
 					end
 				end
 				
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(SGconst.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -297,7 +299,7 @@ function client.tickPlayerSG(p, dt)
 					data.altCoolDown = SGconst.FIRERATE
 					data.coolDown = SGconst.FIRERATE
 					data.pumptime = SGconst.FIRERATE - 0.25 -- 0.5
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					if data.clipamntSG > 0 then
@@ -332,9 +334,7 @@ function client.tickPlayerSG(p, dt)
 					end
 				end
 				
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(SGconst.ALT_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -368,7 +368,7 @@ function client.tickPlayerSG(p, dt)
 					data.altCoolDown = SGconst.ALTFIRERATE
 					data.coolDown = SGconst.ALTFIRERATE
 					data.pumptime = SGconst.ALTFIRERATE - 0.25
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					if data.clipamntSG > 0 then

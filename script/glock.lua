@@ -71,7 +71,7 @@ function server.tickPlayerPIST9MM(p, dt)
 	local ammo = GetToolAmmo(PIST9MMconst.WPNID, p)
 	local data = PIST9MMplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0 and data.clipamntPIST9MM ~= ammo then
 		if data.clipamntPIST9MM > 0 then
 			data.coolDown = PIST9MMconst.RELOAD_TIME
 			data.altCoolDown = PIST9MMconst.RELOAD_TIME
@@ -110,7 +110,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			if data.clipamntPIST9MM > 0 then
 				data.coolDown = PIST9MMconst.FIRERATE
 				data.altCoolDown = PIST9MMconst.FIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = PIST9MMconst.RELOAD_TIME
 				data.altCoolDown = PIST9MMconst.RELOAD_TIME
 				data.inreload =  true;
@@ -145,7 +145,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			if data.clipamntPIST9MM > 0 then
 				data.coolDown = PIST9MMconst.ALTFIRERATE
 				data.altCoolDown = PIST9MMconst.ALTFIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = PIST9MMconst.RELOAD_TIME
 				data.altCoolDown = PIST9MMconst.RELOAD_TIME
 				data.inreload =  true;
@@ -200,7 +200,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = PIST9MMplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0 and data.clipamntPIST9MM ~= ammo then
 		PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 		if data.clipamntPIST9MM > 0 then
 			data.coolDown = PIST9MMconst.RELOAD_TIME
@@ -219,14 +219,13 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
 				StopSound(data.firesound)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), pt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos)
 				else
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), pt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos)
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -270,7 +269,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if data.clipamntPIST9MM > 0 then
 					data.coolDown = PIST9MMconst.FIRERATE
 					data.altCoolDown = PIST9MMconst.FIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PIST9MMconst.RELOAD_TIME
 					data.altCoolDown = PIST9MMconst.RELOAD_TIME
@@ -287,14 +286,13 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
 				StopSound(data.firesound)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), pt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos)
 				else
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), pt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos)
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -340,7 +338,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if data.clipamntPIST9MM > 0 then
 					data.coolDown = PIST9MMconst.ALTFIRERATE
 					data.altCoolDown = PIST9MMconst.ALTFIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PIST9MMconst.RELOAD_TIME
 					data.altCoolDown = PIST9MMconst.RELOAD_TIME

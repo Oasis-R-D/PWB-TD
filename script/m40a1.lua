@@ -20,7 +20,7 @@ function createConstM40()
 		ALTFIRERATE = 0.5,
 		SCOPEFIREDELAY = 0.1,
 		DAMAGE = 0.6, -- x5
-		MAX_RANGE = 250.0,
+		MAX_RANGE = 500.0,
 		WPNID = "opform40a1",
 		WPNNAME = "M40A1",
 		CASING_ORG = Vec(0.02, 0.25, -0.25),
@@ -73,7 +73,7 @@ function server.tickPlayerM40(p, dt)
 	local ammo = GetToolAmmo(M40const.WPNID, p)
 	local data = M40players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0 and data.clipamntM40 ~= ammo then
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
 			data.altCoolDown = M40const.RELOAD_TIME
@@ -115,13 +115,15 @@ function server.tickPlayerM40(p, dt)
 			
 			ShootHook(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID, 4)
 
+			PlaySound(LoadSound(M40const.PRIM_FIRESOUND), mt.pos)
+			
 			data.recoil = M40const.RECOIL_AMNT
 			data.clipamntM40 = data.clipamntM40 - 1
 			
 			if data.clipamntM40 > 0 then
 				data.coolDown = M40const.FIRERATE
 				data.altCoolDown = M40const.FIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = M40const.EMPTYRELOAD_TIME
 				data.altCoolDown = M40const.EMPTYRELOAD_TIME
 				data.inreload =  true;
@@ -186,7 +188,7 @@ function client.tickPlayerM40(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M40players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0 and data.clipamntM40 ~= ammo then
 		PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
@@ -207,10 +209,8 @@ function client.tickPlayerM40(p, dt)
 	end
 
 	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
-			if data.coolDown < 0 then	
-				--Light, particles and sound
+			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(M40const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -253,7 +253,7 @@ function client.tickPlayerM40(p, dt)
 				if data.clipamntM40 > 0 then
 					data.coolDown = M40const.FIRERATE
 					data.altCoolDown = M40const.FIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
 					data.coolDown = M40const.EMPTYRELOAD_TIME
 					data.altCoolDown = M40const.EMPTYRELOAD_TIME
@@ -271,7 +271,9 @@ function client.tickPlayerM40(p, dt)
 	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
-			PlaySound(LoadSound(M40const.ALT_FIRESOUND), pt.pos)
+			if IsPlayerLocal(p) then
+				PlaySound(LoadSound(M40const.ALT_FIRESOUND), pt.pos)
+			end
 			data.altCoolDown = M40const.ALTFIRERATE
 			data.coolDown = M40const.SCOPEFIREDELAY
 			data.scoped = not data.scoped

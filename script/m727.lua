@@ -71,7 +71,7 @@ function server.tickPlayerM727(p, dt)
 	local ammo = GetToolAmmo(M727const.WPNID, p)
 	local data = M727players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0 and data.clipamntM727 ~= ammo then
 		data.coolDown = M727const.RELOAD_TIME
 		data.altCoolDown = M727const.RELOAD_TIME
 		data.inreload = true
@@ -105,13 +105,16 @@ function server.tickPlayerM727(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			ShootHook(pos, dir, "bullet", M727const.DAMAGE, M727const.MAX_RANGE, p, M727const.WPNID)
 			
+			StopSound(data.firesound)
+			data.firesound = PlaySound(LoadSound(M727const.PRIM_FIRESOUND), mt.pos)
+				
 			data.recoil = M727const.RECOIL_AMNT
 			data.clipamntM727 = data.clipamntM727 - 1
 			
 			if data.clipamntM727 > 0 then
 				data.coolDown = M727const.FIRERATE
 				data.altCoolDown = M727const.FIRERATE
-			else
+			elseif ammo > 0 then
 				data.coolDown = M727const.RELOAD_TIME
 				data.altCoolDown = M727const.RELOAD_TIME
 				data.inreload =  true;
@@ -143,6 +146,8 @@ function server.tickPlayerM727(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			Shoot(pos, dir, "rocket", M727const.DAMAGE, M727const.MAX_RANGE * 2, p, M727const.WPNID)
 			
+			PlaySound(LoadSound(M727const.ALT_FIRESOUND), mt.pos)
+							
 			data.recoil = 1.5 * M727const.RECOIL_AMNT
 			
 			data.altCoolDown = M727const.ALTFIRERATE
@@ -192,7 +197,7 @@ function client.tickPlayerM727(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M727players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0 and data.clipamntM727 ~= ammo then
 		PlaySound(LoadSound(M727const.RELOAD_SOUND), pt.pos)
 		data.coolDown = M727const.RELOAD_TIME
 		data.altCoolDown = M727const.RELOAD_TIME
@@ -211,8 +216,6 @@ function client.tickPlayerM727(p, dt)
 			if data.coolDown < 0 then		
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				StopSound(data.firesound)
-				data.firesound = PlaySound(LoadSound(M727const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -255,7 +258,7 @@ function client.tickPlayerM727(p, dt)
 				if data.clipamntM727 > 0 then
 					data.coolDown = M727const.FIRERATE
 					data.altCoolDown = M727const.FIRERATE
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(M727const.RELOAD_SOUND), pt.pos)
 					data.coolDown = M727const.RELOAD_TIME
 					data.altCoolDown = M727const.RELOAD_TIME
@@ -272,10 +275,7 @@ function client.tickPlayerM727(p, dt)
 
 	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
-				
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				PlaySound(LoadSound(M727const.ALT_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then

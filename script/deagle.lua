@@ -75,7 +75,7 @@ function server.tickPlayerDE357(p, dt)
 	local ammo = GetToolAmmo(DE357const.WPNID, p)
 	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0 and data.clipamntDE357 ~= ammo then
 		if data.clipamntDE357 > 0 then
 			data.coolDown = DE357const.RELOAD_TIME
 			data.altCoolDown = DE357const.RELOAD_TIME
@@ -113,7 +113,10 @@ function server.tickPlayerDE357(p, dt)
 
 			dir = VecAdd(dir, rndVec(spread))
 			ShootHook(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID, 3)
-
+			
+			StopSound(data.firesound)
+			data.firesound = PlaySound(LoadSound(DE357const.PRIM_FIRESOUND), mt.pos)
+				
 			data.recoil = DE357const.RECOIL_AMNT
 			data.clipamntDE357 = data.clipamntDE357 - 1
 			
@@ -125,7 +128,7 @@ function server.tickPlayerDE357(p, dt)
 					data.coolDown = DE357const.FIRERATE
 					data.altCoolDown = DE357const.FIRERATE
 				end
-			else
+			elseif ammo > 0 then
 				data.coolDown = DE357const.RELOAD_TIME
 				data.altCoolDown = DE357const.RELOAD_TIME
 				data.inreload =  true;
@@ -188,7 +191,7 @@ function client.tickPlayerDE357(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0 and data.clipamntDE357 ~= ammo then
 		PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
 		if data.clipamntDE357 > 0 then
 			data.coolDown = DE357const.RELOAD_TIME
@@ -212,9 +215,6 @@ function client.tickPlayerDE357(p, dt)
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
-				StopSound(data.firesound)
-				data.firesound = PlaySound(LoadSound(DE357const.PRIM_FIRESOUND), pt.pos)
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
@@ -262,7 +262,7 @@ function client.tickPlayerDE357(p, dt)
 						data.coolDown = DE357const.FIRERATE
 						data.altCoolDown = DE357const.FIRERATE
 					end
-				else
+				elseif ammo > 0 then
 					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
 					data.coolDown = DE357const.RELOAD_TIME
 					data.altCoolDown = DE357const.RELOAD_TIME
