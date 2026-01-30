@@ -10,9 +10,11 @@ function createConstM40()
     return {
 		RELOAD_TIME = 2.32, -- seconds
 		EMPTYRELOAD_TIME = 4.1, -- seconds
-		RELOAD_SOUND = "MOD/snd/m40R.ogg", -- TO-DO: make
+		TACRELOAD_SOUND = "MOD/snd/m40r.ogg", -- TO-DO: make
+		EMPTRELOAD_SOUND = "MOD/snd/m40rfll.ogg", -- TO-DO: make
 		PRIM_FIRESOUND = "MOD/snd/m40FR.ogg", 
 		ALT_FIRESOUND = "MOD/snd/m40scp.ogg",
+		BOLT_CYCLE = "MOD/snd/m40bolt.ogg",
 		CLIP_SIZE = 5.0,
 		PICKUP_SIZE = 15.0,
 		RECOIL_AMNT = 0.25,
@@ -23,7 +25,7 @@ function createConstM40()
 		MAX_RANGE = 500.0,
 		WPNID = "opform40a1",
 		WPNNAME = "M40A1",
-		CASING_ORG = Vec(0.02, 0.25, -0.25),
+		CASING_ORG = Vec(0.02, 0.25, -0.2),		-- casing origin
 	}
 end
 
@@ -40,6 +42,8 @@ function createPlayerDataM40()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		scoped = false,
+		timetobolt = nil,
+		playbolt = true,
 	}
 end
 
@@ -189,10 +193,11 @@ function client.tickPlayerM40(p, dt)
 	local data = M40players[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0 and data.clipamntM40 ~= ammo then
-		PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
+		
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
 			data.altCoolDown = M40const.RELOAD_TIME
+			PlaySound(LoadSound(M40const.TACRELOAD_SOUND), pt.pos)
 		else
 			data.coolDown = M40const.EMPTYRELOAD_TIME
 			data.altCoolDown = M40const.EMPTYRELOAD_TIME
@@ -212,49 +217,32 @@ function client.tickPlayerM40(p, dt)
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(M40const.CASING_ORG[1],M40const.CASING_ORG[2],M40const.CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.6, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
-					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.1, 0.15), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
+				local playervel = GetPlayerVelocity(p)
 				
+				-- muzzleflash
+				for i=0, 3 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.1, 0.15), 0.33)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 					
 				data.clipamntM40 = data.clipamntM40 - 1
 				if data.clipamntM40 > 0 then
 					data.coolDown = M40const.FIRERATE
 					data.altCoolDown = M40const.FIRERATE
+					data.timetobolt = 0.842
 				elseif ammo > 0 then
-					PlaySound(LoadSound(M40const.RELOAD_SOUND), pt.pos)
+					data.recoil = 0.05
+					PlaySound(LoadSound(M40const.EMPTRELOAD_SOUND), pt.pos)
 					data.coolDown = M40const.EMPTYRELOAD_TIME
 					data.altCoolDown = M40const.EMPTYRELOAD_TIME
 					data.inreload = true
@@ -296,6 +284,41 @@ function client.tickPlayerM40(p, dt)
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
+	
+	if data.timetobolt == nil then
+	else
+		data.timetobolt = data.timetobolt - dt
+		if data.timetobolt <= 0 and data.playbolt == true then
+			PlaySound(LoadSound(M40const.BOLT_CYCLE), pt.pos)
+			data.playbolt = false
+			data.recoil = 0.05
+		end
+		if data.timetobolt <= -0.1 then
+			local toolBody = GetToolBody(p)
+			if toolBody ~= 0 then
+				local transform = GetBodyTransform(toolBody)
+				local eject_origin = TransformToParentPoint(transform, Vec(M40const.CASING_ORG[1],M40const.CASING_ORG[2],M40const.CASING_ORG[3]))
+				local playervel = GetPlayerVelocity(p)
+				
+				-- shell ejection
+				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
+				ParticleReset()
+				ParticleGravity(rnd(-2, -8))
+				ParticleRadius(0.02)
+				ParticleAlpha(1)
+				ParticleColor(0.8, 0.6, 0)
+				ParticleTile(6)
+				ParticleDrag(0.125)
+				ParticleSticky(0.5)
+				ParticleCollide(1)
+				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+				data.timetobolt = nil
+				data.playbolt = true
+				data.recoil = 0.025
+			end
+		end
+	end
+	-- END SHELL EJECT
 	
 	-- RECOIL
 	if data.recoil > 0 then

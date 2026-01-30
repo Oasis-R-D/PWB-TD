@@ -23,7 +23,7 @@ end
 function client.drawAmmo(curclip, maxclip)
 	UiPush()
 		UiAlign("center")
-		UiTranslate(Uicenter(), Uicenter())
+		UiTranslate(UiCenter(), UiCenter())
 		UiText(curclip .. "/" .. maxclip)
 	UiPop()
 end
