@@ -95,6 +95,14 @@ function server.tickPlayerSG(p, dt)
 		data.inreload = true
 	end
 	
+	if data.inreload == true and data.coolDown < 0 then
+		data.inreload = false
+		data.clipamntSG = SGconst.CLIP_SIZE
+		if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
+			data.clipamntSG = ammo
+		end
+	end
+	
 	--Check if firing
 	if InputDown("usetool", p) and ammo > 0 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
@@ -104,14 +112,6 @@ function server.tickPlayerSG(p, dt)
 		end
 
 		if data.coolDown < 0 then
-			if data.inreload == true then
-				data.inreload = false
-				data.clipamntSG = SGconst.CLIP_SIZE
-				if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamntSG = ammo
-				end
-			end
-			
 			local crouch = GetPlayerCrouch(p)
 			
 			local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
@@ -157,15 +157,7 @@ function server.tickPlayerSG(p, dt)
 			return
 		end
 
-		if data.altCoolDown < 0 then
-			if data.inreload == true then
-				data.inreload = false
-				data.clipamntSG = SGconst.CLIP_SIZE
-				if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
-					data.clipamntSG = ammo
-				end
-			end
-			
+		if data.altCoolDown < 0 then	
 			local crouch = GetPlayerCrouch(p)
 			
 			local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
@@ -267,16 +259,16 @@ function client.tickPlayerSG(p, dt)
 		data.inreload = true
 	end
 	
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
-			if data.coolDown < 0 then
-				if data.inreload == true then
-					data.inreload = false
-					data.clipamntSG = SGconst.CLIP_SIZE
-					if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamntSG = ammo
-					end
-				end
+	if data.inreload == true and data.coolDown < 0 then -- reload the clip
+		data.inreload = false
+		data.clipamntSG = SGconst.CLIP_SIZE
+		if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
+			data.clipamntSG = ammo
+		end
+	end
 				
+	if InputDown("usetool", p) and ammo > 0 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+			if data.coolDown < 0 then				
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
 				local toolBody = GetToolBody(p)
@@ -333,16 +325,8 @@ function client.tickPlayerSG(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 1 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo > 1 and data.clipamntSG > 1.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
-				if data.inreload == true then
-					data.inreload = false
-					data.clipamntSG = SGconst.CLIP_SIZE
-					if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
-						data.clipamntSG = ammo
-					end
-				end
-				
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
 				local toolBody = GetToolBody(p)
