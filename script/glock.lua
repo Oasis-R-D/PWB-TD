@@ -116,14 +116,13 @@ function server.tickPlayerPIST9MM(p, dt)
 				data.inreload =  true;
 			end
 			
-			
 			if ammo < 9999 then
 				SetToolAmmo(PIST9MMconst.WPNID, ammo-1, p)
 			end
 		end
 	end
 	
-	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
