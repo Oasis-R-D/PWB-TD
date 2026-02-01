@@ -472,7 +472,6 @@ function client.tickPlayerSG(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-	end
 end
 
 function client.drawSG()
