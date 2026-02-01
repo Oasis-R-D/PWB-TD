@@ -21,6 +21,10 @@ function IsMP()
 end
 
 function client.drawAmmo(curclip, maxclip)
+	if curclip == -16 then -- gun is empty
+		return
+	end
+	
 	UiPush()
 		UiFont("bold.ttf", 32)
 		UiAlign("center middle")

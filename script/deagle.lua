@@ -75,7 +75,7 @@ function server.tickPlayerDE357(p, dt)
 	local ammo = GetToolAmmo(DE357const.WPNID, p)
 	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0 and data.clipamntDE357 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
 		if data.clipamntDE357 > 0 then
 			data.coolDown = DE357const.RELOAD_TIME
 			data.altCoolDown = DE357const.RELOAD_TIME
@@ -95,7 +95,7 @@ function server.tickPlayerDE357(p, dt)
 	end
 
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -120,7 +120,7 @@ function server.tickPlayerDE357(p, dt)
 			data.recoil = DE357const.RECOIL_AMNT
 			data.clipamntDE357 = data.clipamntDE357 - 1
 			
-			if data.clipamntDE357 > 0 then
+			if data.clipamntDE357 > 0.5 then
 				if data.laseron == true then
 					data.coolDown = DE357const.LASERFIRERATE
 					data.altCoolDown = DE357const.LASERFIRERATE
@@ -128,7 +128,7 @@ function server.tickPlayerDE357(p, dt)
 					data.coolDown = DE357const.FIRERATE
 					data.altCoolDown = DE357const.FIRERATE
 				end
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				data.coolDown = DE357const.RELOAD_TIME
 				data.altCoolDown = DE357const.RELOAD_TIME
 				data.inreload =  true;
@@ -193,9 +193,9 @@ function client.tickPlayerDE357(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0 and data.clipamntDE357 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
 		PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
-		if data.clipamntDE357 > 0 then
+		if data.clipamntDE357 > 0.5 then
 			data.coolDown = DE357const.RELOAD_TIME
 			data.altCoolDown = DE357const.RELOAD_TIME
 		else
@@ -213,7 +213,7 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
@@ -256,7 +256,7 @@ function client.tickPlayerDE357(p, dt)
 				end
 					
 				data.clipamntDE357 = data.clipamntDE357 - 1
-				if data.clipamntDE357 > 0 then
+				if data.clipamntDE357 > 0.5 then
 					if data.laseron == true then
 						data.coolDown = DE357const.LASERFIRERATE
 						data.altCoolDown = DE357const.LASERFIRERATE
@@ -264,7 +264,7 @@ function client.tickPlayerDE357(p, dt)
 						data.coolDown = DE357const.FIRERATE
 						data.altCoolDown = DE357const.FIRERATE
 					end
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
 					data.coolDown = DE357const.RELOAD_TIME
 					data.altCoolDown = DE357const.RELOAD_TIME
@@ -279,7 +279,7 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
 			if data.laseron == false then
@@ -322,10 +322,12 @@ function client.tickPlayerDE357(p, dt)
 	end
 
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false then
+		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntDE357
-		else
+		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+		else
+			clipamnt = -16
 		end
 	end
 	
@@ -336,7 +338,7 @@ function client.tickPlayerDE357(p, dt)
 	data.laserrefresh = data.laserrefresh - dt
 	
 	-- RECOIL
-	if data.recoil > 0 then
+	if data.recoil > 0.5 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
 		local recoilvert = math.max(0, data.recoil)

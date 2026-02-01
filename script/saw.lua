@@ -69,7 +69,7 @@ function server.tickPlayerM249(p, dt)
 	local ammo = GetToolAmmo(M249const.WPNID, p)
 	local data = M249players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0 and data.clipamntM249 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
 		data.coolDown = M249const.RELOAD_TIME
 		data.inreload = true
 	end
@@ -83,7 +83,7 @@ function server.tickPlayerM249(p, dt)
 	end
 
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -117,7 +117,7 @@ function server.tickPlayerM249(p, dt)
 			
 			if data.clipamntM249 > 0 then
 				data.coolDown = M249const.FIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				data.coolDown = M249const.RELOAD_TIME
 				data.inreload =  true;
 			end
@@ -172,7 +172,7 @@ function client.tickPlayerM249(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M249players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0 and data.clipamntM249 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
 		PlaySound(LoadSound(M249const.RELOAD_SOUND), pt.pos)
 		data.coolDown = M249const.RELOAD_TIME
 		data.inreload = true
@@ -186,7 +186,7 @@ function client.tickPlayerM249(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -236,7 +236,7 @@ function client.tickPlayerM249(p, dt)
 				data.clipamntM249 = data.clipamntM249 - 1
 				if data.clipamntM249 > 0 then
 					data.coolDown = M249const.FIRERATE
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(M249const.RELOAD_SOUND), pt.pos)
 					data.coolDown = M249const.RELOAD_TIME
 					data.inreload = true
@@ -251,10 +251,12 @@ function client.tickPlayerM249(p, dt)
 	end
 	
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false then
+		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntM249
-		else
+		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+		else
+			clipamnt = -16
 		end
 	end
 

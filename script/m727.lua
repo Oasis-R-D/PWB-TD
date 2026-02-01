@@ -71,7 +71,7 @@ function server.tickPlayerM727(p, dt)
 	local ammo = GetToolAmmo(M727const.WPNID, p)
 	local data = M727players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0 and data.clipamntM727 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
 		data.coolDown = M727const.RELOAD_TIME
 		data.altCoolDown = M727const.RELOAD_TIME
 		data.inreload = true
@@ -86,7 +86,7 @@ function server.tickPlayerM727(p, dt)
 	end
 
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -114,7 +114,7 @@ function server.tickPlayerM727(p, dt)
 			if data.clipamntM727 > 0 then
 				data.coolDown = M727const.FIRERATE
 				data.altCoolDown = M727const.FIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				data.coolDown = M727const.RELOAD_TIME
 				data.altCoolDown = M727const.RELOAD_TIME
 				data.inreload =  true;
@@ -127,7 +127,7 @@ function server.tickPlayerM727(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -199,7 +199,7 @@ function client.tickPlayerM727(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M727players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0 and data.clipamntM727 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
 		PlaySound(LoadSound(M727const.RELOAD_SOUND), pt.pos)
 		data.coolDown = M727const.RELOAD_TIME
 		data.altCoolDown = M727const.RELOAD_TIME
@@ -214,7 +214,7 @@ function client.tickPlayerM727(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then		
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
@@ -260,7 +260,7 @@ function client.tickPlayerM727(p, dt)
 				if data.clipamntM727 > 0 then
 					data.coolDown = M727const.FIRERATE
 					data.altCoolDown = M727const.FIRERATE
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(M727const.RELOAD_SOUND), pt.pos)
 					data.coolDown = M727const.RELOAD_TIME
 					data.altCoolDown = M727const.RELOAD_TIME
@@ -275,7 +275,7 @@ function client.tickPlayerM727(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -316,10 +316,12 @@ function client.tickPlayerM727(p, dt)
 	end
 
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false then
+		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntM727
-		else
+		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+		else
+			clipamnt = -16
 		end
 	end
 	

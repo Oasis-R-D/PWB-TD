@@ -71,7 +71,7 @@ function server.tickPlayerPIST9MM(p, dt)
 	local ammo = GetToolAmmo(PIST9MMconst.WPNID, p)
 	local data = PIST9MMplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0 and data.clipamntPIST9MM ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
 		if data.clipamntPIST9MM > 0 then
 			data.coolDown = PIST9MMconst.RELOAD_TIME
 			data.altCoolDown = PIST9MMconst.RELOAD_TIME
@@ -88,7 +88,7 @@ function server.tickPlayerPIST9MM(p, dt)
 	end
 
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -110,7 +110,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			if data.clipamntPIST9MM > 0 then
 				data.coolDown = PIST9MMconst.FIRERATE
 				data.altCoolDown = PIST9MMconst.FIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				data.coolDown = PIST9MMconst.RELOAD_TIME
 				data.altCoolDown = PIST9MMconst.RELOAD_TIME
 				data.inreload =  true;
@@ -122,7 +122,7 @@ function server.tickPlayerPIST9MM(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -144,7 +144,7 @@ function server.tickPlayerPIST9MM(p, dt)
 			if data.clipamntPIST9MM > 0 then
 				data.coolDown = PIST9MMconst.ALTFIRERATE
 				data.altCoolDown = PIST9MMconst.ALTFIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				data.coolDown = PIST9MMconst.RELOAD_TIME
 				data.altCoolDown = PIST9MMconst.RELOAD_TIME
 				data.inreload =  true;
@@ -201,7 +201,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = PIST9MMplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0 and data.clipamntPIST9MM ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
 		PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 		if data.clipamntPIST9MM > 0 then
 			data.coolDown = PIST9MMconst.RELOAD_TIME
@@ -218,7 +218,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -270,7 +270,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if data.clipamntPIST9MM > 0 then
 					data.coolDown = PIST9MMconst.FIRERATE
 					data.altCoolDown = PIST9MMconst.FIRERATE
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PIST9MMconst.RELOAD_TIME
 					data.altCoolDown = PIST9MMconst.RELOAD_TIME
@@ -285,7 +285,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -339,7 +339,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if data.clipamntPIST9MM > 0 then
 					data.coolDown = PIST9MMconst.ALTFIRERATE
 					data.altCoolDown = PIST9MMconst.ALTFIRERATE
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
 					data.coolDown = PIST9MMconst.RELOAD_TIME
 					data.altCoolDown = PIST9MMconst.RELOAD_TIME
@@ -355,10 +355,12 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 	
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false then
+		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntPIST9MM
-		else
+		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+		else
+			clipamnt = -16
 		end
 	end
 	

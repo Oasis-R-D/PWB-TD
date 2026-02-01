@@ -77,7 +77,7 @@ function server.tickPlayerM40(p, dt)
 	local ammo = GetToolAmmo(M40const.WPNID, p)
 	local data = M40players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0 and data.clipamntM40 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
 			data.altCoolDown = M40const.RELOAD_TIME
@@ -97,7 +97,7 @@ function server.tickPlayerM40(p, dt)
 	end
 
 	--Check if firing
-	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -127,7 +127,7 @@ function server.tickPlayerM40(p, dt)
 			if data.clipamntM40 > 0 then
 				data.coolDown = M40const.FIRERATE
 				data.altCoolDown = M40const.FIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				data.coolDown = M40const.EMPTYRELOAD_TIME
 				data.altCoolDown = M40const.EMPTYRELOAD_TIME
 				data.inreload =  true;
@@ -140,7 +140,7 @@ function server.tickPlayerM40(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.altCoolDown = M40const.ALTFIRERATE
 			data.coolDown = M40const.SCOPEFIREDELAY
@@ -193,7 +193,7 @@ function client.tickPlayerM40(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = M40players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0 and data.clipamntM40 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
 		
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
@@ -214,7 +214,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("usetool", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -241,7 +241,7 @@ function client.tickPlayerM40(p, dt)
 					data.coolDown = M40const.FIRERATE
 					data.altCoolDown = M40const.FIRERATE
 					data.timetobolt = 0.842
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					data.recoil = 0.05
 					PlaySound(LoadSound(M40const.EMPTRELOAD_SOUND), pt.pos)
 					data.coolDown = M40const.EMPTYRELOAD_TIME
@@ -257,7 +257,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
 			if IsPlayerLocal(p) then
@@ -282,10 +282,12 @@ function client.tickPlayerM40(p, dt)
 	end
 	
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false then
+		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntM40
-		else
+		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+		else
+			clipamnt = -16
 		end
 	end
 		

@@ -75,7 +75,7 @@ function server.tickPlayerSG(p, dt)
 	local ammo = GetToolAmmo(SGconst.WPNID, p)
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0 and data.clipamntSG ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
 		local reloadtime = 0
 		if data.clipamntSG > 0 then
 			local shellsneedingloading = 8 - data.clipamntSG
@@ -104,7 +104,7 @@ function server.tickPlayerSG(p, dt)
 	end
 	
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -133,7 +133,7 @@ function server.tickPlayerSG(p, dt)
 			if data.clipamntSG > 0 then
 				data.coolDown = SGconst.FIRERATE
 				data.altCoolDown = SGconst.FIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				local shellsneedingloading = 8
 				if shellsneedingloading > ammo then
 					shellsneedingloading = ammo
@@ -150,7 +150,7 @@ function server.tickPlayerSG(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and ammo > 1 and data.clipamntSG > 1.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -179,7 +179,7 @@ function server.tickPlayerSG(p, dt)
 			if data.clipamntSG > 0 then
 				data.coolDown = SGconst.ALTFIRERATE
 				data.altCoolDown = SGconst.ALTFIRERATE
-			elseif ammo > 0 then
+			elseif ammo > 0.5 then
 				local shellsneedingloading = 8
 				if shellsneedingloading > ammo then
 					shellsneedingloading = ammo
@@ -240,7 +240,7 @@ function client.tickPlayerSG(p, dt)
 	-- but only use them for rotating barrel + recoil.
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0 and data.clipamntSG ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 		local reloadtime = 0
 		local shellsneedingloading = 8 - data.clipamntSG
@@ -269,7 +269,7 @@ function client.tickPlayerSG(p, dt)
 		end
 	end
 				
-	if InputDown("usetool", p) and ammo > 0 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and data.clipamntSG > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then				
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -303,7 +303,7 @@ function client.tickPlayerSG(p, dt)
 					data.altCoolDown = SGconst.FIRERATE
 					data.coolDown = SGconst.FIRERATE
 					data.pumptime = SGconst.FIRERATE - 0.25 -- 0.5
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					local shellsneedingloading = 8 - data.clipamntSG
@@ -327,7 +327,7 @@ function client.tickPlayerSG(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 1 and data.clipamntSG > 1.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -363,7 +363,7 @@ function client.tickPlayerSG(p, dt)
 					data.altCoolDown = SGconst.ALTFIRERATE
 					data.coolDown = SGconst.ALTFIRERATE
 					data.pumptime = SGconst.ALTFIRERATE - 0.25
-				elseif ammo > 0 then
+				elseif ammo > 0.5 then
 					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					local shellsneedingloading = 8 - data.clipamntSG
@@ -388,10 +388,12 @@ function client.tickPlayerSG(p, dt)
 	end
 
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false then
+		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntSG
-		else
+		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+		else
+			clipamnt = -16
 		end
 	end
 	
