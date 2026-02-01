@@ -44,9 +44,18 @@ function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 		Shoot(pos, dir, shoottype, damage, range, player, weaponid)
 	end
 
-	local hit, dist, joint = QueryRaycastRope(pos, dir, range)
+	local hit, dist, joint = QueryRaycastRope(pos, dir, range) -- Break Ropes
 	if hit then
 		local breakPoint = VecAdd(pos, VecScale(dir, dist))
 		BreakRope(joint, breakPoint)
 	end
+	
+	QueryInclude("player")
+	QueryRequire("player")
+	local phit, pdist = QueryRaycast(pos, dir, range) -- Play player hit sound (create blood mayhaps?)
+	if phit then
+		local SoundPoint = VecAdd(pos, VecScale(dir, pdist))
+		PlaySound(LoadSound("MOD/snd/bullet_hit0.ogg"), SoundPoint, 2)
+	end
+	
 end

@@ -106,7 +106,7 @@ function server.tickPlayerM727(p, dt)
 			ShootHook(pos, dir, "bullet", M727const.DAMAGE, M727const.MAX_RANGE, p, M727const.WPNID)
 			
 			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(M727const.PRIM_FIRESOUND), mt.pos)
+			data.firesound = PlaySound(LoadSound(M727const.PRIM_FIRESOUND), mt.pos, 300)
 				
 			data.recoil = M727const.RECOIL_AMNT
 			data.clipamntM727 = data.clipamntM727 - 1
@@ -146,7 +146,7 @@ function server.tickPlayerM727(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			Shoot(pos, dir, "rocket", M727const.DAMAGE, M727const.MAX_RANGE * 2, p, M727const.WPNID)
 			
-			PlaySound(LoadSound(M727const.ALT_FIRESOUND), mt.pos)
+			PlaySound(LoadSound(M727const.ALT_FIRESOUND), mt.pos, 300)
 							
 			data.recoil = 1.5 * M727const.RECOIL_AMNT
 			

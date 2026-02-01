@@ -125,7 +125,7 @@ function server.tickPlayerSG(p, dt)
 				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
 			end
 			
-			PlaySound(LoadSound(SGconst.PRIM_FIRESOUND), mt.pos)
+			PlaySound(LoadSound(SGconst.PRIM_FIRESOUND), mt.pos, 300)
 			
 			data.recoil = SGconst.RECOIL_AMNT
 			data.clipamntSG = data.clipamntSG - 1
@@ -171,7 +171,7 @@ function server.tickPlayerSG(p, dt)
 				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
 			end
 			
-			PlaySound(LoadSound(SGconst.ALT_FIRESOUND), mt.pos)
+			PlaySound(LoadSound(SGconst.ALT_FIRESOUND), mt.pos, 300)
 			
 			data.recoil = 1.5 * SGconst.RECOIL_AMNT
 			data.clipamntSG = data.clipamntSG - 2

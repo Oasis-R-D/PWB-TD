@@ -106,7 +106,7 @@ function server.tickPlayerMp5(p, dt)
 			ShootHook(pos, dir, "bullet", MP5const.DAMAGE, MP5const.MAX_RANGE, p, MP5const.WPNID)
 			
 			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(MP5const.PRIM_FIRESOUND), mt.pos)
+			data.firesound = PlaySound(LoadSound(MP5const.PRIM_FIRESOUND), mt.pos, 300)
 			
 			data.recoil = MP5const.RECOIL_AMNT
 			data.clipamntMP5 = data.clipamntMP5 - 1
@@ -146,7 +146,7 @@ function server.tickPlayerMp5(p, dt)
 			dir = VecAdd(dir, rndVec(spread))
 			Shoot(pos, dir, "rocket", MP5const.DAMAGE, MP5const.MAX_RANGE * 2, p, MP5const.WPNID)
 			
-			PlaySound(LoadSound(MP5const.ALT_FIRESOUND), mt.pos)
+			PlaySound(LoadSound(MP5const.ALT_FIRESOUND), mt.pos, 300)
 				
 			data.recoil = 1.5 * MP5const.RECOIL_AMNT
 			

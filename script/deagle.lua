@@ -115,7 +115,7 @@ function server.tickPlayerDE357(p, dt)
 			ShootHook(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID, 3)
 			
 			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(DE357const.PRIM_FIRESOUND), mt.pos)
+			data.firesound = PlaySound(LoadSound(DE357const.PRIM_FIRESOUND), mt.pos, 300)
 				
 			data.recoil = DE357const.RECOIL_AMNT
 			data.clipamntDE357 = data.clipamntDE357 - 1

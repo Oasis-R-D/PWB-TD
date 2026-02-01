@@ -103,7 +103,7 @@ function server.tickPlayerPYTH(p, dt)
 			ShootHook(pos, dir, "bullet", PYTHconst.DAMAGE, PYTHconst.MAX_RANGE, p, PYTHconst.WPNID, 3)
 
 			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(PYTHconst.PRIM_FIRESOUND), mt.pos)
+			data.firesound = PlaySound(LoadSound(PYTHconst.PRIM_FIRESOUND), mt.pos, 300)
 				
 			data.recoil = PYTHconst.RECOIL_AMNT
 			data.clipamntPYTH = data.clipamntPYTH - 1

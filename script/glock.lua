@@ -10,7 +10,7 @@ function createConstPIST9MM()
     return {
 		RELOAD_TIME = 1.5, -- seconds
 		RELOAD_SOUND = "MOD/snd/glockR.ogg",
-		PRIM_FIRESOUND = "MOD/snd/glockFR.ogg", 
+		PRIM_FIRESOUND = nil, 
 		NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg", -- glock has diff sounds when shot by NPCs (in this case, other players)
 		CLIP_SIZE = 17.0,
 		PICKUP_SIZE = 34.0, -- should be 17 but idc
@@ -224,9 +224,9 @@ function client.tickPlayerPIST9MM(p, dt)
 				
 				StopSound(data.firesound)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos, 300)
 				else
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -291,9 +291,9 @@ function client.tickPlayerPIST9MM(p, dt)
 				
 				StopSound(data.firesound)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos, 300)
 				else
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos)
+					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
 				
 				local toolBody = GetToolBody(p)

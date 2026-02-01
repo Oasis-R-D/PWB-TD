@@ -110,7 +110,7 @@ function server.tickPlayerM249(p, dt)
 			ShootHook(pos, dir, "bullet", M249const.DAMAGE, M249const.MAX_RANGE, p, M249const.WPNID)
 			
 			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(M249const.PRIM_FIRESOUND), mt.pos)
+			data.firesound = PlaySound(LoadSound(M249const.PRIM_FIRESOUND), mt.pos, 300)
 				
 			data.recoil = M249const.RECOIL_AMNT
 			data.clipamntM249 = data.clipamntM249 - 1
