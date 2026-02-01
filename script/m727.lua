@@ -347,7 +347,7 @@ function client.tickPlayerM727(p, dt)
 end
 
 function client.drawM727()
-	if GetPlayerTool() ~= M727const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= M727const.WPNID or GetPlayerVehicle() ~= 0 then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 

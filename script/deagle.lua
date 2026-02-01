@@ -354,7 +354,7 @@ function client.tickPlayerDE357(p, dt)
 end
 
 function client.drawDE357()
-	if GetPlayerTool() ~= DE357const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= DE357const.WPNID or GetPlayerVehicle() ~= 0 then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 

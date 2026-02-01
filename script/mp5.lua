@@ -346,7 +346,7 @@ function client.tickPlayerMp5(p, dt)
 end
 
 function client.drawMp5()
-	if GetPlayerTool() ~= MP5const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= MP5const.WPNID or GetPlayerVehicle() ~= 0 then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 
