@@ -297,20 +297,47 @@ function client.tickPlayerDE357(p, dt)
 		data.toolAnimator.forceActionPose = false
 	else
 		if IsPlayerLocal(p) and data.laserrefresh <= 0 then
-			for i=0, 1 do
-				local playervel = GetPlayerVelocity(p)
-				ParticleReset()
-				ParticleGravity(0)
-				ParticleRadius(0.1)
-				ParticleAlpha(0.75, 0)
-				ParticleColor(1.0, 0.0, 0)
-				ParticleTile(5)
-				ParticleDrag(0)
-				ParticleRotation(rnd(10, -10), 0)
-				ParticleSticky(0)
-				ParticleEmissive(5)
-				ParticleCollide(0)
-				SpawnParticle(VecSub(mt.pos, Vec(0.0, 0.15, 0.0)), playervel, 0.05)
+			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+			local hit, dist = QueryRaycast(VecSub(pos, Vec(0.0, 0.15, 0.0)), dir, 100)
+			local toolBody = GetToolBody(p)
+			if toolBody ~= 0 then
+				local transform = GetBodyTransform(toolBody)
+				local laser_origin = TransformToParentPoint(transform, Vec(0.05, 0.05, -0.2))
+				dist = dist - 0.1
+				DrawLine(laser_origin, VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
+				if hit then
+					local breakPoint = VecAdd(pos, VecScale(dir, dist))
+					for i=0, 1 do
+						local playervel = GetPlayerVelocity(p)
+						ParticleReset()
+						ParticleGravity(0)
+						ParticleRadius(0.1)
+						ParticleAlpha(0.75, 0)
+						ParticleColor(1.0, 0.0, 0)
+						ParticleTile(5)
+						ParticleDrag(0)
+						ParticleRotation(rnd(10, -10), 0)
+						ParticleSticky(0)
+						ParticleEmissive(5)
+						ParticleCollide(0)
+						SpawnParticle(breakPoint, playervel, 0.05)
+					end
+				end
+				for i=0, 1 do
+					local playervel = GetPlayerVelocity(p)
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(0.1)
+					ParticleAlpha(0.75, 0)
+					ParticleColor(1.0, 0.0, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5)
+					ParticleCollide(0)
+					SpawnParticle(laser_origin, playervel, 0.05)
+				end
 			end
 			data.laserrefresh = 0.02
 		end
@@ -327,6 +354,7 @@ function client.tickPlayerDE357(p, dt)
 		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
 		else
+			data.clipamntM727 = 0
 			clipamnt = -16
 		end
 	end
@@ -338,7 +366,7 @@ function client.tickPlayerDE357(p, dt)
 	data.laserrefresh = data.laserrefresh - dt
 	
 	-- RECOIL
-	if data.recoil > 0.5 then
+	if data.recoil > 0 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
 		local recoilvert = math.max(0, data.recoil)

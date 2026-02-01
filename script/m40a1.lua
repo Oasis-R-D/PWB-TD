@@ -287,6 +287,7 @@ function client.tickPlayerM40(p, dt)
 		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
 		else
+			data.clipamntM727 = 0
 			clipamnt = -16
 		end
 	end
