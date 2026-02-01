@@ -13,7 +13,7 @@ function createConstPYTH()
 		RELOAD_SOUND = "MOD/snd/357R.ogg",
 		PRIM_FIRESOUND = "MOD/snd/357FR0.ogg", 
 		CLIP_SIZE = 6.0,
-		PICKUP_SIZE = 6.0,
+		PICKUP_SIZE = 12.0,
 		RECOIL_AMNT = 0.3,
 		FIRERATE = 0.75,
 		DAMAGE = 0.5,

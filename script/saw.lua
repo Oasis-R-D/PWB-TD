@@ -12,14 +12,14 @@ function createConstM249()
 		RELOAD_SOUND = "MOD/snd/m249r.ogg",
 		PRIM_FIRESOUND = "MOD/snd/249_fr0.ogg",
 		CLIP_SIZE = 50,
-		PICKUP_SIZE = 200,
+		PICKUP_SIZE = 100,
 		RECOIL_AMNT = 0.2,
 		FIRERATE = 0.067, -- NO
 		DAMAGE = 0.4,
 		MAX_RANGE = 125.0,
 		WPNID = "opform249_saw",
 		WPNNAME = "M249 SAW",
-		CASING_ORG = Vec(0.02, 0.25, -0.25),
+		CASING_ORG = Vec(0.02, 0.05, -0.05),
 	}
 end
 
@@ -35,7 +35,7 @@ function createPlayerDataM249()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		alteject = false, -- M249 ejects both the belt bits and bullets (alternating between them in opfor tho)
-		firesound = nil,
+		firesound = nil,	
 	}
 end
 
@@ -94,7 +94,7 @@ function server.tickPlayerM249(p, dt)
 			if IsPlayerGrounded(p) and GetPlayerCrouch(p) < 0.1 then
 				local playertrans = GetPlayerTransform(p)
 				local playerdir = TransformToParentVec(playertrans, Vec(0, 0, 1))
-				local newplayervel = VecScale(VecNormalize(playerdir), 2)
+				local newplayervel = VecScale(VecNormalize(playerdir), 1.5)
 				SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
 			end
 			
@@ -135,7 +135,7 @@ end
 function client.initM249()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(M249const.WPNID, toolHaptic);
+	SetToolHaptic(M249const.WPNID, toolHaptic)
 end
 
 function client.tickM249(dt)
@@ -151,6 +151,8 @@ function client.tickM249(dt)
 		client.tickPlayerM249(p, dt)
 	end
 end
+
+hideshapetransform = Transform(Vec(0, -0.1, 0.4), QuatEuler(0, 0, 0))
 
 function client.tickPlayerM249(p, dt)
 	if GetPlayerTool(p) ~= M249const.WPNID then
@@ -267,5 +269,31 @@ function client.tickPlayerM249(p, dt)
 	end 
 	-- END RECOIL
 	
+	local toolBody = GetToolBody(p)
+	if toolBody ~= 0 then -- hide shells if low ammo
+		local shapes = GetBodyShapes(toolBody)
+		
+		if data.clipamntM249 < 4.5 then -- four shots left
+			-- hide third shell
+			SetTag(shapes[3], "invisible")
+		elseif HasTag(shapes[3], "invisible") == true then
+			RemoveTag(shapes[3], "invisible")
+		end
+		
+		if data.clipamntM249 < 2.5 then -- two shots left
+			-- hide second shell
+			SetTag(shapes[2], "invisible")
+		elseif HasTag(shapes[2], "invisible") == true then
+			RemoveTag(shapes[2], "invisible")
+		end
+		
+		if data.clipamntM249 < 0.5 then -- empty mag
+			-- hide first shell
+			SetTag(shapes[1], "invisible")
+		elseif HasTag(shapes[1], "invisible") == true then
+			RemoveTag(shapes[1], "invisible")
+		end
+		
+	end
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 end
