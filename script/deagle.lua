@@ -173,6 +173,8 @@ function client.tickDE357(dt)
 	end
 end
 
+clipamnt = 0
+
 function client.tickPlayerDE357(p, dt)
 	if GetPlayerTool(p) ~= DE357const.WPNID then
 		return
@@ -319,6 +321,14 @@ function client.tickPlayerDE357(p, dt)
 		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
 	end
 
+	if IsPlayerLocal(p) then -- UPD AMMO HUD
+		if data.inreload == false then
+			clipamnt = data.clipamntDE357
+		else
+			clipamnt = -8 -- negative 8 means reloading
+		end
+	end
+	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
@@ -341,4 +351,12 @@ function client.tickPlayerDE357(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+end
+
+function client.drawDE357()
+	if GetPlayerTool() ~= DE357const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+		return
+	end
+
+	client.drawAmmo(clipamnt, DE357const.CLIP_SIZE)
 end

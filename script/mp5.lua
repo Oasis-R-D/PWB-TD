@@ -179,6 +179,8 @@ function client.tickMp5(dt)
 	end
 end
 
+clipamnt = 0
+
 function client.tickPlayerMp5(p, dt)
 	if GetPlayerTool(p) ~= MP5const.WPNID then
 		return
@@ -312,6 +314,14 @@ function client.tickPlayerMp5(p, dt)
 		end
 	end
 
+	if IsPlayerLocal(p) then -- UPD AMMO HUD
+		if data.inreload == false then
+			clipamnt = data.clipamntMP5
+		else
+			clipamnt = -8 -- negative 8 means reloading
+		end
+	end
+	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
@@ -333,4 +343,12 @@ function client.tickPlayerMp5(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+end
+
+function client.drawMp5()
+	if GetPlayerTool() ~= MP5const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+		return
+	end
+
+	client.drawAmmo(clipamnt, MP5const.CLIP_SIZE)
 end

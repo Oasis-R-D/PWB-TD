@@ -145,6 +145,8 @@ function client.tickPYTH(dt)
 	end
 end
 
+clipamnt = 0
+
 function client.tickPlayerPYTH(p, dt)
 	if GetPlayerTool(p) ~= PYTHconst.WPNID then
 		return
@@ -220,6 +222,14 @@ function client.tickPlayerPYTH(p, dt)
 		end
 	end
 	
+	if IsPlayerLocal(p) then -- UPD AMMO HUD
+		if data.inreload == false then
+			clipamnt = data.clipamntPYTH
+		else
+			clipamnt = -8 -- negative 8 means reloading
+		end
+	end
+	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
@@ -273,4 +283,12 @@ function client.tickPlayerPYTH(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+end
+
+function client.drawPYTH()
+	if GetPlayerTool() ~= PYTHconst.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+		return
+	end
+
+	client.drawAmmo(clipamnt, PYTHconst.CLIP_SIZE)
 end

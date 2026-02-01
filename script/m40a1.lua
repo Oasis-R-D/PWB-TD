@@ -173,6 +173,7 @@ function client.tickM40(dt)
 end
 
 scopeddraw = false
+clipamnt = 0
 
 function client.tickPlayerM40(p, dt)
 	if GetPlayerTool(p) ~= M40const.WPNID then
@@ -268,18 +269,26 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if data.scoped == false then
+	if data.scoped == false or ammo <= 0 or data.clipamntM40 < 0 then
 		data.toolAnimator.forceActionPose = false
 		if IsPlayerLocal(p) then
 			scopeddraw = false
 		end
-	else
+	elseif data.scoped == true then
 		if IsPlayerLocal(p) then
 			scopeddraw = true
 			SetCameraFov(18)
 		end
 	end
-
+	
+	if IsPlayerLocal(p) then -- UPD AMMO HUD
+		if data.inreload == false then
+			clipamnt = data.clipamntM40
+		else
+			clipamnt = -8 -- negative 8 means reloading
+		end
+	end
+		
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
@@ -339,12 +348,15 @@ function client.tickPlayerM40(p, dt)
 end
 
 function client.drawM40()
-	if GetPlayerTool() ~= M40const.WPNID or scopeddraw ~= true then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= M40const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
 		return
 	end
-	
-	UiTranslate(UiCenter(), UiMiddle())
-	UiAlign("center middle")
-	UiImage("MOD/scope.png")
-	client.drawAmmo(5, M40const.CLIP_SIZE)
+	if scopeddraw == true then
+		UiPush()
+			UiTranslate(UiCenter(), UiMiddle())
+			UiAlign("center middle")
+			UiImage("MOD/scope.png")
+		UiPop()
+	end
+	client.drawAmmo(clipamnt, M40const.CLIP_SIZE)
 end

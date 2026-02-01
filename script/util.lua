@@ -22,9 +22,14 @@ end
 
 function client.drawAmmo(curclip, maxclip)
 	UiPush()
-		UiAlign("center")
-		UiTranslate(UiCenter(), UiCenter())
-		UiText(curclip .. "/" .. maxclip)
+		UiFont("bold.ttf", 32)
+		UiAlign("center middle")
+		UiTranslate(UiCenter(), UiMiddle() + (UiMiddle() * 0.833))
+		if curclip == -8 then
+			UiText("RELOADING...")
+		else
+			UiText(curclip .. "/" .. maxclip)
+		end
 	UiPop()
 end
 

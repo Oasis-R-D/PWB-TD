@@ -75,9 +75,14 @@ function client.tick(dt)
 end
 
 function client.draw()
-   UiPush()
-      client.drawM40()
-   UiPop()
+    client.drawM40()
+	client.drawPIST9MM()
+	client.drawDE357()
+	client.drawM727()
+	client.drawMp5()
+	client.drawPYTH()
+	client.drawM249()
+	client.drawSG()
 end
 
 function client.tickPlayer(p, dt)

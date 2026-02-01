@@ -152,7 +152,7 @@ function client.tickM249(dt)
 	end
 end
 
-hideshapetransform = Transform(Vec(0, -0.1, 0.4), QuatEuler(0, 0, 0))
+clipamnt = 0
 
 function client.tickPlayerM249(p, dt)
 	if GetPlayerTool(p) ~= M249const.WPNID then
@@ -249,6 +249,14 @@ function client.tickPlayerM249(p, dt)
 			PlayHaptic(shootHaptic, 1)
 		end
 	end
+	
+	if IsPlayerLocal(p) then -- UPD AMMO HUD
+		if data.inreload == false then
+			clipamnt = data.clipamntM249
+		else
+			clipamnt = -8 -- negative 8 means reloading
+		end
+	end
 
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
@@ -295,5 +303,14 @@ function client.tickPlayerM249(p, dt)
 		end
 		
 	end
+	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+end
+
+function client.drawM249()
+	if GetPlayerTool() ~= M249const.WPNID or GetPlayerVehicle(p) ~= 0 then -- shouldn't need the player pointer since this runs on client
+		return
+	end
+
+	client.drawAmmo(clipamnt, M249const.CLIP_SIZE)
 end
