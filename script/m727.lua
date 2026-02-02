@@ -32,6 +32,7 @@ M727const = createConstM727()
 function createPlayerDataM727()
     return {
 		clipamntM727 = M727const.CLIP_SIZE,
+		m203amnt727 = 1,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -79,6 +80,7 @@ function server.tickPlayerM727(p, dt)
 
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
+		data.m203amnt727 = 1
 		data.clipamntM727 = M727const.CLIP_SIZE
 		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntM727 = ammo
@@ -127,7 +129,7 @@ function server.tickPlayerM727(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -152,6 +154,7 @@ function server.tickPlayerM727(p, dt)
 			
 			data.altCoolDown = M727const.ALTFIRERATE
 			data.coolDown = M727const.ALTFIRERATE
+			data.m203amnt727 = data.m203amnt727 - 1
 		end
 	end
 	
@@ -180,6 +183,7 @@ function client.tickM727(dt)
 end
 
 clipamnt = 0
+altclipamnt = 0
 
 function client.tickPlayerM727(p, dt)
 	if GetPlayerTool(p) ~= M727const.WPNID then
@@ -208,6 +212,7 @@ function client.tickPlayerM727(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
+		data.m203amnt727 = 1
 		data.clipamntM727 = M727const.CLIP_SIZE
 		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntM727 = ammo
@@ -275,7 +280,7 @@ function client.tickPlayerM727(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -308,6 +313,7 @@ function client.tickPlayerM727(p, dt)
 				
 				data.altCoolDown = M727const.ALTFIRERATE
 				data.coolDown = M727const.ALTFIRERATE
+				data.m203amnt727 = data.m203amnt727 - 1
 			end
 
 		if IsPlayerLocal(p) then
@@ -318,11 +324,14 @@ function client.tickPlayerM727(p, dt)
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
 		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntM727
+			altclipamnt = data.m203amnt727
 		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+			altclipamnt = -8
 		else
 			data.clipamntM727 = 0
 			clipamnt = -16
+			altclipamnt = data.m203amnt727
 		end
 	end
 	
@@ -355,4 +364,5 @@ function client.drawM727()
 	end
 
 	client.drawAmmo(clipamnt, M727const.CLIP_SIZE)
+	client.drawSecAmmo(altclipamnt)
 end

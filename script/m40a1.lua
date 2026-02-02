@@ -80,10 +80,8 @@ function server.tickPlayerM40(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
-			data.altCoolDown = M40const.RELOAD_TIME
 		else
 			data.coolDown = M40const.EMPTYRELOAD_TIME
-			data.altCoolDown = M40const.EMPTYRELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -126,10 +124,9 @@ function server.tickPlayerM40(p, dt)
 			
 			if data.clipamntM40 > 0 then
 				data.coolDown = M40const.FIRERATE
-				data.altCoolDown = M40const.FIRERATE
+				data.altCoolDown = M40const.SCOPEFIREDELAY
 			elseif ammo > 0.5 then
 				data.coolDown = M40const.EMPTYRELOAD_TIME
-				data.altCoolDown = M40const.EMPTYRELOAD_TIME
 				data.inreload =  true;
 			end
 			
@@ -140,11 +137,9 @@ function server.tickPlayerM40(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.altCoolDown = M40const.ALTFIRERATE
-			data.coolDown = M40const.SCOPEFIREDELAY
-			data.scoped = not data.scoped
 		end
 	end
 	
@@ -197,11 +192,9 @@ function client.tickPlayerM40(p, dt)
 		
 		if data.clipamntM40 > 0 then
 			data.coolDown = M40const.RELOAD_TIME
-			data.altCoolDown = M40const.RELOAD_TIME
 			PlaySound(LoadSound(M40const.TACRELOAD_SOUND), pt.pos)
 		else
 			data.coolDown = M40const.EMPTYRELOAD_TIME
-			data.altCoolDown = M40const.EMPTYRELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -239,13 +232,12 @@ function client.tickPlayerM40(p, dt)
 				data.clipamntM40 = data.clipamntM40 - 1
 				if data.clipamntM40 > 0 then
 					data.coolDown = M40const.FIRERATE
-					data.altCoolDown = M40const.FIRERATE
+					data.altCoolDown = M40const.SCOPEFIREDELAY
 					data.timetobolt = 0.842
 				elseif ammo > 0.5 then
 					data.recoil = 0.05
 					PlaySound(LoadSound(M40const.EMPTRELOAD_SOUND), pt.pos)
 					data.coolDown = M40const.EMPTYRELOAD_TIME
-					data.altCoolDown = M40const.EMPTYRELOAD_TIME
 					data.inreload = true
 				end
 				
@@ -257,19 +249,18 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
 			if IsPlayerLocal(p) then
 				PlaySound(LoadSound(M40const.ALT_FIRESOUND), pt.pos)
 			end
 			data.altCoolDown = M40const.ALTFIRERATE
-			data.coolDown = M40const.SCOPEFIREDELAY
 			data.scoped = not data.scoped
 		end
 	end
 
-	if data.scoped == false or ammo <= 0 or data.clipamntM40 < 0 then
+	if data.scoped == false or data.clipamntM40 < 0 then
 		data.toolAnimator.forceActionPose = false
 		if IsPlayerLocal(p) then
 			scopeddraw = false

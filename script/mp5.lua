@@ -32,6 +32,7 @@ MP5const = createConstMP5()
 function createPlayerDataMP5()
     return {
 		clipamntMP5 = MP5const.CLIP_SIZE,
+		m203amntMP5 = 1,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -79,6 +80,7 @@ function server.tickPlayerMp5(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
+		data.m203amntMP5 = 1
 		data.clipamntMP5 = MP5const.CLIP_SIZE
 		if data.clipamntMP5 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntMP5 = ammo
@@ -127,7 +129,7 @@ function server.tickPlayerMp5(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and data.m203amntMP5 > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -152,6 +154,7 @@ function server.tickPlayerMp5(p, dt)
 			
 			data.altCoolDown = MP5const.ALTFIRERATE
 			data.coolDown = MP5const.ALTFIRERATE
+			data.m203amntMP5 = data.m203amntMP5 - 1
 		end
 	end
 	
@@ -180,6 +183,7 @@ function client.tickMp5(dt)
 end
 
 clipamnt = 0
+altclipamnt = 0
 
 function client.tickPlayerMp5(p, dt)
 	if GetPlayerTool(p) ~= MP5const.WPNID then
@@ -208,6 +212,7 @@ function client.tickPlayerMp5(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
+		data.m203amntMP5 = 1
 		data.clipamntMP5 = MP5const.CLIP_SIZE
 		if data.clipamntMP5 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntMP5 = ammo
@@ -274,7 +279,7 @@ function client.tickPlayerMp5(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and data.m203amntMP5 > 0.5 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -307,6 +312,7 @@ function client.tickPlayerMp5(p, dt)
 				
 				data.altCoolDown = MP5const.ALTFIRERATE
 				data.coolDown = MP5const.ALTFIRERATE
+				data.m203amntMP5 = data.m203amntMP5 - 1
 			end
 
 		if IsPlayerLocal(p) then
@@ -317,11 +323,14 @@ function client.tickPlayerMp5(p, dt)
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
 		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntMP5
+			altclipamnt = data.m203amntMP5
 		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
+			altclipamnt = -8
 		else
-			data.clipamntM727 = 0
+			data.clipamntMP5 = 0
 			clipamnt = -16
+			altclipamnt = data.m203amntMP5
 		end
 	end
 	
@@ -354,4 +363,5 @@ function client.drawMp5()
 	end
 
 	client.drawAmmo(clipamnt, MP5const.CLIP_SIZE)
+	client.drawSecAmmo(altclipamnt)
 end

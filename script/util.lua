@@ -37,6 +37,21 @@ function client.drawAmmo(curclip, maxclip)
 	UiPop()
 end
 
+function client.drawSecAmmo(curclip)
+	if curclip == 0 then -- gun is empty
+		return
+	end
+	
+	UiPush()
+		UiFont("bold.ttf", 32)
+		UiAlign("center middle")
+		UiTranslate(UiCenter(), UiMiddle() + (UiMiddle() * 0.766))
+		if curclip ~= -8 then
+			UiText(curclip)
+		end
+	UiPop()
+end
+
 -- hook the Shoot func to add rope damaging (would adding this to the actual function really be THAT hard???)
 function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 	times = times or 0
