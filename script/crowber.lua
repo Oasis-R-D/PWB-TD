@@ -53,7 +53,8 @@ function server.tickCRBR(dt)
 	end
 end
 
-function server.swing(fFirst, m_pPlayer, dt)
+function swing(fFirst, m_pPlayer, dt, client)
+	client = client or false -- so stuff can be not played on client
 	local data = CRBRplayers[m_pPlayer]
 	
 	local fDidHit = false
@@ -67,26 +68,33 @@ function server.swing(fFirst, m_pPlayer, dt)
 	if pHit == false then
 		if fFirst == true then
 			-- Miss
-			PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 1)
+			if client == true then
+				PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 1)
+			end
 			data.coolDown = 0.5
 		end
 	else
 		-- Hit
 		fDidHit = true
-		
+		if clent == true and fFirst == false then
+			data.toolAnimator.timeSinceFire = 2.5 -- pull the crowbar back
+		end
+
 		-- PLAYER DAMAGE
-		QueryRequire("player")
-		QueryInclude("player")
-		local playerHit, playerDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
-		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
-		
-		if playerHit == true then
-			if fFirst == true then
-				PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), SoundPoint, 1)
+
+		if client == false then
+			QueryRequire("player")
+			QueryInclude("player")
+			local playerHit, playerDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
+			local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
+			if playerHit == true then
+				if fFirst == true then
+					PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), SoundPoint, 1)
+				end
+			elseif fFirst == false then
+				PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), SoundPoint, 0.5)
+				MakeHole(SoundPoint, 0.75, 0.16, 0)
 			end
-		elseif fFirst == false then
-			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), SoundPoint, 0.5)
-			MakeHole(SoundPoint, 0.75, 0.16, 0)
 		end
 		-- PLAYER DAMAGE END
 		
@@ -107,15 +115,9 @@ function server.tickPlayerCRBR(p, dt)
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.coolDown < 0 then
-			if server.swing(true, p, dt) == true then
+			if swing(true, p, dt) == true then
 				data.swingtime = 0.1 -- hit the object in 0.1 seconds
 			end
-			--local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			--StopSound(data.firesound)
-			--data.firesound = PlaySound(LoadSound(CRBRconst.PRIM_FIRESOUND), mt.pos, 1)
-				
-			--data.recoil = CRBRconst.RECOIL_AMNT
-			--data.coolDown = CRBRconst.FIRERATE
 		end
 	end
 	
@@ -124,7 +126,7 @@ function server.tickPlayerCRBR(p, dt)
 	if data.swingtime ~= nil then
 		data.swingtime = data.swingtime - dt
 		if data.swingtime <= 0 then -- time to swing
-			server.swing(false, p, dt)
+			swing(false, p, dt)
 			data.swingtime = nil
 		end
 	end
@@ -157,13 +159,28 @@ function client.tickPlayerCRBR(p, dt)
 
 	local pt = GetPlayerTransform(p)
 
+		local data = CRBRplayers[p]
+
+	--Check if firing
+	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+		if data.coolDown < 0 then
+			if swing(true, p, dt, true) == true then
+				data.swingtime = 0.1 -- hit the object in 0.1 seconds
+			end
+		end
+	end
+	
 	-- Simulate coolDown as the server does
 	-- but only use them for rotating barrel + recoil.
-	local data = CRBRplayers[p]
-	
-	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.recoil = data.recoil - dt
+	
+	if data.swingtime ~= nil then
+		data.swingtime = data.swingtime - dt
+		if data.swingtime <= 0 then -- time to swing
+			swing(false, p, dt, true)
+			data.swingtime = nil
+		end
+	end
 
 	-- RECOIL
 	if data.recoil > 0 then
