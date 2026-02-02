@@ -9,11 +9,9 @@
 -- Per weapon constants
 function createConstCRBR()
     return {
-		RELOAD_SOUND = "MOD/snd/357R.ogg",
-		PRIM_FIRESOUND = "MOD/snd/357FR0.ogg",
 		RECOIL_AMNT = 0.3,
 		DAMAGE = 10,
-		MAX_RANGE = 75.0,
+		MAX_RANGE = 2.0,
 		WPNID = "hlcrowbar",
 		WPNNAME = "Crowbar",
 	}
@@ -61,10 +59,10 @@ function server.swing(fFirst, m_pPlayer, dt)
 	local fDidHit = false
 	
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
-	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, 2, m_pPlayer)
+	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, CRBRconst.MAX_RANGE, m_pPlayer)
 	pos = VecAdd(pos, VecScale(dir, 1))
 	QueryInclude("player")
-	local pHit, pDist = QueryRaycast(pos, dir, 2)
+	local pHit, pDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
 	
 	if pHit == false then
 		if fFirst == true then
@@ -79,7 +77,7 @@ function server.swing(fFirst, m_pPlayer, dt)
 		-- PLAYER DAMAGE
 		QueryRequire("player")
 		QueryInclude("player")
-		local playerHit, playerDist = QueryRaycast(pos, dir, 2)
+		local playerHit, playerDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		
 		if playerHit == true then
