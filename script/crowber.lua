@@ -81,7 +81,6 @@ function swing(fFirst, m_pPlayer, dt, client)
 		end
 
 		-- PLAYER DAMAGE
-
 		if client == false then
 			QueryRequire("player")
 			QueryInclude("player")
@@ -97,9 +96,11 @@ function swing(fFirst, m_pPlayer, dt, client)
 			end
 		end
 		-- PLAYER DAMAGE END
-		
+
 		data.coolDown = 0.25
-		data.damagetime = 0.2
+		if client == false then
+			data.damagetime = 0.2
+		end
 	end
 	
 	return fDidHit
