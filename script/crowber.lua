@@ -94,17 +94,18 @@ end
 
 function client.swingCRBR(m_pPlayer, dt, hit, pos, playerHit)
 	local data = CRBRplayers[m_pPlayer]
+	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 1)
+		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), vecSrc.pos, 0.75)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.5
 	else
 		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.66)
+			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.75)
 		else
-			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.33)
+			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.5)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this

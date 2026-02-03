@@ -98,16 +98,17 @@ end
 
 function client.swingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
 	local data = WRNCHplayers[m_pPlayer]
+	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 1)
+		PlaySound(LoadSound("MOD/snd/WRNCH_miss0.ogg"), vecSrc.pos, 0.75)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.75
 		data.altCoolDown = 0.75
 	else
 		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 1)
+			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.75)
 		else
 			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.5)
 		end
