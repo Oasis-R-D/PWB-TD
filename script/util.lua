@@ -2,7 +2,7 @@
 #version 2
 
 #include "script/include/player.lua"
-#include "script/toolanimation.lua"
+#include "script/pwbtoolanimation.lua"
 
 --Return a random vector of desired length
 function rndVec(length)
