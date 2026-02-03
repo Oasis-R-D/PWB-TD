@@ -52,7 +52,7 @@ function server.tickCRBR(dt)
 	end
 end
 
-function server.swing(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
+function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
 	local data = CRBRplayers[m_pPlayer]
 	
 	local fDidHit = false
@@ -65,7 +65,7 @@ function server.swing(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for fami
 	
 	if pHit == false then
 		-- Miss
-		ClientCall(0, "client.swing", m_pPlayer, dt, fDidHit, SoundPoint, false)
+		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, false)
 		data.coolDown = 0.5
 	else
 		-- Hit
@@ -86,13 +86,13 @@ function server.swing(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for fami
 		-- PLAYER DAMAGE END
 		data.coolDown = 0.25
 		
-		ClientCall(0, "client.swing", m_pPlayer, dt, fDidHit, SoundPoint, playerHit)
+		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, playerHit)
 	end
 	
 	return fDidHit
 end
 
-function client.swing(m_pPlayer, dt, hit, pos, playerHit)
+function client.swingCRBR(m_pPlayer, dt, hit, pos, playerHit)
 	local data = CRBRplayers[m_pPlayer]
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
@@ -102,9 +102,9 @@ function client.swing(m_pPlayer, dt, hit, pos, playerHit)
 		data.coolDown = 0.5
 	else
 		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 1)
+			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.66)
 		else
-			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.5)
+			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.33)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
@@ -124,7 +124,7 @@ function server.tickPlayerCRBR(p, dt)
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.coolDown < 0 then
-			server.swing(p, dt)
+			server.swingCRBR(p, dt)
 		end
 	end
 	
@@ -171,12 +171,14 @@ function client.tickPlayerCRBR(p, dt)
 	-- Simulate coolDown as the server does
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
-	data.recoildelay = data.recoildelay - dt
 
 	-- RECOIL
-	if data.recoildelay ~= nil and data.recoildelay < 0 then
-		data.recoil = 0.1
-		data.recoildelay = nil
+	if data.recoildelay ~= nil then 
+		data.recoildelay = data.recoildelay - dt
+		if data.recoildelay < 0 then
+			data.recoil = 0.1
+			data.recoildelay = nil
+		end
 	end
 
 	if data.recoil > 0 then
