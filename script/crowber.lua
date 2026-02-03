@@ -25,6 +25,7 @@ function createPlayerDataCRBR()
     return {
 		coolDown = 0.0,
 		recoil = 0.0,
+		recoildelay = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
 	}
@@ -76,10 +77,10 @@ function server.swing(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for fami
 		local playerHit, playerDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if playerHit == true then
-			Shoot(SoundPoint, dir, "bullet", 0.5, 1, m_pPlayer, CRBRconst.WPNID)
+			Shoot(SoundPoint, dir, "bullet", 0.5, 1, m_pPlayer, CRBRconst.WPNID) -- damage players
 		else
-			ShootHook(SoundPoint, dir, "bullet", 0.1, 1, m_pPlayer, CRBRconst.WPNID, 5)
-			MakeHole(SoundPoint, 0.75, 0.12, 0)
+			ShootHook(SoundPoint, dir, "bullet", 0.1, 1, m_pPlayer, CRBRconst.WPNID, 5) -- push objects, "dent" metal
+			MakeHole(SoundPoint, 0.75, 0.12, 0) -- stronger than sledge
 		end
 		
 		-- PLAYER DAMAGE END
@@ -107,7 +108,7 @@ function client.swing(m_pPlayer, dt, hit, pos, playerHit)
 			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.5)
 		end
 		
-		data.recoil = 0.1 -- more hit feedback and randomness
+		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
 		data.coolDown = 0.25
 		
 		data.toolAnimator.maxActionPoseTime = 0.05 -- stop midswing
@@ -163,6 +164,7 @@ function client.tickPlayerCRBR(p, dt)
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 		if data.coolDown < 0 then
+			data.recoildelay = 0.0 -- make the melee move up a little first
 			data.toolAnimator.timeSinceFire = 0.0
 		end
 	end
@@ -170,8 +172,14 @@ function client.tickPlayerCRBR(p, dt)
 	-- Simulate coolDown as the server does
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
+	data.recoildelay = data.recoildelay - dt
 
 	-- RECOIL
+	if data.recoildelay ~= nil and data.recoildelay < 0 then
+		data.recoil = 0.1
+		data.recoildelay = nil
+	end
+
 	if data.recoil > 0 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
