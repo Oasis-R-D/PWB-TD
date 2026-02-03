@@ -33,7 +33,7 @@ function createPlayerDataWRNCH()
 end
 
 function server.initWRNCH()
-	RegisterTool(WRNCHconst.WPNID, WRNCHconst.WPNNAME, "MOD/prefab/crowbar.xml", 1)
+	RegisterTool(WRNCHconst.WPNID, WRNCHconst.WPNNAME, "MOD/prefab/wrench.xml", 1)
 	SetToolAmmoPickupAmount(WRNCHconst.WPNID, 99999)
 end
 
