@@ -11,6 +11,7 @@
 #include "script/python.lua"
 #include "script/glock.lua"
 #include "script/crowber.lua" -- :3
+#include "script/wrench.lua"
 
 -- this file calls all weapon functions. To add your weapon just add it's functions here.
 -- To remove a weapon, remove it's lua file, xml file and function calls from this file
@@ -18,6 +19,7 @@
 
 function server.init()
    server.initCRBR()
+   server.initWRNCH()
    server.initMp5()
    server.initM727()
    server.initM40()
@@ -31,6 +33,7 @@ end
 
 function server.tick(dt)
    server.tickCRBR(dt)
+   server.tickWRNCH(dt)
    server.tickMp5(dt)
    server.tickM727(dt)
    server.tickM40(dt)
@@ -44,6 +47,7 @@ end
 
 function server.tickPlayer(p, dt)
    server.tickPlayerCRBR(p, dt)
+   server.tickPlayerWRNCH(p, dt)
    server.tickPlayerMp5(p, dt)
    server.tickPlayerM727(p, dt)
    server.tickPlayerM40(p, dt)
@@ -57,6 +61,7 @@ end
 
 function client.init()
    client.initCRBR()
+   client.initWRNCH()
    client.initMp5()
    client.initM727()
    client.initM40()
@@ -70,6 +75,7 @@ end
 
 function client.tick(dt)
    client.tickCRBR(dt)
+   client.tickWRNCH(dt)
    client.tickMp5(dt)
    client.tickM727(dt)
    client.tickM40(dt)
@@ -81,7 +87,7 @@ function client.tick(dt)
 end
 
 function client.draw()
-    client.drawM40()
+   client.drawM40()
 	client.drawPIST9MM()
 	client.drawDE357()
 	client.drawM727()
@@ -93,6 +99,7 @@ end
 
 function client.tickPlayer(p, dt)
    client.tickPlayerCRBR(p, dt)
+   client.tickPlayerWRNCH(p, dt)
    client.tickPlayerMp5(p, dt)
    client.tickPlayerM727(p, dt)
    client.tickPlayerM40(p, dt)

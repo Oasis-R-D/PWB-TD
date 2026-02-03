@@ -84,7 +84,6 @@ function server.swing(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for fami
 		end
 		
 		-- PLAYER DAMAGE END
-		data.recoil = 0.1 -- more hit feedback and randomness
 		data.coolDown = 0.25
 		
 		ClientCall(0, "client.swing", m_pPlayer, dt, fDidHit, SoundPoint, playerHit)
