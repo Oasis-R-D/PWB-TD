@@ -1,4 +1,4 @@
--- copy this for the most basic melee
+-- copy this for the most basic melee with charge attack
 #version 2
 
 #include "script/include/player.lua"
@@ -179,7 +179,7 @@ function client.bigSwing(m_pPlayer, dt, hit, pos, playerHit)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
-		
+
 		data.toolAnimator.maxActionPoseTime = 0.05 -- stop midswing
 	end
 end
