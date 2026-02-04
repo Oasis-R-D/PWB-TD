@@ -59,9 +59,10 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 	
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, CRBRconst.MAX_RANGE, m_pPlayer)
-	pos = VecAdd(pos, VecScale(dir, 1))
+	
 	QueryInclude("player")
-	local pHit, pDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
+	QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
+	local pHit, pDist, pNorm = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE, 0.33)
 	
 	if pHit == false then
 		-- Miss
@@ -74,12 +75,13 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 		-- PLAYER DAMAGE
 		QueryRequire("player")
 		QueryInclude("player")
-		local playerHit, playerDist = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE)
+		QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
+		local playerHit, playerDist, playerNorm = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE, 0.33)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if playerHit == true then
-			Shoot(SoundPoint, dir, "bullet", 0.5, 1, m_pPlayer, CRBRconst.WPNID) -- damage players
+			Shoot(SoundPoint, VecScale(playerNorm, -1), "bullet", 0.5, CRBRconst.MAX_RANGE, m_pPlayer, CRBRconst.WPNID) -- damage players
 		else
-			ShootHook(SoundPoint, dir, "bullet", 0.1, 1, m_pPlayer, CRBRconst.WPNID, 5) -- push objects, "dent" metal
+			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, CRBRconst.MAX_RANGE, m_pPlayer, CRBRconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.75, 0.12, 0) -- stronger than sledge
 		end
 		
@@ -98,14 +100,14 @@ function client.swingCRBR(m_pPlayer, dt, hit, pos, playerHit)
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), vecSrc.pos, 0.75)
+		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.5
 	else
 		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.75)
+			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.5)
 		else
-			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.5)
+			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.25)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this

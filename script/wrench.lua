@@ -60,9 +60,10 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 	
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, WRNCHconst.MAX_RANGE, m_pPlayer)
-	pos = VecAdd(pos, VecScale(dir, 1))
+
 	QueryInclude("player")
-	local pHit, pDist = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE)
+	QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
+	local pHit, pDist, pNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
 	
 	if pHit == false then
 		-- Miss
@@ -76,12 +77,13 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		-- PLAYER DAMAGE
 		QueryRequire("player")
 		QueryInclude("player")
-		local playerHit, playerDist = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE)
+		QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
+		local playerHit, playerDist, playerNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if playerHit == true then
-			Shoot(SoundPoint, dir, "bullet", 1.0, 1, m_pPlayer, WRNCHconst.WPNID) -- damage players
+			Shoot(SoundPoint, VecScale(playerNorm, -1), "bullet", 1.0, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID) -- damage players
 		else
-			ShootHook(SoundPoint, dir, "bullet", 0.1, 1, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
+			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
 		end
 		
@@ -102,15 +104,15 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/WRNCH_miss0.ogg"), vecSrc.pos, 0.75)
+		PlaySound(LoadSound("MOD/snd/WRNCH_miss0.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.75
 		data.altCoolDown = 0.75
 	else
 		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.75)
+			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.5)
 		else
-			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.5)
+			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
@@ -130,7 +132,8 @@ function server.bigSwingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here 
 	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, WRNCHconst.MAX_RANGE, m_pPlayer)
 	pos = VecAdd(pos, VecScale(dir, 1))
 	QueryInclude("player")
-	local pHit, pDist = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE)
+	QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
+	local pHit, pDist, pNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
 	
 	data.coolDown = 1
 	data.altCoolDown = 1
@@ -145,12 +148,13 @@ function server.bigSwingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here 
 		-- PLAYER DAMAGE
 		QueryRequire("player")
 		QueryInclude("player")
-		local playerHit, playerDist = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE)
+		QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
+		local playerHit, playerDist, playerNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if playerHit == true then
-			Shoot(SoundPoint, dir, "bullet", 1.0, 1, m_pPlayer, WRNCHconst.WPNID) -- damage players
+			Shoot(SoundPoint, VecScale(playerNorm, -1), "bullet", 1.0, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID) -- damage players
 		else
-			ShootHook(SoundPoint, dir, "bullet", 0.1, 1, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
+			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
 		end
 		
@@ -170,13 +174,13 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
 
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 1)
+		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 	else
 		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 1)
+			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.5)
 		else
-			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.5)
+			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
