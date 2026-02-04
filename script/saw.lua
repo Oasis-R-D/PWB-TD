@@ -100,12 +100,17 @@ function server.tickPlayerM249(p, dt)
 			
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 			local crouch = GetPlayerCrouch(p)
-			
+			local pvel = GetPlayerVelocity(p)
+
 			local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
 			if crouch > 0.1 then
 				spread = 0.03490/2
 			end
 			
+			if not IsPlayerGrounded(p) or VecLength(pvel) > (GetPlayerWalkingSpeed() - 0.1) then
+				spread = 0.05234
+			end
+
 			dir = VecAdd(dir, rndVec(spread))
 			ShootHook(pos, dir, "bullet", M249const.DAMAGE, M249const.MAX_RANGE, p, M249const.WPNID)
 			
