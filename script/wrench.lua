@@ -25,6 +25,7 @@ function createPlayerDataWRNCH()
     return {
 		coolDown = 0.0,
 		altCoolDown = 0.0,
+		inAltAttack = false,
 		recoil = 0.0,
 		recoildelay = 0.0,
 		toolAnimator = ToolAnimator(),
@@ -125,7 +126,7 @@ function server.tickPlayerWRNCH(p, dt)
 	local data = WRNCHplayers[p]
 
 	--Check if firing
-	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and inAltAttack == false then
 		if data.coolDown < 0 then
 			server.swingWRNCH(p, dt)
 		end
@@ -164,7 +165,7 @@ function client.tickPlayerWRNCH(p, dt)
 		local data = WRNCHplayers[p]
 
 	--Check if firing
-	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and inAltAttack == false then
 		if data.coolDown < 0 then
 			data.recoildelay = 0.0 -- make the melee move up a little first
 			data.toolAnimator.timeSinceFire = 0.0
