@@ -10,7 +10,7 @@
 function createConstCRBR()
     return {
 		RECOIL_AMNT = 0.3,
-		DAMAGE = 10,
+		DAMAGE = 0.1,
 		MAX_RANGE = 2.0,
 		WPNID = "hlcrowbar",
 		WPNNAME = "Crowbar",
@@ -60,27 +60,21 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, CRBRconst.MAX_RANGE, m_pPlayer)
 	
-	QueryInclude("player")
-	QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
-	local pHit, pDist, pNorm = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE, 0.33)
+	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, CRBRconst.MAX_RANGE, 0.33, m_pPlayer)
 	
 	if pHit == false then
 		-- Miss
-		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, false)
+		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
 		data.coolDown = 0.5
 	else
 		-- Hit
 		fDidHit = true
 		
 		-- PLAYER DAMAGE
-		QueryRequire("player")
-		QueryInclude("player")
-		QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
-		local playerHit, playerDist, playerNorm = QueryRaycast(pos, dir, CRBRconst.MAX_RANGE, 0.33)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
-		if playerHit == true then
-			Shoot(SoundPoint, VecScale(playerNorm, -1), "bullet", 0.5, CRBRconst.MAX_RANGE, m_pPlayer, CRBRconst.WPNID) -- damage players
-		else
+		if pHitPlayer ~= 0 then
+			ApplyPlayerDamage(pHitPlayer, CRBRconst.DAMAGE, "tool", m_pPlayer)
+		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, CRBRconst.MAX_RANGE, m_pPlayer, CRBRconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.75, 0.12, 0) -- stronger than sledge
 		end
@@ -88,13 +82,13 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 		-- PLAYER DAMAGE END
 		data.coolDown = 0.25
 		
-		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, playerHit)
+		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
 	end
 	
 	return fDidHit
 end
 
-function client.swingCRBR(m_pPlayer, dt, hit, pos, playerHit)
+function client.swingCRBR(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 	local data = CRBRplayers[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
@@ -104,12 +98,11 @@ function client.swingCRBR(m_pPlayer, dt, hit, pos, playerHit)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.5
 	else
-		if playerHit == true then
+		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.5)
-		else
+		elseif pHitWorld ~= 0 then
 			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.25)
 		end
-		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
 		data.coolDown = 0.25
 		

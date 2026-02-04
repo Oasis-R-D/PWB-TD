@@ -10,7 +10,7 @@
 function createConstWRNCH()
     return {
 		RECOIL_AMNT = 0.3,
-		DAMAGE = 10,
+		DAMAGE = 0.2,
 		MAX_RANGE = 2.0,
 		WPNID = "opforwrench",
 		WPNNAME = "Pipe Wrench",
@@ -61,13 +61,11 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, WRNCHconst.MAX_RANGE, m_pPlayer)
 
-	QueryInclude("player")
-	QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
-	local pHit, pDist, pNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
+	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, WRNCHconst.MAX_RANGE, 0.33, m_pPlayer)
 	
 	if pHit == false then
 		-- Miss
-		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, false)
+		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
 		data.coolDown = 0.75
 		data.altCoolDown = 0.75
 	else
@@ -75,14 +73,10 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		fDidHit = true
 		
 		-- PLAYER DAMAGE
-		QueryRequire("player")
-		QueryInclude("player")
-		QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
-		local playerHit, playerDist, playerNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
-		if playerHit == true then
-			Shoot(SoundPoint, VecScale(playerNorm, -1), "bullet", 1.0, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID) -- damage players
-		else
+		if pHitPlayer ~= 0 then
+			ApplyPlayerDamage(pHitPlayer, WRNCHconst.DAMAGE, "tool", m_pPlayer)
+		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
 		end
@@ -92,13 +86,13 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		data.coolDown = 0.5
 		data.altCoolDown = 0.5
 		
-		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, playerHit)
+		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
 	end
 	
 	return fDidHit
 end
 
-function client.swingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
+function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 	local data = WRNCHplayers[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
@@ -109,9 +103,9 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
 		data.coolDown = 0.75
 		data.altCoolDown = 0.75
 	else
-		if playerHit == true then
+		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.5)
-		else
+		elseif pHitWorld ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
 		end
 		
@@ -119,72 +113,6 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
 		data.coolDown = 0.5
 		data.altCoolDown = 0.5
 		
-		data.toolAnimator.maxActionPoseTime = 0.05 -- stop midswing
-	end
-end
-
-function server.bigSwingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
-	local data = WRNCHplayers[m_pPlayer]
-	
-	local fDidHit = false
-	
-	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
-	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, WRNCHconst.MAX_RANGE, m_pPlayer)
-	pos = VecAdd(pos, VecScale(dir, 1))
-	QueryInclude("player")
-	QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
-	local pHit, pDist, pNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
-	
-	data.coolDown = 1
-	data.altCoolDown = 1
-
-	if pHit == false then
-		-- Miss
-		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, false)
-	else
-		-- Hit
-		fDidHit = true
-		
-		-- PLAYER DAMAGE
-		QueryRequire("player")
-		QueryInclude("player")
-		QueryRejectAnimator(GetPlayerAnimator(m_pPlayer))
-		local playerHit, playerDist, playerNorm = QueryRaycast(pos, dir, WRNCHconst.MAX_RANGE, 0.33)
-		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
-		if playerHit == true then
-			Shoot(SoundPoint, VecScale(playerNorm, -1), "bullet", 1.0, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID) -- damage players
-		else
-			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
-			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
-		end
-		
-		-- PLAYER DAMAGE END
-		
-		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, playerHit)
-	end
-	
-	return fDidHit
-end
-
-function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, playerHit)
-	local data = WRNCHplayers[m_pPlayer]
-	data.toolAnimator.timeSinceFire = 0.0
-	data.coolDown = 1
-	data.altCoolDown = 1
-
-	if hit == false then
-		-- Miss
-		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), pos, 0.5)
-		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
-	else
-		if playerHit == true then
-			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.5)
-		else
-			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
-		end
-		
-		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
-
 		data.toolAnimator.maxActionPoseTime = 0.05 -- stop midswing
 	end
 end

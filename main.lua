@@ -116,6 +116,3 @@ function client.tickPlayer(p, dt)
    client.tickPlayerPIST9MM(p, dt)
    client.tickPlayerSG(p, dt)
 end
-
-
-
