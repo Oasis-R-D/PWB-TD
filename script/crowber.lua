@@ -11,7 +11,7 @@ function createConstCRBR()
     return {
 		RECOIL_AMNT = 0.3,
 		DAMAGE = 0.1,
-		MAX_RANGE = 2.0,
+		MAX_RANGE = 2.25,
 		WPNID = "hlcrowbar",
 		WPNNAME = "Crowbar",
 	}

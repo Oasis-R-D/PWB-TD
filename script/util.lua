@@ -1,4 +1,3 @@
--- use this for whatever, I do NOT care -PM09
 #version 2
 
 #include "script/include/player.lua"

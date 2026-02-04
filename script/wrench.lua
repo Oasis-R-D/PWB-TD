@@ -11,7 +11,7 @@ function createConstWRNCH()
     return {
 		RECOIL_AMNT = 0.3,
 		DAMAGE = 0.2,
-		MAX_RANGE = 2.0,
+		MAX_RANGE = 2.25,
 		WPNID = "opforwrench",
 		WPNNAME = "Pipe Wrench",
 	}

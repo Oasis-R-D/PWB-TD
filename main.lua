@@ -1,4 +1,3 @@
--- use this for whatever, I do NOT care -PM09
 #version 2
 
 
@@ -14,9 +13,8 @@
 #include "script/crowber.lua" -- :3
 #include "script/wrench.lua"
 
--- this file calls all weapon functions. To add your weapon just add it's functions here.
+-- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
 -- To remove a weapon, remove it's lua file, xml file and function calls from this file
-
 
 function server.init()
    server.initCRBR()
