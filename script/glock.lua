@@ -285,7 +285,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerPickBody(p) == 0 then
 		if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				

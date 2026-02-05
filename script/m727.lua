@@ -219,7 +219,7 @@ function client.tickPlayerM727(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerPickBody(p) == 0 then
 			if data.coolDown < 0 then		
 				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
@@ -280,7 +280,7 @@ function client.tickPlayerM727(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerVehicle(p) == 0  and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerPickBody(p) == 0 then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				

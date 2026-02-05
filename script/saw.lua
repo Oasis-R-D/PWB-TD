@@ -191,7 +191,7 @@ function client.tickPlayerM249(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerPickBody(p) == 0 then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
