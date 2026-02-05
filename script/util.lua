@@ -76,7 +76,7 @@ function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 	for i=0, 7 do
 		ParticleReset()
 		ParticleGravity(rnd(-7, -10))
-		ParticleRadius((damage * times) * 0.1)
+		ParticleRadius((damage * times) / 10)
 		ParticleAlpha(1, 0, "easein")
 		ParticleColor(0.33, 0.01, 0)
 		ParticleTile(6)
@@ -85,7 +85,7 @@ function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 		ParticleCollide(0, 1)
 		ParticleRotation(0.2, 0)
 		ParticleStretch(0.5, 0, "easein")
-		SpawnParticle(SoundPoint, VecScale(VecAdd(dir, rndVec(1)), math.random(0, 1)), 3)
+		SpawnParticle(SoundPoint, VecScale(VecAdd(dir, rndVec(0.5)), rnd(0, 1)), 3)
 	end
 	
 	for i=0, (times + math.random(0, 1)) do
