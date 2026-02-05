@@ -65,7 +65,8 @@ function ToolAnimator()
 
     -- The action pose is automatically selected when "usetool" is pressed. To manually select the action pose set forceActionPose to true. 
     anim.forceActionPose = false
-
+	anim.forceSecondaryActionPose = false
+	
     -- Adds offset transform
     anim.offsetTransform = Transform()
 
@@ -106,7 +107,15 @@ function tickToolAnimator(toolAnimator, dt, defaultPoseTransform, playerId, swin
 	
     local poseRightHand = HandPose()
     local poseLeftHand = HandPose()
-    local pose = getPoseTransform(prefix.."action"..swingamnts, playerId)
+	
+	local pose = nil 
+	
+	if toolAnimator.forceSecondaryActionPose == false then
+		pose = getPoseTransform(prefix.."action"..swingamnts, playerId)
+	else
+		pose = getPoseTransform(prefix.."secaction", playerId)
+	end
+	
     if defaultPoseTransform ~= nil then
         pose = TransformCopy(defaultPoseTransform)
     end
@@ -114,15 +123,20 @@ function tickToolAnimator(toolAnimator, dt, defaultPoseTransform, playerId, swin
     if pose == nil then
         pose = Transform()
     end
-
-    getHandPoseTransforms(prefix .. "action"..swingamnts, poseRightHand, poseLeftHand, playerId)
-    mixWithPose(prefix.."action_crouch"..swingamnts, getCrouching(playerId), pose, poseRightHand, poseLeftHand, playerId)
-
+	
+	if toolAnimator.forceSecondaryActionPose == false then
+		getHandPoseTransforms(prefix .. "action"..swingamnts, poseRightHand, poseLeftHand, playerId)
+		mixWithPose(prefix.."action_crouch"..swingamnts, getCrouching(playerId), pose, poseRightHand, poseLeftHand, playerId)
+	else
+		getHandPoseTransforms(prefix .. "secaction", poseRightHand, poseLeftHand, playerId)
+		mixWithPose(prefix.."secaction_crouch", getCrouching(playerId), pose, poseRightHand, poseLeftHand, playerId)
+	end
+	
     toolAnimator.timeSinceFire = toolAnimator.timeSinceFire + dt
-    if (InputDown("usetool", playerId) and noheldaction == false) or toolAnimator.forceActionPose then
+    if (InputDown("usetool", playerId) and noheldaction == false) or toolAnimator.forceActionPose or toolAnimator.forceSecondaryActionPose then
         toolAnimator.timeSinceFire = 0.0
     end
-
+	
     local useAimRotation = toolAnimator.useAimRotation
     local poseTimeCondition = toolAnimator.maxActionPoseTime
     if toolAnimator.contact.intersects then

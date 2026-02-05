@@ -102,13 +102,13 @@ function server.tickPlayerM249(p, dt)
 			local crouch = GetPlayerCrouch(p)
 			local pvel = GetPlayerVelocity(p)
 
-			local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
+			local spread = 0.03490 -- assuming spread is a radian value and this is the diameter of the cone
 			if crouch > 0.1 then
-				spread = 0.03490/2
+				spread = 0.01745
 			end
 			
-			if not IsPlayerGrounded(p) or VecLength(pvel) > (GetPlayerWalkingSpeed() - 0.1) then
-				spread = 0.05234
+			if not IsPlayerGrounded(p) or VecLength(pvel) > (GetPlayerWalkingSpeed() * 0.75) then
+				spread = 0.08716
 			end
 
 			dir = VecAdd(dir, rndVec(spread))
