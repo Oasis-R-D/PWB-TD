@@ -179,7 +179,7 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_bighitplayer0.ogg"), pos, 0.5)
 		elseif pHitWorld ~= 0 then
-			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
+			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.5)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
@@ -286,6 +286,7 @@ function client.tickPlayerWRNCH(p, dt)
 			data.altTime = data.altTime + dt -- increase timer for use in damage calc
 			if data.altTime > 1 and not InputDown("grab", p) then -- swing start animation done (in opfor)
 				data.altSwingTime = 0.1
+				data.recoil = 0.1
 				data.waitingforswing = true -- don't mess with altTime any more
 			end
 		end
