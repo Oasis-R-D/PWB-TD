@@ -99,7 +99,7 @@ function server.tickPlayerDE357(p, dt)
 	end
 
 	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -145,7 +145,7 @@ function server.tickPlayerDE357(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			data.altCoolDown = DE357const.ALTFIRERATE
 			data.coolDown = DE357const.ALTFIRERATE
@@ -220,7 +220,7 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -285,7 +285,7 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
 			if data.laseron == false then

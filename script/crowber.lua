@@ -124,7 +124,7 @@ function server.tickPlayerCRBR(p, dt)
 	local data = CRBRplayers[p]
 
 	--Check if firing
-	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
 		if data.coolDown < 0 then
 			server.swingCRBR(p, dt)
 		end
@@ -169,7 +169,7 @@ function client.tickPlayerCRBR(p, dt)
 	local data = CRBRplayers[p]
 
 	--Check if firing
-	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
 		if data.coolDown < 0 then
 			data.recoildelay = 0.0 -- make the melee move up a little first
 			data.toolAnimator.timeSinceFire = 0.0

@@ -99,7 +99,7 @@ function server.tickPlayerM40(p, dt)
 	end
 
 	--Check if firing
-	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		local mt = GetToolLocationWorldTransform("muzzle", p)
 
 		if mt == nil then
@@ -118,7 +118,7 @@ function server.tickPlayerM40(p, dt)
 			if not data.scoped == true then -- make fire from center of screen?
 				dir = VecAdd(dir, rndVec(spread))
 			end
-			
+
 			ShootHook(pos, dir, "bullet", M40const.DAMAGE, M40const.MAX_RANGE, p, M40const.WPNID, 4)
 
 			PlaySound(LoadSound(M40const.PRIM_FIRESOUND), mt.pos, 300)
@@ -141,7 +141,7 @@ function server.tickPlayerM40(p, dt)
 		end
 	end
 	
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			data.altCoolDown = M40const.ALTFIRERATE
 		end
@@ -214,7 +214,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				local playervel = GetPlayerVelocity(p)
@@ -255,7 +255,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
+	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			data.toolAnimator.forceActionPose = true
 			if IsPlayerLocal(p) then

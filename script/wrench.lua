@@ -208,13 +208,13 @@ function server.tickPlayerWRNCH(p, dt)
 	local data = WRNCHplayers[p]
 
 	--Check if firing
-	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and data.inAltAttack == false then
+	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and data.inAltAttack == false then
 		if data.coolDown < 0 then
 			server.swingWRNCH(p, dt)
 		end
 	end
 	
-	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and data.inAltAttack == false then
+	if InputDown("grab", p) and GetPlayerCanUseTool(p) == true and data.inAltAttack == false then
 		if data.coolDown < 0 then
 			data.inAltAttack = true
 		end
@@ -283,14 +283,14 @@ function client.tickPlayerWRNCH(p, dt)
 	local data = WRNCHplayers[p]
 
 	--Check if firing
-	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and data.inAltAttack == false then
+	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and data.inAltAttack == false then
 		if data.coolDown < 0 then
 			data.recoildelay = 0.0 -- make the melee move up a little first
 			data.toolAnimator.timeSinceFire = 0.0
 		end
 	end
 	
-	if InputDown("grab", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and data.inAltAttack == false then
+	if InputDown("grab", p) and GetPlayerCanUseTool(p) == true and data.inAltAttack == false then
 		if data.coolDown < 0 then
 			data.inAltAttack = true
 			data.toolAnimator.forceSecondaryActionPose = true
