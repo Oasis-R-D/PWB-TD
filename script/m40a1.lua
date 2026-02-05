@@ -69,6 +69,10 @@ function server.tickM40(dt)
 end
 
 function server.tickPlayerM40(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		M40players[p] = createPlayerDataM40()
+		return
+	end
 	
 	if GetPlayerTool(p) ~= M40const.WPNID then
 		return
@@ -171,6 +175,11 @@ scopeddraw = false
 clipamnt = 0
 
 function client.tickPlayerM40(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		M40players[p] = createPlayerDataM40()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= M40const.WPNID then
 		return
 	end
@@ -184,8 +193,6 @@ function client.tickPlayerM40(p, dt)
 		return
 	end
 
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
 	local data = M40players[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < M40const.CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
@@ -210,7 +217,6 @@ function client.tickPlayerM40(p, dt)
 	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
 				local playervel = GetPlayerVelocity(p)
 				
 				-- muzzleflash

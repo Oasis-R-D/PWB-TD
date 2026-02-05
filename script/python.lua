@@ -62,6 +62,10 @@ function server.tickPYTH(dt)
 end
 
 function server.tickPlayerPYTH(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		PYTHplayers[p] = createPlayerDataPYTH()
+		return
+	end
 	
 	if GetPlayerTool(p) ~= PYTHconst.WPNID then
 		return
@@ -148,6 +152,11 @@ end
 clipamnt = 0
 
 function client.tickPlayerPYTH(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		PYTHplayers[p] = createPlayerDataPYTH()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= PYTHconst.WPNID then
 		return
 	end
@@ -161,8 +170,6 @@ function client.tickPlayerPYTH(p, dt)
 		return
 	end
 
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
 	local data = PYTHplayers[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < PYTHconst.CLIP_SIZE and ammo > 0.5 and data.clipamntPYTH ~= ammo then

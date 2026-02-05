@@ -111,7 +111,13 @@ function client.swingCRBR(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 end
 
 function server.tickPlayerCRBR(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		CRBRplayers[p] = createPlayerDataCRBR()
+		return
+	end
+
 	if GetPlayerTool(p) ~= CRBRconst.WPNID then
+		CRBRplayers[p] = createPlayerDataCRBR()
 		return
 	end
 	
@@ -148,13 +154,19 @@ function client.tickCRBR(dt)
 end
 
 function client.tickPlayerCRBR(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		CRBRplayers[p] = createPlayerDataCRBR()
+		return
+	end
+
 	if GetPlayerTool(p) ~= CRBRconst.WPNID then
+		CRBRplayers[p] = createPlayerDataCRBR()
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 
-		local data = CRBRplayers[p]
+	local data = CRBRplayers[p]
 
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then

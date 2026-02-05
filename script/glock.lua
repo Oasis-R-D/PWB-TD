@@ -63,6 +63,9 @@ function server.tickPIST9MM(dt)
 end
 
 function server.tickPlayerPIST9MM(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		PIST9MMplayers[p] = createPlayerDataPIST9MM()
+	end
 	
 	if GetPlayerTool(p) ~= PIST9MMconst.WPNID then
 		return
@@ -184,6 +187,11 @@ end
 clipamnt = 0
 
 function client.tickPlayerPIST9MM(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		PIST9MMplayers[p] = createPlayerDataPIST9MM()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= PIST9MMconst.WPNID then
 		return
 	end
@@ -196,9 +204,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	if mt == nil then
 		return
 	end
-
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
+	
 	local data = PIST9MMplayers[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then

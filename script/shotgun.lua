@@ -67,6 +67,10 @@ function server.tickSG(dt)
 end
 
 function server.tickPlayerSG(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		SGplayers[p] = createPlayerDataSG()
+		return
+	end
 	
 	if GetPlayerTool(p) ~= SGconst.WPNID then
 		return
@@ -223,6 +227,11 @@ end
 clipamnt = 0
 
 function client.tickPlayerSG(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		SGplayers[p] = createPlayerDataSG()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= SGconst.WPNID then
 		return
 	end
@@ -235,9 +244,7 @@ function client.tickPlayerSG(p, dt)
 	if mt == nil then
 		return
 	end
-
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
+	
 	local data = SGplayers[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
@@ -295,7 +302,6 @@ function client.tickPlayerSG(p, dt)
 						ParticleColor(1,0.35,0, 1,0,0)
 						SpawnParticle(mt.pos, playervel, 0.125)
 					end
-				
 				end
 					
 				data.clipamntSG = data.clipamntSG - 1

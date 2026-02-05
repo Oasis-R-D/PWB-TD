@@ -64,6 +64,10 @@ function server.tickMp5(dt)
 end
 
 function server.tickPlayerMp5(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		MP5players[p] = createPlayerDataMP5()
+		return
+	end
 	
 	if GetPlayerTool(p) ~= MP5const.WPNID then
 		return
@@ -186,6 +190,11 @@ clipamnt = 0
 altclipamnt = 0
 
 function client.tickPlayerMp5(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		MP5players[p] = createPlayerDataMP5()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= MP5const.WPNID then
 		return
 	end
@@ -199,8 +208,6 @@ function client.tickPlayerMp5(p, dt)
 		return
 	end
 
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
 	local data = MP5players[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < MP5const.CLIP_SIZE and ammo > 0.5 and data.clipamntMP5 ~= ammo then
@@ -287,6 +294,7 @@ function client.tickPlayerMp5(p, dt)
 				if toolBody ~= 0 then
 					local playervel = GetPlayerVelocity(p)
 					local vectuh = VecAdd(mt.pos, Vec(0, -0.25, 0))
+					
 					-- muzzleflash
 					for i=0, 4 do
 						ParticleReset()
@@ -301,9 +309,7 @@ function client.tickPlayerMp5(p, dt)
 						ParticleCollide(0)
 						ParticleColor(1,0.35,0, 1,0,0)
 						SpawnParticle(vectuh, playervel, 0.125)
-						
 					end
-				
 				end
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight

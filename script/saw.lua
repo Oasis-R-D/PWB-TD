@@ -61,6 +61,10 @@ function server.tickM249(dt)
 end
 
 function server.tickPlayerM249(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		M249players[p] = createPlayerDataM249()
+		return
+	end
 	
 	if GetPlayerTool(p) ~= M249const.WPNID then
 		return
@@ -160,6 +164,11 @@ end
 clipamnt = 0
 
 function client.tickPlayerM249(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		M249players[p] = createPlayerDataM249()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= M249const.WPNID then
 		return
 	end
@@ -172,9 +181,7 @@ function client.tickPlayerM249(p, dt)
 	if mt == nil then
 		return
 	end
-
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
+	
 	local data = M249players[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then

@@ -11,7 +11,7 @@ function createConstWRNCH()
     return {
 		RECOIL_AMNT = 0.3,
 		DAMAGE = 0.2,
-		MAX_RANGE = 2.25,
+		MAX_RANGE = 2,
 		WPNID = "opforwrench",
 		WPNNAME = "Pipe Wrench",
 	}
@@ -133,11 +133,12 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 	
 	data.inAltAttack = false
 	data.altTime = nil
+	
 	if pHit == false then
 		-- Miss
 		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
-		data.coolDown = 1
-		data.altCoolDown = 1
+		data.coolDown = 1.25
+		data.altCoolDown = 1.25
 	else
 		-- Hit
 		fDidHit = true
@@ -145,8 +146,10 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		-- PLAYER DAMAGE
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
-			local damage = (heldtime * (WRNCHconst.DAMAGE*100) + 25)/100 -- have to convert to a 100 point health system to use the original game's math
-			DebugWatch("damage", damage)
+			local damage = (heldtime * (WRNCHconst.DAMAGE*100) + 20)/100 -- 2.75 seconds to reach full charge
+			if damage > 0.75 then
+				damage = 0.75
+			end
 			ApplyPlayerDamage(pHitPlayer, damage, WRNCHconst.WPNNAME, m_pPlayer)
 		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
@@ -155,9 +158,9 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		
 		-- PLAYER DAMAGE END
 		data.recoil = 0.1 -- more hit feedback and randomness
-		data.coolDown = 0.75
-		data.altCoolDown = 0.75
-		
+		data.coolDown = 1
+		data.altCoolDown = 1
+	
 		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
 	end
 	
@@ -169,12 +172,13 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
 	data.toolAnimator.forceSecondaryActionPose = false
+	
 	if hit == false then
 		-- Miss
 		PlaySound(LoadSound("MOD/snd/WRNCH_bigmiss.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.15 -- stop midswing but further in
-		data.coolDown = 1
-		data.altCoolDown = 1
+		data.coolDown = 1.25
+		data.altCoolDown = 1.25
 	else
 		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_bighitplayer0.ogg"), pos, 0.5)
@@ -183,15 +187,21 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 		end
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
-		data.coolDown = 0.75
-		data.altCoolDown = 0.75
-		
+		data.coolDown = 1
+		data.altCoolDown = 1
+
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing
 	end
 end
 
 function server.tickPlayerWRNCH(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		WRNCHplayers[p] = createPlayerDataWRNCH()
+		return
+	end
+
 	if GetPlayerTool(p) ~= WRNCHconst.WPNID then
+		WRNCHplayers[p] = createPlayerDataWRNCH()
 		return
 	end
 	
@@ -213,7 +223,7 @@ function server.tickPlayerWRNCH(p, dt)
 	if data.altTime ~= nil and data.inAltAttack == true then -- deplete timer and check if ready
 		if data.waitingforswing == false then -- not waiting on swing
 			data.altTime = data.altTime + dt -- increase timer for use in damage calc
-			if data.altTime > 1 and not InputDown("grab", p) then -- swing start animation done (in opfor)
+			if (data.altTime > 1 and not InputDown("grab", p)) or data.altTime > 5 then -- swing start animation done (in opfor)
 				data.altSwingTime = 0.1
 				data.waitingforswing = true -- don't mess with altTime any more
 			end
@@ -258,13 +268,19 @@ function client.tickWRNCH(dt)
 end
 
 function client.tickPlayerWRNCH(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		WRNCHplayers[p] = createPlayerDataWRNCH()
+		return
+	end
+
 	if GetPlayerTool(p) ~= WRNCHconst.WPNID then
+		WRNCHplayers[p] = createPlayerDataWRNCH()
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 
-		local data = WRNCHplayers[p]
+	local data = WRNCHplayers[p]
 
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 and data.inAltAttack == false then
@@ -284,7 +300,7 @@ function client.tickPlayerWRNCH(p, dt)
 	if data.altTime ~= nil and data.inAltAttack == true then -- deplete timer and check if ready
 		if data.waitingforswing == false then -- not waiting on swing
 			data.altTime = data.altTime + dt -- increase timer for use in damage calc
-			if data.altTime > 1 and not InputDown("grab", p) then -- swing start animation done (in opfor)
+			if (data.altTime > 1 and not InputDown("grab", p)) or data.altTime > 5 then -- swing start animation done (in opfor)
 				data.altSwingTime = 0.1
 				data.recoil = 0.1
 				data.waitingforswing = true -- don't mess with altTime any more

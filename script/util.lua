@@ -64,12 +64,21 @@ function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 		BreakRope(joint, breakPoint)
 	end
 	
-	QueryInclude("player")
-	QueryRequire("player")
-	local phit, pdist = QueryRaycast(pos, dir, range) -- Play player hit sound (create blood mayhaps?)
-	if phit then
-		local SoundPoint = VecAdd(pos, VecScale(dir, pdist))
-		PlaySound(LoadSound("MOD/snd/bullet_hit0.ogg"), SoundPoint, 2)
+	local _, pdist, _, playerhit = QueryShot(pos, dir, range, 0, player) -- Play player hit sound (create blood mayhaps?)
+	if playerhit == 0 then
+		return
 	end
 	
+	local SoundPoint = VecAdd(pos, VecScale(dir, pdist))
+	PlaySound(LoadSound("MOD/snd/bullet_hit0.ogg"), SoundPoint, 2)
+	
+	-- BLOOD VFX
+	for i=0, (times + math.random(0, 1)) do
+		local newdir = VecAdd(dir, rndVec(0.125))
+		local bloodhit, blooddist = QueryRaycast(SoundPoint, newdir, 4)
+		if bloodhit ~= 0 then
+			PaintRGBA(VecAdd(SoundPoint, VecScale(newdir, blooddist)), rnd(0.3, 0.75), 0.33, 0.01, 0.0, 1.0, rnd(0.4, 0.6))
+		end
+	end
+	-- END BLOOD VFX
 end

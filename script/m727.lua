@@ -64,6 +64,10 @@ function server.tickM727(dt)
 end
 
 function server.tickPlayerM727(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		M727players[p] = createPlayerDataM727()
+		return
+	end
 	
 	if GetPlayerTool(p) ~= M727const.WPNID then
 		return
@@ -186,6 +190,11 @@ clipamnt = 0
 altclipamnt = 0
 
 function client.tickPlayerM727(p, dt)
+	if GetPlayerHealth(p) <= 0 then
+		M727players[p] = createPlayerDataM727()
+		return
+	end
+	
 	if GetPlayerTool(p) ~= M727const.WPNID then
 		return
 	end
@@ -198,9 +207,7 @@ function client.tickPlayerM727(p, dt)
 	if mt == nil then
 		return
 	end
-
-	-- Simulate coolDown as the server does
-	-- but only use them for rotating barrel + recoil.
+	
 	local data = M727players[p]
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
@@ -221,7 +228,6 @@ function client.tickPlayerM727(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerVehicle(p) == 0 and GetPlayerGrabShape(p) == 0 then
 			if data.coolDown < 0 then		
-				--Light, particles and sound
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
 				local toolBody = GetToolBody(p)
