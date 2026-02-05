@@ -145,7 +145,9 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		-- PLAYER DAMAGE
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
-			ApplyPlayerDamage(pHitPlayer, WRNCHconst.DAMAGE, "tool", m_pPlayer)
+			local damage = (heldtime * (WRNCHconst.DAMAGE*100) + 25)/100 -- have to convert to a 100 point health system to use the original game's math
+			DebugWatch("damage", damage)
+			ApplyPlayerDamage(pHitPlayer, damage, "tool", m_pPlayer)
 		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 1, 0.2, 0) -- stronger than sledge
@@ -169,13 +171,13 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 	data.toolAnimator.forceSecondaryActionPose = false
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/WRNCH_miss0.ogg"), vecSrc.pos, 0.5)
+		PlaySound(LoadSound("MOD/snd/WRNCH_bigmiss.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.15 -- stop midswing but further in
 		data.coolDown = 1
 		data.altCoolDown = 1
 	else
 		if pHitPlayer ~= 0 then
-			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.5)
+			PlaySound(LoadSound("MOD/snd/WRNCH_bighitplayer0.ogg"), pos, 0.5)
 		elseif pHitWorld ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
 		end
@@ -226,8 +228,9 @@ function server.tickPlayerWRNCH(p, dt)
 			data.waitingforswing = false
 			data.altSwingTime = nil
 			data.inAltAttack = false
-			data.altTime = nil
 			server.bigSwingWRNCH(p, dt, data.altTime)
+			data.altTime = nil
+			
 		end
 	end
 	
