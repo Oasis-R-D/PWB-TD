@@ -395,7 +395,7 @@ function client.tickPlayerPIST9MM(p, dt)
 end
 
 function client.drawPIST9MM()
-	if GetPlayerTool() ~= PIST9MMconst.WPNID or GetPlayerVehicle() ~= 0 then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= PIST9MMconst.WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 

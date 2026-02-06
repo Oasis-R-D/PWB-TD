@@ -323,7 +323,7 @@ function client.tickPlayerM249(p, dt)
 end
 
 function client.drawM249()
-	if GetPlayerTool() ~= M249const.WPNID or GetPlayerVehicle() ~= 0 then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= M249const.WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 

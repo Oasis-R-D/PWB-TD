@@ -91,7 +91,10 @@ function client.tick(dt)
 end
 
 function client.draw()
-   client.drawM40()
+	if GetPlayerHealth() <= 0 or GetPlayerVehicle() ~= 0 then
+		return
+	end
+	client.drawM40()
 	client.drawPIST9MM()
 	client.drawDE357()
 	client.drawM727()

@@ -484,7 +484,7 @@ function client.tickPlayerSG(p, dt)
 end
 
 function client.drawSG()
-	if GetPlayerTool() ~= SGconst.WPNID or GetPlayerVehicle() ~= 0 then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= SGconst.WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 

@@ -80,6 +80,7 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
 			ApplyPlayerDamage(pHitPlayer, WRNCHconst.DAMAGE, WRNCHconst.WPNNAME, m_pPlayer)
+			BloodVFX(SoundPoint, dir, 0)
 		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
@@ -151,6 +152,8 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 				damage = 0.75
 			end
 			ApplyPlayerDamage(pHitPlayer, damage, WRNCHconst.WPNNAME, m_pPlayer)
+			BloodVFX(SoundPoint, dir, 0) 
+			BloodVFX(SoundPoint, dir, 0) -- run twice
 		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 1, 0.2, 0) -- stronger than sledge
