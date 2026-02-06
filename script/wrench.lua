@@ -7,19 +7,14 @@
 
 
 -- Per weapon constants
-function createConstWRNCH()
-    return {
-		RECOIL_AMNT = 0.3,
-		DAMAGE = 0.2,
-		MAX_RANGE = 2,
-		WPNID = "opforwrench",
-		WPNNAME = "Pipe Wrench",
-	}
-end
+local RECOIL_AMNT = 0.3
+local DAMAGE = 0.2
+local MAX_RANGE = 2
+local WPNID = "opforwrench"
+local WPNNAME = "Pipe Wrench"
 
 -- Per weapon data and const storers
 WRNCHplayers = {}
-WRNCHconst = createConstWRNCH()
 
 function createPlayerDataWRNCH()
     return {
@@ -37,15 +32,15 @@ function createPlayerDataWRNCH()
 end
 
 function server.initWRNCH()
-	RegisterTool(WRNCHconst.WPNID, WRNCHconst.WPNNAME, "MOD/prefab/wrench.xml", 1)
-	SetToolAmmoPickupAmount(WRNCHconst.WPNID, 99999)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/wrench.xml", 1)
+	SetToolAmmoPickupAmount(WPNID, 99999)
 end
 
 function server.tickWRNCH(dt)
 	for p in PlayersAdded() do
 		WRNCHplayers[p] = createPlayerDataWRNCH()
-		SetToolEnabled(WRNCHconst.WPNID, true, p)
-		SetToolAmmo(WRNCHconst.WPNID, 99999, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 99999, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -63,9 +58,9 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 	local fDidHit = false
 	
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
-	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, WRNCHconst.MAX_RANGE, m_pPlayer)
+	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, MAX_RANGE, m_pPlayer)
 
-	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, WRNCHconst.MAX_RANGE, 0.33, m_pPlayer)
+	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, MAX_RANGE, 0.33, m_pPlayer)
 	
 	if pHit == false then
 		-- Miss
@@ -79,10 +74,10 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		-- PLAYER DAMAGE
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
-			ApplyPlayerDamage(pHitPlayer, WRNCHconst.DAMAGE, WRNCHconst.WPNNAME, m_pPlayer)
+			ApplyPlayerDamage(pHitPlayer, DAMAGE, WPNNAME, m_pPlayer)
 			BloodVFX(SoundPoint, dir, 0)
 		elseif pHitWorld ~= 0 then
-			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
+			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, MAX_RANGE, m_pPlayer, WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
 		end
 		
@@ -128,9 +123,9 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 	local fDidHit = false
 	
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
-	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, WRNCHconst.MAX_RANGE, m_pPlayer)
+	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, MAX_RANGE, m_pPlayer)
 
-	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, WRNCHconst.MAX_RANGE, 0.33, m_pPlayer)
+	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, MAX_RANGE, 0.33, m_pPlayer)
 	
 	data.inAltAttack = false
 	data.altTime = nil
@@ -147,15 +142,15 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		-- PLAYER DAMAGE
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
-			local damage = (heldtime * (WRNCHconst.DAMAGE*100) + 20)/100 -- 2.75 seconds to reach full charge
+			local damage = (heldtime * (DAMAGE*100) + 20)/100 -- 2.75 seconds to reach full charge
 			if damage > 0.75 then
 				damage = 0.75
 			end
-			ApplyPlayerDamage(pHitPlayer, damage, WRNCHconst.WPNNAME, m_pPlayer)
+			ApplyPlayerDamage(pHitPlayer, damage, WPNNAME, m_pPlayer)
 			BloodVFX(SoundPoint, dir, 0) 
 			BloodVFX(SoundPoint, dir, 0) -- run twice
 		elseif pHitWorld ~= 0 then
-			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, WRNCHconst.MAX_RANGE, m_pPlayer, WRNCHconst.WPNID, 5) -- push objects, "dent" metal
+			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, MAX_RANGE, m_pPlayer, WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 1, 0.2, 0) -- stronger than sledge
 		end
 		
@@ -203,7 +198,7 @@ function server.tickPlayerWRNCH(p, dt)
 		return
 	end
 
-	if GetPlayerTool(p) ~= WRNCHconst.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		WRNCHplayers[p] = createPlayerDataWRNCH()
 		return
 	end
@@ -253,7 +248,7 @@ end
 function client.initWRNCH()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WRNCHconst.WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic);
 end
 
 function client.tickWRNCH(dt)
@@ -276,7 +271,7 @@ function client.tickPlayerWRNCH(p, dt)
 		return
 	end
 
-	if GetPlayerTool(p) ~= WRNCHconst.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		WRNCHplayers[p] = createPlayerDataWRNCH()
 		return
 	end

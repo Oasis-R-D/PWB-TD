@@ -6,33 +6,28 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstSG()
-    return {
-		RELOAD_TIME = 0.8, -- seconds
-		RELOAD_SOUND = "MOD/snd/sgreloadstart.ogg",
-		PRIM_FIRESOUND = "MOD/snd/sbarrel.ogg", 
-		ALT_FIRESOUND = "MOD/snd/dbarrel.ogg",
-		PUMP_SOUND = "MOD/snd/sgcock.ogg",
-		CLIP_SIZE = 8,
-		PICKUP_SIZE = 12,
-		RECOIL_AMNT = 0.2,
-		FIRERATE = 0.75,
-		ALTFIRERATE = 1.5,
-		DAMAGE = 0.35,
-		MAX_RANGE = 60.0,
-		WPNID = "hlshotgun",
-		WPNNAME = "Assault Shotgun",
-		CASING_ORG = Vec(0.02, 0.1, 0.075),
-	}
-end
+local RELOAD_TIME = 0.8 -- seconds
+local RELOAD_SOUND = "MOD/snd/sgreloadstart.ogg"
+local PRIM_FIRESOUND = "MOD/snd/sbarrel.ogg"
+local ALT_FIRESOUND = "MOD/snd/dbarrel.ogg"
+local PUMP_SOUND = "MOD/snd/sgcock.ogg"
+local CLIP_SIZE = 8
+local PICKUP_SIZE = 12
+local RECOIL_AMNT = 0.2
+local FIRERATE = 0.75
+local ALTFIRERATE = 1.5
+local DAMAGE = 0.35
+local MAX_RANGE = 60.0
+local WPNID = "hlshotgun"
+local WPNNAME = "Assault Shotgun"
+local CASING_ORG = Vec(0.02, 0.1, 0.075)
 
 -- Per weapon data and const storers
 SGplayers = {}
-SGconst = createConstSG()
 	
 function createPlayerDataSG()
     return {
-		clipamntSG = SGconst.CLIP_SIZE,
+		clipamntSG = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -46,15 +41,15 @@ function createPlayerDataSG()
 end
 
 function server.initSG()
-	RegisterTool(SGconst.WPNID, SGconst.WPNNAME, "MOD/prefab/shotgun.xml", 3)
-	SetToolAmmoPickupAmount(SGconst.WPNID, SGconst.PICKUP_SIZE)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/shotgun.xml", 3)
+	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
 function server.tickSG(dt)
 	for p in PlayersAdded() do
 		SGplayers[p] = createPlayerDataSG()
-		SetToolEnabled(SGconst.WPNID, true, p)
-		SetToolAmmo(SGconst.WPNID, 125, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 125, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -71,143 +66,64 @@ function server.tickPlayerSG(p, dt)
 		SGplayers[p] = createPlayerDataSG()
 		return
 	end
+end
+
+function server.primaryFireSG(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
+
+	local crouch = GetPlayerCrouch(p)
 	
-	if GetPlayerTool(p) ~= SGconst.WPNID then
-		return
+	local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
+	if crouch > 0.1 then
+		spread = 0.06976/2
 	end
 	
-	local ammo = GetToolAmmo(SGconst.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
-		local reloadtime = 0
-		if data.clipamntSG > 0 then
-			local shellsneedingloading = 8 - data.clipamntSG
-			if shellsneedingloading > ammo then
-				shellsneedingloading = ammo
-			end
-			reloadtime = SGconst.RELOAD_TIME * shellsneedingloading
-		else
-			local shellsneedingloading = 8 - data.clipamntSG
-			if shellsneedingloading > ammo then
-				shellsneedingloading = ammo
-			end
-			reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
-		end
-		data.coolDown = reloadtime
-		data.altCoolDown = reloadtime
-		data.inreload = true
+	for i=0, 5 do
+		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+		dir = VecAdd(dir, rndVec(spread))
+		ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID)
 	end
 	
-	if data.inreload == true and data.coolDown < 0 then
-		data.inreload = false
-		data.clipamntSG = SGconst.CLIP_SIZE
-		if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntSG = ammo
-		end
+	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+	
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
+	end
+end
+
+function server.secondaryFireSG(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
+
+	local crouch = GetPlayerCrouch(p)
+	
+	local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
+	if crouch > 0.1 then
+		spread = 0.06976/2
 	end
 	
-	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and data.clipamntSG > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
+	local ammo = GetToolAmmo(WPNID, p)
+	local data = SGplayers[p]
 
-		if mt == nil then
-			return
-		end
-
-		if data.coolDown < 0 then
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
-			if crouch > 0.1 then
-				spread = 0.06976/2
-			end
-			
-			for i=0, 5 do
-				local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-				dir = VecAdd(dir, rndVec(spread))
-				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
-			end
-			
-			PlaySound(LoadSound(SGconst.PRIM_FIRESOUND), mt.pos, 300)
-			
-			data.recoil = SGconst.RECOIL_AMNT
-			data.clipamntSG = data.clipamntSG - 1
-			
-			if data.clipamntSG > 0 then
-				data.coolDown = SGconst.FIRERATE
-				data.altCoolDown = SGconst.FIRERATE
-			elseif ammo > 0.5 then
-				local shellsneedingloading = 8
-				if shellsneedingloading > ammo then
-					shellsneedingloading = ammo
-				end
-				reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
-				data.coolDown = reloadtime
-				data.altCoolDown = reloadtime
-				data.inreload =  true;
-			end
-			
-			if ammo < 9999 then
-				SetToolAmmo(SGconst.WPNID, ammo-1, p)
-			end
-		end
+	for i=0, 11 do
+		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+		dir = VecAdd(dir, rndVec(spread))
+		ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID)
 	end
 	
-	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
-
-		if mt == nil then
-			return
-		end
-
-		if data.altCoolDown < 0 then	
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
-			if crouch > 0.1 then
-				spread = 0.06976/2
-			end
-			
-			for i=0, 11 do
-				local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-				dir = VecAdd(dir, rndVec(spread))
-				ShootHook(pos, dir, "bullet", SGconst.DAMAGE, SGconst.MAX_RANGE, p, SGconst.WPNID)
-			end
-			
-			PlaySound(LoadSound(SGconst.ALT_FIRESOUND), mt.pos, 300)
-			
-			data.recoil = 1.5 * SGconst.RECOIL_AMNT
-			data.clipamntSG = data.clipamntSG - 2
-			
-			if data.clipamntSG > 0 then
-				data.coolDown = SGconst.ALTFIRERATE
-				data.altCoolDown = SGconst.ALTFIRERATE
-			elseif ammo > 0.5 then
-				local shellsneedingloading = 8
-				if shellsneedingloading > ammo then
-					shellsneedingloading = ammo
-				end
-				reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
-				data.coolDown = reloadtime
-				data.altCoolDown = reloadtime
-				data.inreload =  true;
-			end
-			
-			if ammo < 9999 then
-				SetToolAmmo(SGconst.WPNID, ammo-2, p)
-			end
-		end
-	end
+	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
 	
-	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-2, p)
+	end
 end
 
 function client.initSG()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(SGconst.WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic);
 end
 
 function client.tickSG(dt)
@@ -232,14 +148,14 @@ function client.tickPlayerSG(p, dt)
 		return
 	end
 	
-	if GetPlayerTool(p) ~= SGconst.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(SGconst.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 
 	if mt == nil then
 		return
@@ -247,18 +163,18 @@ function client.tickPlayerSG(p, dt)
 	
 	local data = SGplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < SGconst.CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
-		PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
+	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
+		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		local reloadtime = 0
 		local shellsneedingloading = 8 - data.clipamntSG
 		if shellsneedingloading > ammo then
 			shellsneedingloading = ammo
 		end
 		if data.clipamntSG > 0 then
-			reloadtime = SGconst.RELOAD_TIME * shellsneedingloading
+			reloadtime = RELOAD_TIME * shellsneedingloading
 			data.shellstoload = shellsneedingloading
 		else
-			reloadtime = (SGconst.RELOAD_TIME * shellsneedingloading) + 0.3
+			reloadtime = (RELOAD_TIME * shellsneedingloading) + 0.3
 			data.pumptime = reloadtime - 0.25
 			data.shellstoload = shellsneedingloading
 		end
@@ -270,7 +186,7 @@ function client.tickPlayerSG(p, dt)
 	
 	if data.inreload == true and data.coolDown < 0 then -- reload the clip
 		data.inreload = false
-		data.clipamntSG = SGconst.CLIP_SIZE
+		data.clipamntSG = CLIP_SIZE
 		if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntSG = ammo
 		end
@@ -279,7 +195,10 @@ function client.tickPlayerSG(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and data.clipamntSG > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then				
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+				if IsPlayerLocal(p) then
+					ServerCall("server.primaryFireSG", p)
+				end
+
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local playervel = GetPlayerVelocity(p)
@@ -306,17 +225,17 @@ function client.tickPlayerSG(p, dt)
 					
 				data.clipamntSG = data.clipamntSG - 1
 				if data.clipamntSG > 0 then
-					data.altCoolDown = SGconst.FIRERATE
-					data.coolDown = SGconst.FIRERATE
-					data.pumptime = SGconst.FIRERATE - 0.25 -- 0.5
+					data.altCoolDown = FIRERATE
+					data.coolDown = FIRERATE
+					data.pumptime = FIRERATE - 0.25 -- 0.5
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					local shellsneedingloading = 8 - data.clipamntSG
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
 					end
-					reloadtime = (shellsneedingloading * SGconst.RELOAD_TIME) + 0.3
+					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
 					data.pumptime = reloadtime - 0.25
 					data.shellstoload = shellsneedingloading
 					data.coolDown = reloadtime
@@ -325,7 +244,7 @@ function client.tickPlayerSG(p, dt)
 					data.inreload = true
 				end
 				
-				data.recoil = SGconst.RECOIL_AMNT
+				data.recoil = RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -336,7 +255,10 @@ function client.tickPlayerSG(p, dt)
 	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerCanUseTool(p) == true then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+				if IsPlayerLocal(p) then
+					ServerCall("server.secondaryFireSG", p)
+				end
+
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local playervel = GetPlayerVelocity(p)
@@ -366,17 +288,17 @@ function client.tickPlayerSG(p, dt)
 				
 				data.clipamntSG = data.clipamntSG - 2
 				if data.clipamntSG > 0 then
-					data.altCoolDown = SGconst.ALTFIRERATE
-					data.coolDown = SGconst.ALTFIRERATE
-					data.pumptime = SGconst.ALTFIRERATE - 0.25
+					data.altCoolDown = ALTFIRERATE
+					data.coolDown = ALTFIRERATE
+					data.pumptime = ALTFIRERATE - 0.25
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(SGconst.RELOAD_SOUND), pt.pos)
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					local shellsneedingloading = 8 - data.clipamntSG
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
 					end
-					reloadtime = (shellsneedingloading * SGconst.RELOAD_TIME) + 0.3
+					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
 					data.pumptime = reloadtime - 0.25
 					data.shellstoload = shellsneedingloading
 					data.coolDown = reloadtime
@@ -385,7 +307,7 @@ function client.tickPlayerSG(p, dt)
 					data.inreload = true
 				end
 				
-				data.recoil = 1.5 * SGconst.RECOIL_AMNT
+				data.recoil = 1.5 * RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -420,7 +342,7 @@ function client.tickPlayerSG(p, dt)
 			data.shellstoload = data.shellstoload - 1
 			data.recoil = 0.1
 			--data.clipamntSG = data.clipamntSG + 1 -- TO-DO: reimplement
-			--if data.clipamntSG > SGconst.CLIP_SIZE then 
+			--if data.clipamntSG > CLIP_SIZE then 
 				--DebugPrint("SHELL LOADING IS FORKED")
 		end
 		
@@ -437,13 +359,13 @@ function client.tickPlayerSG(p, dt)
 	
 		-- pump the gun
 		if data.pumptime < 0 then
-			PlaySound(LoadSound(SGconst.PUMP_SOUND), pt.pos)
+			PlaySound(LoadSound(PUMP_SOUND), pt.pos)
 			data.pumptime = nil
 			-- SHELL EJECT
 			local toolBody = GetToolBody(p)
 			if toolBody ~= 0 then 
 				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, Vec(SGconst.CASING_ORG[1],SGconst.CASING_ORG[2],SGconst.CASING_ORG[3]))
+				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 				local playervel = GetPlayerVelocity(p)
 				
@@ -484,9 +406,9 @@ function client.tickPlayerSG(p, dt)
 end
 
 function client.drawSG()
-	if GetPlayerTool() ~= SGconst.WPNID then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 
-	client.drawAmmo(clipamnt, SGconst.CLIP_SIZE)
+	client.drawAmmo(clipamnt, CLIP_SIZE)
 end

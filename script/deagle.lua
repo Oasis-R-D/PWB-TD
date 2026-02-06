@@ -6,34 +6,29 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstDE357()
-    return {
-		RELOAD_TIME = 1.5, -- seconds
-		RELOAD_SOUND = "MOD/snd/DeagR.ogg",
-		PRIM_FIRESOUND = "MOD/snd/DeagFR.ogg", 
-		LASERONSFX = "MOD/snd/DeagLaser.ogg",
-		LASEROFFSFX = "MOD/snd/DeagLaserOff.ogg",
-		CLIP_SIZE = 7.0,
-		PICKUP_SIZE = 15.0,
-		RECOIL_AMNT = 0.25,
-		FIRERATE = 0.22, -- laser off
-		LASERFIRERATE = 0.5, -- laser on
-		ALTFIRERATE = 0.125,
-		DAMAGE = 0.5,
-		MAX_RANGE = 150.0,
-		WPNID = "opfordeagle",
-		WPNNAME = "Desert Eagle",
-		CASING_ORG = Vec(0.02, 0.25, 0.1),
-	}
-end
+local RELOAD_TIME = 1.5 -- seconds
+local RELOAD_SOUND = "MOD/snd/DeagR.ogg"
+local PRIM_FIRESOUND = "MOD/snd/DeagFR.ogg"
+local LASERONSFX = "MOD/snd/DeagLaser.ogg"
+local LASEROFFSFX = "MOD/snd/DeagLaserOff.ogg"
+local CLIP_SIZE = 7.0
+local PICKUP_SIZE = 15.0
+local RECOIL_AMNT = 0.25
+local FIRERATE = 0.22 -- laser off
+local LASERFIRERATE = 0.5 -- laser on
+local ALTFIRERATE = 0.125
+local DAMAGE = 0.5
+local MAX_RANGE = 150.0
+local WPNID = "opfordeagle"
+local WPNNAME = "Desert Eagle"
+local CASING_ORG = Vec(0.02, 0.25, 0.1)
 
 -- Per weapon data and const storers
 DE357players = {}
-DE357const = createConstDE357()
 
 function createPlayerDataDE357()
     return {
-		clipamntDE357 = DE357const.CLIP_SIZE,
+		clipamntDE357 = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -46,15 +41,15 @@ function createPlayerDataDE357()
 end
 
 function server.initDE357()
-	RegisterTool(DE357const.WPNID, DE357const.WPNNAME, "MOD/prefab/deagle.xml", 3)
-	SetToolAmmoPickupAmount(DE357const.WPNID, DE357const.PICKUP_SIZE)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/deagle.xml", 3)
+	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
 function server.tickDE357(dt)
 	for p in PlayersAdded() do
 		DE357players[p] = createPlayerDataDE357()
-		SetToolEnabled(DE357const.WPNID, true, p)
-		SetToolAmmo(DE357const.WPNID, 250, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -71,96 +66,41 @@ function server.tickPlayerDE357(p, dt)
 		DE357players[p] = createPlayerDataDE357()
 		return
 	end
-	
-	if GetPlayerTool(p) ~= DE357const.WPNID then
-		return
-	end
-	
-	local ammo = GetToolAmmo(DE357const.WPNID, p)
+end
+
+function server.primaryFireDE357(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
+
+	local ammo = GetToolAmmo(WPNID, p)
 	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
-		if data.clipamntDE357 > 0 then
-			data.coolDown = DE357const.RELOAD_TIME
-			data.altCoolDown = DE357const.RELOAD_TIME
-		else
-			data.coolDown = DE357const.RELOAD_TIME
-			data.altCoolDown = DE357const.RELOAD_TIME
-		end
-		data.inreload = true
-	end
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 	
-	if data.coolDown < 0 and data.inreload == true then	
-		data.inreload = false
-		data.clipamntDE357 = DE357const.CLIP_SIZE
-		if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntDE357 = ammo
-		end
+	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
+	if data.laseron == true then
+		spread = 0.001/2
 	end
 
-	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
-
-		if mt == nil then
-			return
-		end
-
-		if data.coolDown < 0 then		
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
-			if data.laseron == true then
-				spread = 0.001/2
-			end
-
-			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", DE357const.DAMAGE, DE357const.MAX_RANGE, p, DE357const.WPNID, 3)
-			
-			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(DE357const.PRIM_FIRESOUND), mt.pos, 300)
-				
-			data.recoil = DE357const.RECOIL_AMNT
-			data.clipamntDE357 = data.clipamntDE357 - 1
-			
-			if data.clipamntDE357 > 0.5 then
-				if data.laseron == true then
-					data.coolDown = DE357const.LASERFIRERATE
-					data.altCoolDown = DE357const.LASERFIRERATE
-				else
-					data.coolDown = DE357const.FIRERATE
-					data.altCoolDown = DE357const.FIRERATE
-				end
-			elseif ammo > 0.5 then
-				data.coolDown = DE357const.RELOAD_TIME
-				data.altCoolDown = DE357const.RELOAD_TIME
-				data.inreload =  true;
-			end
-			
-			
-			if ammo < 9999 then
-				SetToolAmmo(DE357const.WPNID, ammo-1, p)
-			end
-		end
-	end
+	dir = VecAdd(dir, rndVec(spread))
+	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 3)
 	
-	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
-		if data.altCoolDown < 0 then
-			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.ALTFIRERATE
-			data.laseron = not data.laseron
-		end
-	end
+	StopSound(data.firesound)
+	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	
-	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
+	end
+end
+
+function server.secondaryFireDE357(p)
+	local data = DE357players[p]
+	data.laseron = not data.laseron
 end
 
 function client.initDE357()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(DE357const.WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic);
 end
 
 function client.tickDE357(dt)
@@ -185,14 +125,14 @@ function client.tickPlayerDE357(p, dt)
 		return
 	end
 	
-	if GetPlayerTool(p) ~= DE357const.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(DE357const.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 
 	if mt == nil then
 		return
@@ -200,21 +140,21 @@ function client.tickPlayerDE357(p, dt)
 	
 	local data = DE357players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < DE357const.CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
-		PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
+	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
+		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntDE357 > 0.5 then
-			data.coolDown = DE357const.RELOAD_TIME
-			data.altCoolDown = DE357const.RELOAD_TIME
+			data.coolDown = RELOAD_TIME
+			data.altCoolDown = RELOAD_TIME
 		else
-			data.coolDown = DE357const.RELOAD_TIME
-			data.altCoolDown = DE357const.RELOAD_TIME
+			data.coolDown = RELOAD_TIME
+			data.altCoolDown = RELOAD_TIME
 		end
 		data.inreload = true
 	end
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntDE357 = DE357const.CLIP_SIZE
+		data.clipamntDE357 = CLIP_SIZE
 		if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntDE357 = ammo
 		end
@@ -223,11 +163,14 @@ function client.tickPlayerDE357(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+				if IsPlayerLocal(p) then
+					ServerCall("server.primaryFireDE357", p)
+				end
+
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(DE357const.CASING_ORG[1],DE357const.CASING_ORG[2],DE357const.CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -264,20 +207,20 @@ function client.tickPlayerDE357(p, dt)
 				data.clipamntDE357 = data.clipamntDE357 - 1
 				if data.clipamntDE357 > 0.5 then
 					if data.laseron == true then
-						data.coolDown = DE357const.LASERFIRERATE
-						data.altCoolDown = DE357const.LASERFIRERATE
+						data.coolDown = LASERFIRERATE
+						data.altCoolDown = LASERFIRERATE
 					else
-						data.coolDown = DE357const.FIRERATE
-						data.altCoolDown = DE357const.FIRERATE
+						data.coolDown = FIRERATE
+						data.altCoolDown = FIRERATE
 					end
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(DE357const.RELOAD_SOUND), pt.pos)
-					data.coolDown = DE357const.RELOAD_TIME
-					data.altCoolDown = DE357const.RELOAD_TIME
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+					data.coolDown = RELOAD_TIME
+					data.altCoolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = DE357const.RECOIL_AMNT
+				data.recoil = RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -287,14 +230,18 @@ function client.tickPlayerDE357(p, dt)
 
 	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
+			if IsPlayerLocal(p) then
+				ServerCall("server.secondaryFireDE357", p)
+			end
+			
 			data.toolAnimator.forceActionPose = true
 			if data.laseron == false then
-				PlaySound(LoadSound(DE357const.LASERONSFX), pt.pos)
+				PlaySound(LoadSound(LASERONSFX), pt.pos)
 			else
-				PlaySound(LoadSound(DE357const.LASEROFFSFX), pt.pos)
+				PlaySound(LoadSound(LASEROFFSFX), pt.pos)
 			end
-			data.altCoolDown = DE357const.ALTFIRERATE
-			data.coolDown = DE357const.ALTFIRERATE
+			data.altCoolDown = ALTFIRERATE
+			data.coolDown = ALTFIRERATE
 			data.laseron = not data.laseron
 		end
 	end
@@ -390,9 +337,9 @@ function client.tickPlayerDE357(p, dt)
 end
 
 function client.drawDE357()
-	if GetPlayerTool() ~= DE357const.WPNID then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 
-	client.drawAmmo(clipamnt, DE357const.CLIP_SIZE)
+	client.drawAmmo(clipamnt, CLIP_SIZE)
 end

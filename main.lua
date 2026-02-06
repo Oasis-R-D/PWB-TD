@@ -1,6 +1,5 @@
 #version 2
 
-
 #include "script/mp5.lua"
 #include "script/m727.lua"
 #include "script/shotgun.lua"

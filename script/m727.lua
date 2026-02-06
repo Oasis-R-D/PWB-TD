@@ -6,32 +6,27 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstM727()
-    return {
-		RELOAD_TIME = 1.5, -- seconds
-		RELOAD_SOUND = "MOD/snd/hkr.ogg",
-		ALT_FIRESOUND = "MOD/snd/hkgl.ogg",
-		PRIM_FIRESOUND = "MOD/snd/727_fr0.ogg",
-		CLIP_SIZE = 50,
-		PICKUP_SIZE = 50,
-		RECOIL_AMNT = 0.185,
-		FIRERATE = 0.1,
-		ALTFIRERATE = 1,
-		DAMAGE = 0.45,
-		MAX_RANGE = 100.0,
-		WPNID = "hlm727",
-		WPNNAME = "Colt M727",
-		CASING_ORG = Vec(0.02, 0.0, 0.1),
-	}
-end
+local RELOAD_TIME = 1.5 -- seconds
+local RELOAD_SOUND = "MOD/snd/hkr.ogg"
+local ALT_FIRESOUND = "MOD/snd/hkgl.ogg"
+local PRIM_FIRESOUND = "MOD/snd/727_fr0.ogg"
+local CLIP_SIZE = 50
+local PICKUP_SIZE = 50
+local RECOIL_AMNT = 0.185
+local FIRERATE = 0.1
+local ALTFIRERATE = 1
+local DAMAGE = 0.45
+local MAX_RANGE = 100.0
+local WPNID = "hlm727"
+local WPNNAME = "Colt M727"
+local CASING_ORG = Vec(0.02, 0.0, 0.1)
 
 -- Per weapon data and const storers
 M727players = {}
-M727const = createConstM727()
 
 function createPlayerDataM727()
     return {
-		clipamntM727 = M727const.CLIP_SIZE,
+		clipamntM727 = CLIP_SIZE,
 		m203amnt727 = 1,
 		inreload = false,
 		coolDown = 0.0,
@@ -43,15 +38,15 @@ function createPlayerDataM727()
 end
 
 function server.initM727()
-	RegisterTool(M727const.WPNID, M727const.WPNNAME, "MOD/prefab/m727.xml", 3)
-	SetToolAmmoPickupAmount(M727const.WPNID, M727const.PICKUP_SIZE)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/m727.xml", 3)
+	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
 function server.tickM727(dt)
 	for p in PlayersAdded() do
 		M727players[p] = createPlayerDataM727()
-		SetToolEnabled(M727const.WPNID, true, p)
-		SetToolAmmo(M727const.WPNID, 250, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -68,108 +63,54 @@ function server.tickPlayerM727(p, dt)
 		M727players[p] = createPlayerDataM727()
 		return
 	end
-	
-	if GetPlayerTool(p) ~= M727const.WPNID then
-		return
-	end
-	
-	local ammo = GetToolAmmo(M727const.WPNID, p)
+end
+
+function server.primaryFireM727(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
+
+	local ammo = GetToolAmmo(WPNID, p)
 	local data = M727players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
-		data.coolDown = M727const.RELOAD_TIME
-		data.altCoolDown = M727const.RELOAD_TIME
-		data.inreload = true
-	end
-
-	if data.coolDown < 0 and data.inreload == true then	
-		data.inreload = false
-		data.m203amnt727 = 1
-		data.clipamntM727 = M727const.CLIP_SIZE
-		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntM727 = ammo
-		end
-	end
-
-	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
-
-		if mt == nil then
-			return
-		end
-
-		if data.coolDown < 0 then	
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
-			if crouch > 0.1 then
-				spread = 0.03490/2
-			end
-			
-			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", M727const.DAMAGE, M727const.MAX_RANGE, p, M727const.WPNID)
-			
-			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(M727const.PRIM_FIRESOUND), mt.pos, 300)
-				
-			data.recoil = M727const.RECOIL_AMNT
-			data.clipamntM727 = data.clipamntM727 - 1
-			
-			if data.clipamntM727 > 0 then
-				data.coolDown = M727const.FIRERATE
-				data.altCoolDown = M727const.FIRERATE
-			elseif ammo > 0.5 then
-				data.coolDown = M727const.RELOAD_TIME
-				data.altCoolDown = M727const.RELOAD_TIME
-				data.inreload =  true;
-			end
-			
-			
-			if ammo < 9999 then
-				SetToolAmmo(M727const.WPNID, ammo-1, p)
-			end
-		end
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local crouch = GetPlayerCrouch(p)
+	
+	local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
+	if crouch > 0.1 then
+		spread = 0.03490/2
 	end
 	
-	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
+	dir = VecAdd(dir, rndVec(spread))
+	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID)
+	
+	StopSound(data.firesound)
+	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+	
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
+	end
+end
 
-		if mt == nil then
-			return
-		end
+function server.secondaryFireM727(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-		if data.altCoolDown < 0 then
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.05234/8 -- assuming spread is a radian value and this is the diameter of the cone
-			if crouch > 0.1 then
-				spread = 0.03490/8
-			end
-			
-			dir = VecAdd(dir, rndVec(spread))
-			Shoot(pos, dir, "rocket", M727const.DAMAGE, M727const.MAX_RANGE * 2, p, M727const.WPNID)
-			
-			PlaySound(LoadSound(M727const.ALT_FIRESOUND), mt.pos, 300)
-							
-			data.recoil = 1.5 * M727const.RECOIL_AMNT
-			
-			data.altCoolDown = M727const.ALTFIRERATE
-			data.coolDown = M727const.ALTFIRERATE
-			data.m203amnt727 = data.m203amnt727 - 1
-		end
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local crouch = GetPlayerCrouch(p)
+	
+	local spread = 0.05234/8 -- assuming spread is a radian value and this is the diameter of the cone
+	if crouch > 0.1 then
+		spread = 0.03490/8
 	end
 	
-	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
+	dir = VecAdd(dir, rndVec(spread))
+	Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID)
+	
+	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
 end
 
 function client.initM727()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(M727const.WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic);
 end
 
 function client.tickM727(dt)
@@ -195,14 +136,14 @@ function client.tickPlayerM727(p, dt)
 		return
 	end
 	
-	if GetPlayerTool(p) ~= M727const.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(M727const.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 
 	if mt == nil then
 		return
@@ -210,17 +151,17 @@ function client.tickPlayerM727(p, dt)
 	
 	local data = M727players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < M727const.CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
-		PlaySound(LoadSound(M727const.RELOAD_SOUND), pt.pos)
-		data.coolDown = M727const.RELOAD_TIME
-		data.altCoolDown = M727const.RELOAD_TIME
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
+		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		data.coolDown = RELOAD_TIME
+		data.altCoolDown = RELOAD_TIME
 		data.inreload = true
 	end
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
 		data.m203amnt727 = 1
-		data.clipamntM727 = M727const.CLIP_SIZE
+		data.clipamntM727 = CLIP_SIZE
 		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntM727 = ammo
 		end
@@ -229,11 +170,14 @@ function client.tickPlayerM727(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then		
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+				if IsPlayerLocal(p) then
+					ServerCall("server.primaryFireM727", p)
+				end
+
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(M727const.CASING_ORG[1],M727const.CASING_ORG[2],M727const.CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -269,16 +213,16 @@ function client.tickPlayerM727(p, dt)
 					
 				data.clipamntM727 = data.clipamntM727 - 1
 				if data.clipamntM727 > 0 then
-					data.coolDown = M727const.FIRERATE
-					data.altCoolDown = M727const.FIRERATE
+					data.coolDown = FIRERATE
+					data.altCoolDown = FIRERATE
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(M727const.RELOAD_SOUND), pt.pos)
-					data.coolDown = M727const.RELOAD_TIME
-					data.altCoolDown = M727const.RELOAD_TIME
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+					data.coolDown = RELOAD_TIME
+					data.altCoolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = M727const.RECOIL_AMNT
+				data.recoil = RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -289,7 +233,10 @@ function client.tickPlayerM727(p, dt)
 	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerCanUseTool(p) == true  then
 			if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+				if IsPlayerLocal(p) then
+					ServerCall("server.secondaryFireM727", p)
+				end
+
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local playervel = GetPlayerVelocity(p)
@@ -315,10 +262,10 @@ function client.tickPlayerM727(p, dt)
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 				
-				data.recoil = 1.5 * M727const.RECOIL_AMNT
+				data.recoil = 1.5 * RECOIL_AMNT
 				
-				data.altCoolDown = M727const.ALTFIRERATE
-				data.coolDown = M727const.ALTFIRERATE
+				data.altCoolDown = ALTFIRERATE
+				data.coolDown = ALTFIRERATE
 				data.m203amnt727 = data.m203amnt727 - 1
 			end
 
@@ -365,10 +312,10 @@ function client.tickPlayerM727(p, dt)
 end
 
 function client.drawM727()
-	if GetPlayerTool() ~= M727const.WPNID then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 
-	client.drawAmmo(clipamnt, M727const.CLIP_SIZE)
+	client.drawAmmo(clipamnt, CLIP_SIZE)
 	client.drawSecAmmo(altclipamnt)
 end

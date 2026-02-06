@@ -6,32 +6,27 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstPIST9MM()
-    return {
-		RELOAD_TIME = 1.5, -- seconds
-		RELOAD_SOUND = "MOD/snd/glockR.ogg",
-		PRIM_FIRESOUND = "MOD/snd/glockFR.ogg", 
-		NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg", -- glock has diff sounds when shot by NPCs (in this case, other players)
-		CLIP_SIZE = 17.0,
-		PICKUP_SIZE = 34.0, -- should be 17 but idc
-		RECOIL_AMNT = 0.17,
-		FIRERATE = 0.3,
-		ALTFIRERATE = 0.2,
-		DAMAGE = 0.4,
-		MAX_RANGE = 125.0,
-		WPNID = "hlglock",
-		WPNNAME = "9mm HandGun",
-		CASING_ORG = Vec(0.02, 0.25, 0.1),
-	}
-end
+local RELOAD_TIME = 1.5 -- seconds
+local RELOAD_SOUND = "MOD/snd/glockR.ogg"
+local PRIM_FIRESOUND = "MOD/snd/glockFR.ogg"
+local NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg" -- glock has diff sounds when shot by NPCs (in this case, other players)
+local CLIP_SIZE = 17.0
+local PICKUP_SIZE = 17.0
+local RECOIL_AMNT = 0.17
+local FIRERATE = 0.3
+local ALTFIRERATE = 0.2
+local DAMAGE = 0.4
+local MAX_RANGE = 125.0
+local WPNID = "hlglock"
+local WPNNAME = "9mm HandGun"
+local CASING_ORG = Vec(0.02, 0.25, 0.1)
 
 -- Per weapon data and const storers
 PIST9MMplayers = {}
-PIST9MMconst = createConstPIST9MM()
 
 function createPlayerDataPIST9MM()
     return {
-		clipamntPIST9MM = PIST9MMconst.CLIP_SIZE,
+		clipamntPIST9MM = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -42,15 +37,15 @@ function createPlayerDataPIST9MM()
 end
 
 function server.initPIST9MM()
-	RegisterTool(PIST9MMconst.WPNID, PIST9MMconst.WPNNAME, "MOD/prefab/glock.xml", 3)
-	SetToolAmmoPickupAmount(PIST9MMconst.WPNID, PIST9MMconst.PICKUP_SIZE)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/glock.xml", 3)
+	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
 function server.tickPIST9MM(dt)
 	for p in PlayersAdded() do
 		PIST9MMplayers[p] = createPlayerDataPIST9MM()
-		SetToolEnabled(PIST9MMconst.WPNID, true, p)
-		SetToolAmmo(PIST9MMconst.WPNID, 250, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -66,108 +61,46 @@ function server.tickPlayerPIST9MM(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		PIST9MMplayers[p] = createPlayerDataPIST9MM()
 	end
-	
-	if GetPlayerTool(p) ~= PIST9MMconst.WPNID then
-		return
-	end
-	
-	local ammo = GetToolAmmo(PIST9MMconst.WPNID, p)
+end
+
+function server.primaryFirePIST9MM(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
+
+	local ammo = GetToolAmmo(WPNID, p)
 	local data = PIST9MMplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
-		if data.clipamntPIST9MM > 0 then
-			data.coolDown = PIST9MMconst.RELOAD_TIME
-			data.altCoolDown = PIST9MMconst.RELOAD_TIME
-		end
-		data.inreload = true
-	end
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
+
+	dir = VecAdd(dir, rndVec(spread))
+	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 2)
 	
-	if data.coolDown < 0 and data.inreload == true then	
-		data.inreload = false
-		data.clipamntPIST9MM = PIST9MMconst.CLIP_SIZE
-		if data.clipamntPIST9MM > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntPIST9MM = ammo
-		end
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
 	end
+end
 
-	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
-
-		if mt == nil then
-			return
-		end
-
-		if data.coolDown < 0 then
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
-
-			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID, 1)
-
-			data.recoil = PIST9MMconst.RECOIL_AMNT
-			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
-			
-			if data.clipamntPIST9MM > 0 then
-				data.coolDown = PIST9MMconst.FIRERATE
-				data.altCoolDown = PIST9MMconst.FIRERATE
-			elseif ammo > 0.5 then
-				data.coolDown = PIST9MMconst.RELOAD_TIME
-				data.altCoolDown = PIST9MMconst.RELOAD_TIME
-				data.inreload =  true;
-			end
-			
-			if ammo < 9999 then
-				SetToolAmmo(PIST9MMconst.WPNID, ammo-1, p)
-			end
-		end
-	end
+function server.secondaryFirePIST9MM(p) -- separated for easy modability
+	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
-	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
+	local ammo = GetToolAmmo(WPNID, p)
+	local data = PIST9MMplayers[p]
 
-		if mt == nil then
-			return
-		end
-		
-		if data.altCoolDown < 0 then
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
 
-			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", PIST9MMconst.DAMAGE, PIST9MMconst.MAX_RANGE, p, PIST9MMconst.WPNID, 2)
-
-			data.recoil = PIST9MMconst.RECOIL_AMNT
-			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
-			
-			if data.clipamntPIST9MM > 0 then
-				data.coolDown = PIST9MMconst.ALTFIRERATE
-				data.altCoolDown = PIST9MMconst.ALTFIRERATE
-			elseif ammo > 0.5 then
-				data.coolDown = PIST9MMconst.RELOAD_TIME
-				data.altCoolDown = PIST9MMconst.RELOAD_TIME
-				data.inreload =  true;
-			end
-			
-			
-			if ammo < 9999 then
-				SetToolAmmo(PIST9MMconst.WPNID, ammo-1, p)
-			end
-		end
-	end
+	dir = VecAdd(dir, rndVec(spread))
+	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 2)
 	
-	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
+	end
 end
 
 function client.initPIST9MM()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(PIST9MMconst.WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic);
 end
 
 function client.tickPIST9MM(dt)
@@ -192,14 +125,14 @@ function client.tickPlayerPIST9MM(p, dt)
 		return
 	end
 	
-	if GetPlayerTool(p) ~= PIST9MMconst.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(PIST9MMconst.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 
 	if mt == nil then
 		return
@@ -207,18 +140,18 @@ function client.tickPlayerPIST9MM(p, dt)
 	
 	local data = PIST9MMplayers[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < PIST9MMconst.CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
-		PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
+	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
+		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntPIST9MM > 0 then
-			data.coolDown = PIST9MMconst.RELOAD_TIME
-			data.altCoolDown = PIST9MMconst.RELOAD_TIME
+			data.coolDown = RELOAD_TIME
+			data.altCoolDown = RELOAD_TIME
 		end
 		data.inreload = true
 	end
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntPIST9MM = PIST9MMconst.CLIP_SIZE
+		data.clipamntPIST9MM = CLIP_SIZE
 		if data.clipamntPIST9MM > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntPIST9MM = ammo
 		end
@@ -227,18 +160,19 @@ function client.tickPlayerPIST9MM(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+					
 				StopSound(data.firesound)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos, 300)
+					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+					ServerCall("server.primaryFirePIST9MM", p)
 				else
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(PIST9MMconst.CASING_ORG[1],PIST9MMconst.CASING_ORG[2],PIST9MMconst.CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -274,16 +208,16 @@ function client.tickPlayerPIST9MM(p, dt)
 					
 				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
 				if data.clipamntPIST9MM > 0 then
-					data.coolDown = PIST9MMconst.FIRERATE
-					data.altCoolDown = PIST9MMconst.FIRERATE
+					data.coolDown = FIRERATE
+					data.altCoolDown = FIRERATE
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
-					data.coolDown = PIST9MMconst.RELOAD_TIME
-					data.altCoolDown = PIST9MMconst.RELOAD_TIME
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+					data.coolDown = RELOAD_TIME
+					data.altCoolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = PIST9MMconst.RECOIL_AMNT
+				data.recoil = RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -297,15 +231,16 @@ function client.tickPlayerPIST9MM(p, dt)
 				
 				StopSound(data.firesound)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.PRIM_FIRESOUND), mt.pos, 300)
+					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+					ServerCall("server.secondaryFirePIST9MM", p)
 				else
-					data.firesound = PlaySound(LoadSound(PIST9MMconst.NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(PIST9MMconst.CASING_ORG[1],PIST9MMconst.CASING_ORG[2],PIST9MMconst.CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -343,16 +278,16 @@ function client.tickPlayerPIST9MM(p, dt)
 				
 				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
 				if data.clipamntPIST9MM > 0 then
-					data.coolDown = PIST9MMconst.ALTFIRERATE
-					data.altCoolDown = PIST9MMconst.ALTFIRERATE
+					data.coolDown = ALTFIRERATE
+					data.altCoolDown = ALTFIRERATE
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(PIST9MMconst.RELOAD_SOUND), pt.pos)
-					data.coolDown = PIST9MMconst.RELOAD_TIME
-					data.altCoolDown = PIST9MMconst.RELOAD_TIME
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+					data.coolDown = RELOAD_TIME
+					data.altCoolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = PIST9MMconst.RECOIL_AMNT
+				data.recoil = RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -395,9 +330,9 @@ function client.tickPlayerPIST9MM(p, dt)
 end
 
 function client.drawPIST9MM()
-	if GetPlayerTool() ~= PIST9MMconst.WPNID then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 
-	client.drawAmmo(clipamnt, PIST9MMconst.CLIP_SIZE)
+	client.drawAmmo(clipamnt, CLIP_SIZE)
 end

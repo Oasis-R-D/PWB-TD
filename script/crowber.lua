@@ -7,19 +7,14 @@
 
 
 -- Per weapon constants
-function createConstCRBR()
-    return {
-		RECOIL_AMNT = 0.3,
-		DAMAGE = 0.1,
-		MAX_RANGE = 2.25,
-		WPNID = "hlcrowbar",
-		WPNNAME = "Crowbar",
-	}
-end
+local RECOIL_AMNT = 0.3
+local DAMAGE = 0.1
+local MAX_RANGE = 2.25
+local WPNID = "hlcrowbar"
+local WPNNAME = "Crowbar"
 
 -- Per weapon data and const storers
 CRBRplayers = {}
-CRBRconst = createConstCRBR()
 
 function createPlayerDataCRBR()
     return {
@@ -32,15 +27,15 @@ function createPlayerDataCRBR()
 end
 
 function server.initCRBR()
-	RegisterTool(CRBRconst.WPNID, CRBRconst.WPNNAME, "MOD/prefab/crowbar.xml", 1)
-	SetToolAmmoPickupAmount(CRBRconst.WPNID, 99999)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/crowbar.xml", 1)
+	SetToolAmmoPickupAmount(WPNID, 99999)
 end
 
 function server.tickCRBR(dt)
 	for p in PlayersAdded() do
 		CRBRplayers[p] = createPlayerDataCRBR()
-		SetToolEnabled(CRBRconst.WPNID, true, p)
-		SetToolAmmo(CRBRconst.WPNID, 99999, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 99999, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -58,9 +53,9 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 	local fDidHit = false
 	
 	local vecSrc = GetPlayerEyeTransform(m_pPlayer)
-	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, CRBRconst.MAX_RANGE, m_pPlayer)
+	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, MAX_RANGE, m_pPlayer)
 	
-	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, CRBRconst.MAX_RANGE, 0.33, m_pPlayer)
+	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, MAX_RANGE, 0.33, m_pPlayer)
 	
 	if pHit == false then
 		-- Miss
@@ -73,10 +68,10 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 		-- PLAYER DAMAGE
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
-			ApplyPlayerDamage(pHitPlayer, CRBRconst.DAMAGE, CRBRconst.WPNNAME, m_pPlayer)
+			ApplyPlayerDamage(pHitPlayer, DAMAGE, WPNNAME, m_pPlayer)
 			BloodVFX(SoundPoint, dir, 0)
 		elseif pHitWorld ~= 0 then
-			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, CRBRconst.MAX_RANGE, m_pPlayer, CRBRconst.WPNID, 5) -- push objects, "dent" metal
+			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, MAX_RANGE, m_pPlayer, WPNID, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.75, 0.12, 0) -- stronger than sledge
 		end
 		
@@ -117,7 +112,7 @@ function server.tickPlayerCRBR(p, dt)
 		return
 	end
 
-	if GetPlayerTool(p) ~= CRBRconst.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		CRBRplayers[p] = createPlayerDataCRBR()
 		return
 	end
@@ -137,7 +132,7 @@ end
 function client.initCRBR()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(CRBRconst.WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic);
 end
 
 function client.tickCRBR(dt)
@@ -160,7 +155,7 @@ function client.tickPlayerCRBR(p, dt)
 		return
 	end
 
-	if GetPlayerTool(p) ~= CRBRconst.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		CRBRplayers[p] = createPlayerDataCRBR()
 		return
 	end

@@ -6,30 +6,25 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-function createConstM249()
-    return {
-		RELOAD_TIME = 3.8, -- seconds
-		RELOAD_SOUND = "MOD/snd/m249r.ogg",
-		PRIM_FIRESOUND = "MOD/snd/249_fr0.ogg",
-		CLIP_SIZE = 50,
-		PICKUP_SIZE = 100,
-		RECOIL_AMNT = 0.2,
-		FIRERATE = 0.067, -- NO
-		DAMAGE = 0.4,
-		MAX_RANGE = 125.0,
-		WPNID = "opform249_saw",
-		WPNNAME = "M249 SAW",
-		CASING_ORG = Vec(0.02, 0.05, -0.05),
-	}
-end
+local RELOAD_TIME = 3.8 -- seconds
+local RELOAD_SOUND = "MOD/snd/m249r.ogg"
+local PRIM_FIRESOUND = "MOD/snd/249_fr0.ogg"
+local CLIP_SIZE = 50
+local PICKUP_SIZE = 100
+local RECOIL_AMNT = 0.2
+local FIRERATE = 0.067 -- NO
+local DAMAGE = 0.4
+local MAX_RANGE = 125.0
+local WPNID = "opform249_saw"
+local WPNNAME = "M249 SAW"
+local CASING_ORG = Vec(0.02, 0.05, -0.05)
 
 -- Per weapon data and const storers
 M249players = {}
-M249const = createConstM249()
 
 function createPlayerDataM249()
     return {
-		clipamntM249 = M249const.CLIP_SIZE,
+		clipamntM249 = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -40,15 +35,15 @@ function createPlayerDataM249()
 end
 
 function server.initM249()
-	RegisterTool(M249const.WPNID, M249const.WPNNAME, "MOD/prefab/saw.xml", 6)
-	SetToolAmmoPickupAmount(M249const.WPNID, M249const.PICKUP_SIZE)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/saw.xml", 6)
+	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
 function server.tickM249(dt)
 	for p in PlayersAdded() do
 		M249players[p] = createPlayerDataM249()
-		SetToolEnabled(M249const.WPNID, true, p)
-		SetToolAmmo(M249const.WPNID, 250, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -65,86 +60,49 @@ function server.tickPlayerM249(p, dt)
 		M249players[p] = createPlayerDataM249()
 		return
 	end
+end
+
+function server.primaryFireM249(p)
+	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
-	if GetPlayerTool(p) ~= M249const.WPNID then
-		return
+	if IsPlayerGrounded(p) and GetPlayerCrouch(p) < 0.1 then
+		local playertrans = GetPlayerTransform(p)
+		local playerdir = TransformToParentVec(playertrans, Vec(0, 0, 1))
+		local newplayervel = VecScale(VecNormalize(playerdir), 1.5)
+		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
 	end
 	
-	local ammo = GetToolAmmo(M249const.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 	local data = M249players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
-		data.coolDown = M249const.RELOAD_TIME
-		data.inreload = true
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local crouch = GetPlayerCrouch(p)
+	local pvel = GetPlayerVelocity(p)
+
+	local spread = 0.03490 -- assuming spread is a radian value and this is the diameter of the cone
+	if crouch > 0.1 then
+		spread = 0.01745
 	end
 	
-	if data.coolDown < 0 and data.inreload == true then	
-		data.inreload = false
-		data.clipamntM249 = M249const.CLIP_SIZE
-		if data.clipamntM249 > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntM249 = ammo
-		end
+	if not IsPlayerGrounded(p) or VecLength(pvel) > (GetPlayerWalkingSpeed() * 0.75) then
+		spread = 0.08716
 	end
 
-	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
-
-		if mt == nil then
-			return
-		end
-
-		if data.coolDown < 0 then		
-			if IsPlayerGrounded(p) and GetPlayerCrouch(p) < 0.1 then
-				local playertrans = GetPlayerTransform(p)
-				local playerdir = TransformToParentVec(playertrans, Vec(0, 0, 1))
-				local newplayervel = VecScale(VecNormalize(playerdir), 1.5)
-				SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
-			end
-			
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			local pvel = GetPlayerVelocity(p)
-
-			local spread = 0.03490 -- assuming spread is a radian value and this is the diameter of the cone
-			if crouch > 0.1 then
-				spread = 0.01745
-			end
-			
-			if not IsPlayerGrounded(p) or VecLength(pvel) > (GetPlayerWalkingSpeed() * 0.75) then
-				spread = 0.08716
-			end
-
-			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", M249const.DAMAGE, M249const.MAX_RANGE, p, M249const.WPNID)
-			
-			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(M249const.PRIM_FIRESOUND), mt.pos, 300)
-				
-			data.recoil = M249const.RECOIL_AMNT
-			data.clipamntM249 = data.clipamntM249 - 1
-			
-			if data.clipamntM249 > 0 then
-				data.coolDown = M249const.FIRERATE
-			elseif ammo > 0.5 then
-				data.coolDown = M249const.RELOAD_TIME
-				data.inreload =  true;
-			end
-			
-			
-			if ammo < 9999 then
-				SetToolAmmo(M249const.WPNID, ammo-1, p)
-			end
-		end
-	end
+	dir = VecAdd(dir, rndVec(spread))
+	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID)
 	
-	data.coolDown = data.coolDown - dt
+	StopSound(data.firesound)
+	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
+	end
 end
 
 function client.initM249()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(M249const.WPNID, toolHaptic)
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickM249(dt)
@@ -169,14 +127,14 @@ function client.tickPlayerM249(p, dt)
 		return
 	end
 	
-	if GetPlayerTool(p) ~= M249const.WPNID then
+	if GetPlayerTool(p) ~= WPNID then
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(M249const.WPNID, p)
+	local ammo = GetToolAmmo(WPNID, p)
 
 	if mt == nil then
 		return
@@ -184,15 +142,15 @@ function client.tickPlayerM249(p, dt)
 	
 	local data = M249players[p]
 
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < M249const.CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
-		PlaySound(LoadSound(M249const.RELOAD_SOUND), pt.pos)
-		data.coolDown = M249const.RELOAD_TIME
+	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
+		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		data.coolDown = RELOAD_TIME
 		data.inreload = true
 	end
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntM249 = M249const.CLIP_SIZE
+		data.clipamntM249 = CLIP_SIZE
 		if data.clipamntM249 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntM249 = ammo
 		end
@@ -201,11 +159,14 @@ function client.tickPlayerM249(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				
+				if IsPlayerLocal(p) then
+					ServerCall("server.primaryFireM249", p)
+				end
+
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(M249const.CASING_ORG[1],M249const.CASING_ORG[2],M249const.CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
@@ -247,14 +208,14 @@ function client.tickPlayerM249(p, dt)
 					
 				data.clipamntM249 = data.clipamntM249 - 1
 				if data.clipamntM249 > 0 then
-					data.coolDown = M249const.FIRERATE
+					data.coolDown = FIRERATE
 				elseif ammo > 0.5 then
-					PlaySound(LoadSound(M249const.RELOAD_SOUND), pt.pos)
-					data.coolDown = M249const.RELOAD_TIME
+					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+					data.coolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
-				data.recoil = M249const.RECOIL_AMNT
+				data.recoil = RECOIL_AMNT
 			end
 
 		if IsPlayerLocal(p) then
@@ -323,9 +284,9 @@ function client.tickPlayerM249(p, dt)
 end
 
 function client.drawM249()
-	if GetPlayerTool() ~= M249const.WPNID then -- shouldn't need the player pointer since this runs on client
+	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
 		return
 	end
 
-	client.drawAmmo(clipamnt, M249const.CLIP_SIZE)
+	client.drawAmmo(clipamnt, CLIP_SIZE)
 end
