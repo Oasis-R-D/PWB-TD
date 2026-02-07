@@ -15,6 +15,7 @@ local PICKUP_SIZE = 12.0
 local RECOIL_AMNT = 0.3
 local FIRERATE = 0.75
 local DAMAGE = 0.5
+local PLAYERDAMAGE = 0.4
 local MAX_RANGE = 150.0
 local WPNID = "hlpython"
 local WPNNAME = "Colt Python"
@@ -61,47 +62,8 @@ function server.tickPlayerPYTH(p, dt)
 		PYTHplayers[p] = createPlayerDataPYTH()
 		return
 	end
-	
-	local ammo = GetToolAmmo(WPNID, p)
-	local data = PYTHplayers[p]
-
-	--Check if firing
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		local mt = GetToolLocationWorldTransform("muzzle", p)
-
-		if mt == nil then
-			return
-		end
-
-		if data.coolDown < 0 then
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
-			local crouch = GetPlayerCrouch(p)
-			
-			local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
-
-			dir = VecAdd(dir, rndVec(spread))
-			ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 3)
-
-			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-				
-			data.recoil = RECOIL_AMNT
-			data.clipamntPYTH = data.clipamntPYTH - 1
-			
-			if data.clipamntPYTH > 0 then
-				data.coolDown = FIRERATE
-			elseif ammo > 0.5 then
-				data.coolDown = RELOAD_TIME
-				data.inreload =  true;
-			end
-			
-			
-			if ammo < 9999 then
-				SetToolAmmo(WPNID, ammo-1, p)
-			end
-		end
-	end
 end
+
 function server.primaryFirePYTH(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
@@ -112,7 +74,7 @@ function server.primaryFirePYTH(p)
 	local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 3)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 3)
 
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)

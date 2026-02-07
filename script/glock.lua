@@ -16,6 +16,7 @@ local RECOIL_AMNT = 0.17
 local FIRERATE = 0.3
 local ALTFIRERATE = 0.2
 local DAMAGE = 0.4
+local PLAYERDAMAGE = 0.12
 local MAX_RANGE = 125.0
 local WPNID = "hlglock"
 local WPNNAME = "9mm HandGun"
@@ -73,7 +74,7 @@ function server.primaryFirePIST9MM(p)
 	local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 2)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 2)
 	
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)
@@ -90,7 +91,7 @@ function server.secondaryFirePIST9MM(p) -- separated for easy modability
 	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 2)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 2)
 	
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)

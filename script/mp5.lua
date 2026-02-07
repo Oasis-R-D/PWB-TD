@@ -16,6 +16,7 @@ local RECOIL_AMNT = 0.2
 local FIRERATE = 0.1
 local ALTFIRERATE = 1
 local DAMAGE = 0.45
+local PLAYERDAMAGE = 0.12
 local MAX_RANGE = 100.0
 local WPNID = "hl9mmar"
 local WPNNAME = "9mmAR"
@@ -80,7 +81,7 @@ function server.primaryFireMp5(p)
 	end
 	
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID)
 	
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)

@@ -20,6 +20,7 @@ local FIRERATE = 2.0
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
 local DAMAGE = 0.6 -- x5
+local PLAYERDAMAGE = 1 -- instakills in opfor
 local MAX_RANGE = 500.0
 local WPNID = "opform40a1"
 local WPNNAME = "M40A1"
@@ -88,7 +89,7 @@ function server.primaryFireM40(p)
 		dir = VecAdd(dir, rndVec(spread))
 	end
 
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 4)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 3)
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	

@@ -51,23 +51,30 @@ function client.drawSecAmmo(curclip)
 	UiPop()
 end
 
-function client.BloodParticles(pos, dir)
+function client.BloodParticles(pos, dir, damage, playerhit)
+	local impactsize = damage
+	if impactsize > 0.4 then
+		impactsize = 0.4
+	end
+
+	local playervel = GetPlayerVelocity(playerhit)
+
 	for i=0, 3 do
 		ParticleReset()
 		ParticleType("smoke")
-		ParticleRadius(0.1, 0.2)
+		ParticleRadius(impactsize)
 		ParticleAlpha(10, 0)
 		ParticleColor(0.4, 0.01, 0)
 		ParticleCollide(0)
 		ParticleDrag(1.0)
-		SpawnParticle(pos, Vec(0, 0, 0), 0.5)
+		SpawnParticle(pos, playervel, 0.5)
 	end		
 		
-	for i=0, 3 do
+	for i=0, (impactsize * 50) do
 		ParticleReset()
 		ParticleGravity(rnd(-7, -10))
 		ParticleRadius(rnd(0.01, 0.03))
-		ParticleAlpha(1, 0, "easein")
+		ParticleAlpha(1, 0, "easein") 
 		ParticleColor(0.33, 0.01, 0)
 		ParticleTile(6)
 		ParticleDrag(0.0625)
@@ -75,14 +82,28 @@ function client.BloodParticles(pos, dir)
 		ParticleCollide(0, 1, "easein")
 		ParticleRotation(0.2, 0)
 		ParticleStretch(1, 0, "easein")
-		SpawnParticle(pos, VecScale(VecAdd(dir, rndVec(1)), rnd(1, 4)), 3)
+		SpawnParticle(pos, VecAdd(VecScale(VecAdd(dir, rndVec(1)), rnd(1, 4)), playervel), 3)
 	end
 end
 
-function BloodVFX(pos, dir, times)
-	ClientCall(0, "client.BloodParticles", pos, dir)
-	for i=0, (times + 3) do
-		local newdir = VecAdd(dir, rndVec(0.33))
+function BloodVFX(pos, dir, damage, playerhit)
+	ClientCall(0, "client.BloodParticles", pos, dir, damage, playerhit)
+
+	local count = 1
+	local noise = 0.1
+	if damage < 0.1 then
+		noise = 0.25;
+		count = 3;
+	elseif damage < 0.25 then
+		noise = 0.4;
+		count = 6;
+	else
+		noise = 0.55;
+		count = 12;
+	end
+
+	for i=0, count do
+		local newdir = VecAdd(dir, rndVec(noise))
 		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5)
 		if bloodhit ~= 0 then
 			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.16, 0.33), 0.33, 0.01, 0.0, 1.0, rnd(0.66, 0.99))
@@ -96,11 +117,10 @@ function BloodVFX(pos, dir, times)
 end
 
 -- hook the Shoot func to add rope damaging (would adding this to the actual function really be THAT hard???)
-function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
+function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, weaponid, times)
 	times = times or 0
-	for i=0, times do
-		Shoot(pos, dir, shoottype, damage, range, player, weaponid)
-	end
+	newrange = range or 100 -- or is only here just because, not needed.
+	playerdamage = playerdamage or 0
 
 	local hit, dist, joint = QueryRaycastRope(pos, dir, range) -- Break Ropes
 	if hit then
@@ -110,11 +130,20 @@ function ShootHook(pos, dir, shoottype, damage, range, player, weaponid, times)
 	
 	local _, pdist, _, playerhit = QueryShot(pos, dir, range, 0, player) -- Play player hit sound and create blud
 	if playerhit == 0 then
+		for i=0, times do
+			Shoot(pos, dir, shoottype, damage, range, player, weaponid)
+		end
 		return
 	end
-	
+
+	newrange = pdist - 0.5 -- don't actually hit the player so we can do our own damage and vfx
+	for i=0, times do
+		Shoot(pos, dir, shoottype, damage, newrange, player, weaponid)
+	end
+	ApplyPlayerDamage(playerhit, playerdamage, weaponid, player)
+
 	local SoundPoint = VecAdd(pos, VecScale(dir, pdist))
 	PlaySound(LoadSound("MOD/snd/bullet_hit0.ogg"), SoundPoint, 2)
-	
-	BloodVFX(SoundPoint, dir, times)
+
+	BloodVFX(SoundPoint, dir, playerdamage, playerhit)
 end

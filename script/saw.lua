@@ -14,6 +14,7 @@ local PICKUP_SIZE = 100
 local RECOIL_AMNT = 0.2
 local FIRERATE = 0.067 -- NO
 local DAMAGE = 0.4
+local PLAYERDAMAGE = 0.15
 local MAX_RANGE = 125.0
 local WPNID = "opform249_saw"
 local WPNNAME = "M249 SAW"
@@ -89,7 +90,7 @@ function server.primaryFireM249(p)
 	end
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID)
 	
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)

@@ -18,6 +18,7 @@ local FIRERATE = 0.22 -- laser off
 local LASERFIRERATE = 0.5 -- laser on
 local ALTFIRERATE = 0.125
 local DAMAGE = 0.5
+local PLAYERDAMAGE = 0.34
 local MAX_RANGE = 150.0
 local WPNID = "opfordeagle"
 local WPNNAME = "Desert Eagle"
@@ -82,7 +83,7 @@ function server.primaryFireDE357(p)
 	end
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, MAX_RANGE, p, WPNID, 3)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 3)
 	
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
