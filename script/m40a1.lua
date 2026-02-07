@@ -77,7 +77,7 @@ function server.primaryFireM40(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = M40players[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.0005 -- assuming spread is a radian value and this is the diameter of the cone

@@ -75,7 +75,7 @@ function server.primaryFireDE357(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = DE357players[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	
 	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
 	if data.laseron == true then
@@ -251,7 +251,7 @@ function client.tickPlayerDE357(p, dt)
 		data.toolAnimator.forceActionPose = false
 	else
 		if IsPlayerLocal(p) and data.laserrefresh <= 0 then
-			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 			local hit, dist = QueryRaycast(VecSub(pos, Vec(0.0, 0.15, 0.0)), dir, 100)
 			local toolBody = GetToolBody(p)
 			if toolBody ~= 0 then

@@ -70,7 +70,7 @@ function server.primaryFirePYTH(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = PYTHplayers[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 	dir = VecAdd(dir, rndVec(spread))

@@ -83,7 +83,7 @@ function server.primaryFireSG(p)
 	local data = SGplayers[p]
 
 	for i=0, 5 do
-		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 		dir = VecAdd(dir, rndVec(spread))
 		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
@@ -109,7 +109,7 @@ function server.secondaryFireSG(p)
 	local data = SGplayers[p]
 
 	for i=0, 11 do
-		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 		dir = VecAdd(dir, rndVec(spread))
 		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end

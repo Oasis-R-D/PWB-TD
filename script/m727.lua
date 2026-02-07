@@ -72,7 +72,7 @@ function server.primaryFireM727(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = M727players[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
@@ -94,7 +94,7 @@ end
 function server.secondaryFireM727(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
+	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.05234/8 -- assuming spread is a radian value and this is the diameter of the cone
