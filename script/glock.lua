@@ -74,7 +74,7 @@ function server.primaryFirePIST9MM(p)
 	local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 2)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)
@@ -91,7 +91,7 @@ function server.secondaryFirePIST9MM(p) -- separated for easy modability
 	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
 
 	dir = VecAdd(dir, rndVec(spread))
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, 2)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)

@@ -117,7 +117,7 @@ function BloodVFX(pos, dir, damage, playerhit)
 end
 
 -- hook the Shoot func to add rope damaging (would adding this to the actual function really be THAT hard???)
-function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, weaponid, times)
+function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, weaponid, weaponname, times)
 	times = times or 0
 	newrange = range or 100 -- or is only here just because, not needed.
 	playerdamage = playerdamage or 0
@@ -140,7 +140,7 @@ function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, wea
 	for i=0, times do
 		Shoot(pos, dir, shoottype, damage, newrange, player, weaponid)
 	end
-	ApplyPlayerDamage(playerhit, playerdamage, weaponid, player)
+	ApplyPlayerDamage(playerhit, playerdamage, weaponname, player)
 
 	local SoundPoint = VecAdd(pos, VecScale(dir, pdist))
 	PlaySound(LoadSound("MOD/snd/bullet_hit0.ogg"), SoundPoint, 2)

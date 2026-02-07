@@ -85,7 +85,7 @@ function server.primaryFireSG(p)
 	for i=0, 5 do
 		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 		dir = VecAdd(dir, rndVec(spread))
-		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID)
+		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
 	
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
@@ -111,7 +111,7 @@ function server.secondaryFireSG(p)
 	for i=0, 11 do
 		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, 100, p)
 		dir = VecAdd(dir, rndVec(spread))
-		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID)
+		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
 	
 	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
