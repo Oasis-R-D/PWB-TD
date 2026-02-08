@@ -69,7 +69,7 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
 		if pHitPlayer ~= 0 then
 			ApplyPlayerDamage(pHitPlayer, DAMAGE, WPNNAME, m_pPlayer)
-			BloodVFX(SoundPoint, dir, 0)
+			BloodVFX(SoundPoint, dir, DAMAGE, pHitPlayer)
 		elseif pHitWorld ~= 0 then
 			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, 0.1, MAX_RANGE, m_pPlayer, WPNID, WPNNAME, 5) -- push objects, "dent" metal
 			MakeHole(SoundPoint, 0.75, 0.12, 0) -- stronger than sledge
