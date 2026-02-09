@@ -102,15 +102,16 @@ function BloodVFX(pos, dir, damage, playerhit)
 		count = 12;
 	end
 
-	for i=0, count do
-		local newdir = VecAdd(dir, rndVec(noise))
+	for i=0, count do 
+		local newdir = VecSub(VecAdd(dir, rndVec(noise)), GetGravity())
 		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5)
 		if bloodhit ~= 0 then
 			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.16, 0.33), 0.33, 0.01, 0.0, 1.0, rnd(0.66, 0.99))
 		end
 	end
 	
-	local bigbloodhit, bigblooddist = QueryRaycast(pos, dir, 3.75)
+	local newestdir = VecSub(dir, GetGravity())
+	local bigbloodhit, bigblooddist = QueryRaycast(pos, newestdir, 3.75)
 	if bigbloodhit ~= 0 then
 		PaintRGBA(VecAdd(pos, VecScale(dir, bigblooddist)), 0.5, 0.33, 0.01, 0.0, 1.0, 0.66)
 	end

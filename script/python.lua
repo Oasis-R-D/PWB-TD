@@ -83,6 +83,7 @@ function server.primaryFirePYTH(p)
 		SetToolAmmo(WPNID, ammo-1, p)
 	end
 end
+
 function client.initPYTH()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
