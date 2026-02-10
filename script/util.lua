@@ -66,7 +66,6 @@ function client.BloodParticles(pos, dir, damage, playerhit)
 		ParticleAlpha(10, 0)
 		ParticleColor(0.4, 0.01, 0)
 		ParticleCollide(0)
-		ParticleDrag(1.0)
 		SpawnParticle(pos, playervel, 0.5)
 	end		
 		
@@ -92,25 +91,25 @@ function BloodVFX(pos, dir, damage, playerhit)
 	local count = 1
 	local noise = 0.1
 	if damage < 0.1 then
-		noise = 0.25;
+		noise = 0.2;
 		count = 3;
 	elseif damage < 0.25 then
-		noise = 0.4;
+		noise = 0.35;
 		count = 6;
 	else
-		noise = 0.55;
+		noise = 0.45;
 		count = 12;
 	end
 
 	for i=0, count do 
-		local newdir = VecSub(VecAdd(dir, rndVec(noise)), GetGravity())
+		local newdir = VecAdd(VecAdd(dir, rndVec(noise)), VecScale(GetGravity(), 0.01))
 		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5)
 		if bloodhit ~= 0 then
 			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.16, 0.33), 0.33, 0.01, 0.0, 1.0, rnd(0.66, 0.99))
 		end
 	end
 	
-	local newestdir = VecSub(dir, GetGravity())
+	local newestdir = VecAdd(dir, VecScale(GetGravity(), 0.01))
 	local bigbloodhit, bigblooddist = QueryRaycast(pos, newestdir, 3.75)
 	if bigbloodhit ~= 0 then
 		PaintRGBA(VecAdd(pos, VecScale(dir, bigblooddist)), 0.5, 0.33, 0.01, 0.0, 1.0, 0.66)
