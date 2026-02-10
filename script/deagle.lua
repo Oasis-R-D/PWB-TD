@@ -24,7 +24,7 @@ local WPNID = "opfordeagle"
 local WPNNAME = "Desert Eagle"
 local CASING_ORG = Vec(0.02, 0.25, 0.1)
 
--- Per weapon data and const storers
+-- Per weapon data storer
 DE357players = {}
 
 function createPlayerDataDE357()

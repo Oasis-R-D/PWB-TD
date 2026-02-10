@@ -13,7 +13,7 @@ local MAX_RANGE = 2
 local WPNID = "opforwrench"
 local WPNNAME = "Pipe Wrench"
 
--- Per weapon data and const storers
+-- Per weapon data storer
 WRNCHplayers = {}
 
 function createPlayerDataWRNCH()

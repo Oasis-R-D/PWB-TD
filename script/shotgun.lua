@@ -23,7 +23,7 @@ local WPNID = "hlshotgun"
 local WPNNAME = "Assault Shotgun"
 local CASING_ORG = Vec(0.02, 0.1, 0.075)
 
--- Per weapon data and const storers
+-- Per weapon data storer
 SGplayers = {}
 	
 function createPlayerDataSG()

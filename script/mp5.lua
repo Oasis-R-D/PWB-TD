@@ -22,7 +22,7 @@ local WPNID = "hl9mmar"
 local WPNNAME = "9mmAR"
 local CASING_ORG = Vec(0.02, 0.25, -0.25)	-- casing origin
 
--- Per weapon data and const storers
+-- Per weapon data storer
 MP5players = {}
 
 function createPlayerDataMP5()

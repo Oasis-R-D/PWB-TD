@@ -13,7 +13,7 @@ local MAX_RANGE = 2.25
 local WPNID = "hlcrowbar"
 local WPNNAME = "Crowbar"
 
--- Per weapon data and const storers
+-- Per weapon data storer
 CRBRplayers = {}
 
 function createPlayerDataCRBR()

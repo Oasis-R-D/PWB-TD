@@ -22,7 +22,7 @@ local WPNID = "hlglock"
 local WPNNAME = "9mm HandGun"
 local CASING_ORG = Vec(0.02, 0.25, 0.1)
 
--- Per weapon data and const storers
+-- Per weapon data storer
 PIST9MMplayers = {}
 
 function createPlayerDataPIST9MM()

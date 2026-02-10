@@ -20,7 +20,7 @@ local WPNID = "opform249_saw"
 local WPNNAME = "M249 SAW"
 local CASING_ORG = Vec(0.02, 0.05, -0.05)
 
--- Per weapon data and const storers
+-- Per weapon data storer
 M249players = {}
 
 function createPlayerDataM249()

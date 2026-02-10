@@ -22,7 +22,7 @@ local WPNID = "hlm727"
 local WPNNAME = "Colt M727"
 local CASING_ORG = Vec(0.02, 0.0, 0.1)
 
--- Per weapon data and const storers
+-- Per weapon data storer
 M727players = {}
 
 function createPlayerDataM727()

@@ -21,7 +21,7 @@ local WPNID = "hlpython"
 local WPNNAME = "Colt Python"
 local CASING_ORG = Vec(-0.1, 0.25, 0.15)
 
--- Per weapon data and const storers
+-- Per weapon data storer
 PYTHplayers = {}
 
 function createPlayerDataPYTH()
