@@ -207,7 +207,6 @@ function client.tickPlayerM40(p, dt)
 
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
-			data.toolAnimator.forceActionPose = true
 			if IsPlayerLocal(p) then
 				PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
 			end
@@ -218,10 +217,13 @@ function client.tickPlayerM40(p, dt)
 
 	if data.scoped == false or data.clipamntM40 < 0 or ammo <= 0 then
 		data.toolAnimator.forceActionPose = false
+
 		if IsPlayerLocal(p) then
 			scopeddraw = false
 		end
 	elseif data.scoped == true then
+		data.toolAnimator.forceActionPose = true
+
 		if IsPlayerLocal(p) then
 			scopeddraw = true
 			SetCameraFov(18)

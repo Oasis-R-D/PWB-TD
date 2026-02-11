@@ -193,7 +193,6 @@ function client.tickPlayerPYTH(p, dt)
 	
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
-			data.toolAnimator.forceSecondaryActionPose = true
 			if IsPlayerLocal(p) then
 				PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
 			end
@@ -206,9 +205,13 @@ function client.tickPlayerPYTH(p, dt)
 		data.toolAnimator.forceSecondaryActionPose = false
 		data.adsFov = nil
 	elseif data.scoped == true then
+		data.toolAnimator.timeSinceFire = 1.5 -- make unscoping take ~0.5
+		data.toolAnimator.forceSecondaryActionPose = true
+
 		if data.adsFov == nil then
 			data.adsFov = 0.0
 		end
+
 		if IsPlayerLocal(p) then
 			local fov = math.min(data.adsFov, ADSFOV)
 			SetCameraFov(fov)
