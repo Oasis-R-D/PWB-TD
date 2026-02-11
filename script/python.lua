@@ -35,7 +35,7 @@ function createPlayerDataPYTH()
 		timeuntileject = nil,
 		toolAnimator = ToolAnimator(),
 		scoped = false,
-		adsFov = 0.0,
+		adsFov = nil,
 		firesound = nil,
 	}
 end
@@ -204,11 +204,16 @@ function client.tickPlayerPYTH(p, dt)
 
 	if data.scoped == false or data.clipamntPYTH < 0 or ammo <= 0 then
 		data.toolAnimator.forceSecondaryActionPose = false
+		data.adsFov = nil
 	elseif data.scoped == true then
+		if data.adsFov == nil then
+			data.adsFov = 0.0
+		end
 		if IsPlayerLocal(p) then
 			local fov = math.min(data.adsFov, ADSFOV)
 			SetCameraFov(fov)
 		end
+		data.adsFov = data.adsFov + (2*dt)
 	end
 
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
@@ -225,7 +230,7 @@ function client.tickPlayerPYTH(p, dt)
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
-	data.adsFov = data.adsFov + (2*dt)
+	
 
 	-- SHELL EJECT
 	if data.timeuntileject == nil then
