@@ -14,12 +14,14 @@ local CLIP_SIZE = 6.0
 local PICKUP_SIZE = 12.0
 local RECOIL_AMNT = 0.3
 local FIRERATE = 0.75
+local ALTFIRERATE = 0.5
 local DAMAGE = 0.5
 local PLAYERDAMAGE = 0.4
 local MAX_RANGE = 150.0
 local WPNID = "hlpython"
 local WPNNAME = "Colt Python"
 local CASING_ORG = Vec(-0.1, 0.25, 0.15)
+local ADSFOV = 40
 
 -- Per weapon data storer
 PYTHplayers = {}
@@ -32,6 +34,8 @@ function createPlayerDataPYTH()
 		recoil = 0.0,
 		timeuntileject = nil,
 		toolAnimator = ToolAnimator(),
+		scoped = false,
+		adsFov = 0.0,
 		firesound = nil,
 	}
 end
@@ -187,6 +191,26 @@ function client.tickPlayerPYTH(p, dt)
 		end
 	end
 	
+	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
+		if data.altCoolDown < 0 then
+			data.toolAnimator.forceSecondaryActionPose = true
+			if IsPlayerLocal(p) then
+				PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
+			end
+			data.altCoolDown = ALTFIRERATE
+			data.scoped = not data.scoped
+		end
+	end
+
+	if data.scoped == false or data.clipamntPYTH < 0 then
+		data.toolAnimator.forceSecondaryActionPose = false
+	elseif data.scoped == true then
+		if IsPlayerLocal(p) then
+			local fov = math.min(data.adsFov, ADSFOV)
+			SetCameraFov(fov)
+		end
+	end
+
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
 		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntPYTH
@@ -201,7 +225,8 @@ function client.tickPlayerPYTH(p, dt)
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
-	
+	data.adsFov = data.adsFov + (2*dt)
+
 	-- SHELL EJECT
 	if data.timeuntileject == nil then
 	else
