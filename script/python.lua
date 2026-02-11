@@ -202,7 +202,7 @@ function client.tickPlayerPYTH(p, dt)
 		end
 	end
 
-	if data.scoped == false or data.clipamntPYTH < 0 then
+	if data.scoped == false or data.clipamntPYTH < 0 or ammo <= 0 then
 		data.toolAnimator.forceSecondaryActionPose = false
 	elseif data.scoped == true then
 		if IsPlayerLocal(p) then

@@ -216,7 +216,7 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if data.scoped == false or data.clipamntM40 < 0 then
+	if data.scoped == false or data.clipamntM40 < 0 or ammo <= 0 then
 		data.toolAnimator.forceActionPose = false
 		if IsPlayerLocal(p) then
 			scopeddraw = false
