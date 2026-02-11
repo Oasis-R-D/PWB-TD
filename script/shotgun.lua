@@ -166,11 +166,13 @@ function client.tickPlayerSG(p, dt)
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-		local reloadtime = 0
+		local reloadtime = nil
 		local shellsneedingloading = 8 - data.clipamntSG
+
 		if shellsneedingloading > ammo then
 			shellsneedingloading = ammo
 		end
+
 		if data.clipamntSG > 0 then
 			reloadtime = RELOAD_TIME * shellsneedingloading
 			data.shellstoload = shellsneedingloading
@@ -179,6 +181,7 @@ function client.tickPlayerSG(p, dt)
 			data.pumptime = reloadtime - 0.25
 			data.shellstoload = shellsneedingloading
 		end
+
 		data.coolDown = reloadtime
 		data.altCoolDown = reloadtime
 		data.shellinserttime = 0.8
@@ -231,11 +234,13 @@ function client.tickPlayerSG(p, dt)
 					data.pumptime = FIRERATE - 0.25 -- 0.5
 				elseif ammo > 0.5 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-					local reloadtime = 0
+					local reloadtime = nil
 					local shellsneedingloading = 8 - data.clipamntSG
+
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
 					end
+
 					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
 					data.pumptime = reloadtime - 0.25
 					data.shellstoload = shellsneedingloading
@@ -295,10 +300,12 @@ function client.tickPlayerSG(p, dt)
 				elseif ammo > 0.5 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
+					
 					local shellsneedingloading = 8 - data.clipamntSG
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
 					end
+
 					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
 					data.pumptime = reloadtime - 0.25
 					data.shellstoload = shellsneedingloading
