@@ -9,7 +9,11 @@
 		</group>
 		<group name="tool_space">
 			<body dynamic="false">
-				<vox file="MOD/vox/python.vox" scale="0.4"/>
+				<vox file="MOD/vox/python.vox" object="gun" scale="0.4">
+					<vox pos="0.015 0.28 -0.23" file="MOD/vox/python.vox" object="frontsight" scale="0.1"/>
+					<vox pos="0.03 0.28 0.08" file="MOD/vox/python.vox" object="backsight1" scale="0.1"/>
+					<vox pos="0.0 0.28 0.08" file="MOD/vox/python.vox" object="backsight2" scale="0.1"/>
+				</vox>
 			</body>
 			<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>
 			<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>

@@ -1,0 +1,7 @@
+<prefab version="1.6.0">
+	<group name="instance=MOD/prop/explosive/groundgrenade.xml" pos="-0.7 0.0 0.1" rot="0.0 0.0 0.0">
+		<vox id_="1917438208" tags="unbreakable" pos="-0.1 0.1 0.0" rot="0.0 0.0 0.0" prop="true" file="MOD/prop/explosive/grenade.vox"/>
+	</group>
+</prefab>
+
+
