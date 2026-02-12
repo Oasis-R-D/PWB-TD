@@ -294,7 +294,7 @@ function client.tickPlayerMp5(p, dt)
 	data.recoil = data.recoil - dt
 	
 	-- RECOIL
-	if data.recoil > 0 then
+	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
 		local recoilvert = math.max(0, data.recoil)

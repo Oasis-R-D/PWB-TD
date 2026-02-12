@@ -295,7 +295,7 @@ function client.tickPlayerM727(p, dt)
 	data.recoil = data.recoil - dt
 	
 	-- RECOIL
-	if data.recoil > 0 then
+	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil / 2)
 		local siderecoil = recoil * 0.25
 		local recoilvert = math.max(0, data.recoil * 1.5)

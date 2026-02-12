@@ -282,7 +282,7 @@ function client.tickPlayerM40(p, dt)
 	-- END SHELL EJECT
 	
 	-- RECOIL
-	if data.recoil > 0 then
+	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
 		local recoilvert = math.max(0, data.recoil)

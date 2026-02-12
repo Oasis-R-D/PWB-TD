@@ -31,6 +31,7 @@ function createPlayerDataPYTH()
 		clipamntPYTH = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
+		altCoolDown = 0.0,
 		recoil = 0.0,
 		timeuntileject = nil,
 		toolAnimator = ToolAnimator(),
@@ -194,7 +195,7 @@ function client.tickPlayerPYTH(p, dt)
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			if IsPlayerLocal(p) then
-				PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
+				--PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
 			end
 			data.altCoolDown = ALTFIRERATE
 			data.scoped = not data.scoped
@@ -213,7 +214,7 @@ function client.tickPlayerPYTH(p, dt)
 		end
 
 		if IsPlayerLocal(p) then
-			local fov = math.min(data.adsFov, ADSFOV)
+			local fov = 40 --math.min(ADSFOV, data.adsFov)
 			SetCameraFov(fov)
 		end
 		data.adsFov = data.adsFov + (2*dt)
@@ -232,9 +233,9 @@ function client.tickPlayerPYTH(p, dt)
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
+	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	
-
 	-- SHELL EJECT
 	if data.timeuntileject == nil then
 	else
@@ -269,7 +270,7 @@ function client.tickPlayerPYTH(p, dt)
 	-- END SHELL EJECT
 
 	-- RECOIL
-	if data.recoil > 0 then
+	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil)
 		local siderecoil = recoil * 0.25
 		local recoilvert = math.max(0, data.recoil * 1.2)
