@@ -67,7 +67,7 @@ function client.BloodParticles(pos, dir, damage, playerhit)
 		ParticleColor(0.4, 0.01, 0)
 		ParticleCollide(0)
 		SpawnParticle(pos, playervel, 0.5)
-	end		
+	end
 		
 	for i=0, (impactsize * 50) do
 		ParticleReset()
@@ -116,7 +116,7 @@ function BloodVFX(pos, dir, damage, playerhit)
 	end
 end
 
--- hook the Shoot func to add rope damaging (would adding this to the actual function really be THAT hard???)
+-- hook the Shoot func to add new stuff
 function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, weaponid, weaponname, times)
 	times = times or 0
 	newrange = range or 100 -- or is only here just because, not needed.
