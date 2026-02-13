@@ -40,6 +40,7 @@ function createPlayerDataTAU()
 end
 
 function server.initTAU()
+	laserSprite = LoadSprite("gfx/laser.png")
 	RegisterTool(WPNID, WPNNAME, "MOD/prefab/tau.xml", 6)
 	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
@@ -73,6 +74,20 @@ function getFullChargeTime()
 	return 4
 end
 
+function client.drawlaser(vecSrc, vecDir, raycastDist, clLaserSprite, p, primary)
+	if IsPlayerLocal(p) then
+		local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
+		local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
+		local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform(p).pos))
+		t.rot = QuatAlignXZ(xAxis, zAxis)
+		if primary == true then
+			DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.33, 1.0, 0.5, 0.0, 0.66, true, true)
+		else
+			DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.66, 1.0, 1.0, 1.0, 0.9, true, true) -- 0.9 should be the damage instead.
+		end
+	end
+end
+
 function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local data = MP5players[p]
 	
@@ -89,9 +104,11 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 
 	while flDamage > 10 and nMaxHits > 0 do 
 		nMaxHits = nMaxHits - 1
-
+		
 		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, 208, 0, pentIgnore)
-		DrawLine(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.0, 0.1, 0.1, 1)
+		--DrawLine(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.0, 0.1, 0.1, 1)
+		ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary)
+		
 		--DrawLine(vecSrc, vecDest, 0.0, 0.1, 1.0, 1)
 
 		if not raycastHit then
@@ -194,6 +211,8 @@ function server.startShootbeam(primary, p, chargetime)
 	local flDamage = 0.0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
+	StopSound(data.firesound)
+
 	local _,vecSrc,_,vecAiming = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	if primary == false then
 		if chargetime > getFullChargeTime() then
@@ -201,9 +220,18 @@ function server.startShootbeam(primary, p, chargetime)
 		else
 			flDamage = 200 * (chargetime / getFullChargeTime())
 		end
+
+		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 350)
+
+		if chargetime > 10 then
+			ApplyPlayerDamage(p, 0.5, "Overcharged")
+			local hitpos = GetPlayerEyeTransform(p)
+			BloodVFX(hitpos.pos, GetQuatEuler(hitpos.rot), 50, p)
+		end
 	else 
 		-- fixed damage in primary
 		flDamage = 20
+		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	end
 	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p);
 end
@@ -254,36 +282,30 @@ function client.tickPlayerTAU(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then	
-				PointLight(mt.pos, 1, 0.75, 0.0, 3)
+				PointLight(mt.pos, 1, 0.5, 0.0, 3)
 				data.angVel = 1000
-				StopSound(data.firesound)
-				data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 				
 				data.aftershocksfx = rnd(0.3, 0.8)
 				if IsPlayerLocal(p) then
 					ServerCall("server.startShootbeam", true, p)
 				end
 				
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local playervel = GetPlayerVelocity(p)
-					
-					-- muzzleflash
-					for i=0, 2 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.08, 0.13), 0.3)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,1,1, 1,0.75,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
+				local playervel = GetPlayerVelocity(p)
 				
+				-- muzzleflash
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.13), 0.3)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.33,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 				
 				data.coolDown = FIRERATE
@@ -312,20 +334,43 @@ function client.tickPlayerTAU(p, dt)
 			pitch = 250
 		end
 		pitch = pitch / 100
-		data.angVel = math.min(1500, data.angVel + (pitch * 20))
+
+		data.angVel = math.min(1750, data.angVel + (pitch * 20))
+		data.recoil = math.min(0.1, data.recoil + (pitch * 0.5))
+
 		PlayLoop(gaussLoop, mt.pos, 1, true, pitch)
-		if (data.chargedTime > 0.5 and not InputDown("grab", p)) or data.chargedTime > 10 then -- swing start animation done (in opfor)
-			StopSound(data.firesound)
-			data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-			
+
+		if (data.chargedTime > 1 and not InputDown("grab", p)) or data.chargedTime > 10 then -- swing start animation done (in opfor)
+			PointLight(mt.pos, 1, 1, 1, 5)
+
+			local playervel = GetPlayerVelocity(p)
+				
+			-- muzzleflash
+			for i=0, 3 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.1, 0.2), 0.4)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(1,0.8,0.75)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
+
 			data.aftershocksfx = rnd(0.3, 0.8)
 			if IsPlayerLocal(p) then
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
 			end
 
-			data.recoil = 2 * RECOIL_AMNT
+			data.recoil = 2.5 * RECOIL_AMNT
 			data.chargedTime = nil
 			data.inAltAttack = false
+			data.coolDown = 2 * FIRERATE
+			data.altCoolDown = 2 * FIRERATE
 		end
 	elseif data.inAltAttack == true then -- start timer
 		data.chargedTime = 0
