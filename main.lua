@@ -12,6 +12,8 @@
 #include "script/crowber.lua" -- :3
 #include "script/wrench.lua"
 
+#include "script/tau.lua"
+
 -- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
 -- To remove a weapon, remove it's lua file, xml file and function calls from this file
 
@@ -27,6 +29,8 @@ function server.init()
    server.initPYTH()
    server.initPIST9MM()
    server.initSG()
+
+   server.initTAU()
 end
 
 
@@ -42,6 +46,8 @@ function server.tick(dt)
    server.tickPYTH(dt)
    server.tickPIST9MM(dt)
    server.tickSG(dt)
+
+   server.tickTAU(dt)
 end
 
 
@@ -57,6 +63,8 @@ function server.tickPlayer(p, dt)
    server.tickPlayerPYTH(p, dt)
    server.tickPlayerPIST9MM(p, dt)
    server.tickPlayerSG(p, dt)
+
+   server.tickPlayerTAU(p, dt)
 end
 
 
@@ -72,6 +80,8 @@ function client.init()
    client.initPYTH()
    client.initPIST9MM()
    client.initSG()
+
+   client.initTAU()
 end
 
 
@@ -87,6 +97,8 @@ function client.tick(dt)
    client.tickPYTH(dt)
    client.tickPIST9MM(dt)
    client.tickSG(dt)
+
+   client.tickTAU(dt)
 end
 
 function client.draw()
@@ -115,4 +127,6 @@ function client.tickPlayer(p, dt)
    client.tickPlayerPYTH(p, dt)
    client.tickPlayerPIST9MM(p, dt)
    client.tickPlayerSG(p, dt)
+
+   client.tickPlayerTAU(p, dt)
 end

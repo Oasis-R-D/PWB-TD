@@ -6,10 +6,11 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-local PRIM_FIRESOUND = "MOD/snd/glockFR.ogg"
-local PICKUP_SIZE = 25.0
+local PRIM_FIRESOUND = "MOD/snd/tauFire.ogg"
+local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
+local PICKUP_SIZE = 20.0
 local RECOIL_AMNT = 0.17
-local FIRERATE = 0.3
+local FIRERATE = 0.2
 local ALTFIRERATE = 0.2
 local DAMAGE = 0.4
 local PLAYERDAMAGE = 0.12
@@ -20,24 +21,31 @@ local WPNNAME = "Tau Cannon"
 -- Per weapon data storer
 TAUplayers = {}
 
-function createPlayerDataPIST9MM()
+function createPlayerDataTAU()
     return {
 		coolDown = 0.0,
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		aftershocksfx = nil,
+		chargedTime = nil,
 		firesound = nil,
+		angle = 0.0,
+		angVel = 0.0,
+		body = nil,
+		barrel = nil,
+		barrelTransform = nil,
 	}
 end
 
-function server.initPIST9MM()
+function server.initTAU()
 	RegisterTool(WPNID, WPNNAME, "MOD/prefab/tau.xml", 6)
 	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
-function server.tickPIST9MM(dt)
+function server.tickTAU(dt)
 	for p in PlayersAdded() do
-		TAUplayers[p] = createPlayerDataPIST9MM()
+		TAUplayers[p] = createPlayerDataTAU()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -47,17 +55,17 @@ function server.tickPIST9MM(dt)
 	end
 
 	for p in Players() do
-		server.tickPlayerPIST9MM(p, dt)
+		server.tickPlayerTAU(p, dt)
 	end
 end
 
-function server.tickPlayerPIST9MM(p, dt)
+function server.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then
-		TAUplayers[p] = createPlayerDataPIST9MM()
+		TAUplayers[p] = createPlayerDataTAU()
 	end
 end
 
-function server.primaryFirePIST9MM(p)
+function server.primaryFireTAU(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
@@ -72,7 +80,7 @@ function server.primaryFirePIST9MM(p)
 	end
 end
 
-function server.secondaryFirePIST9MM(p) -- separated for easy modability
+function server.secondaryFireTAU(p) -- separated for easy modability
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
 	local ammo = GetToolAmmo(WPNID, p)
@@ -87,15 +95,15 @@ function server.secondaryFirePIST9MM(p) -- separated for easy modability
 	end
 end
 
-function client.initPIST9MM()
+function client.initTAU()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(WPNID, toolHaptic);
 end
 
-function client.tickPIST9MM(dt)
+function client.tickTAU(dt)
 	for p in PlayersAdded() do
-		TAUplayers[p] = createPlayerDataPIST9MM();
+		TAUplayers[p] = createPlayerDataTAU();
 	end
 
 	for p in PlayersRemoved() do
@@ -103,15 +111,15 @@ function client.tickPIST9MM(dt)
 	end
 
 	for p in Players() do
-		client.tickPlayerPIST9MM(p, dt)
+		client.tickPlayerTAU(p, dt)
 	end
 end
 
 clipamnt = 0
 
-function client.tickPlayerPIST9MM(p, dt)
+function client.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then
-		TAUplayers[p] = createPlayerDataPIST9MM()
+		TAUplayers[p] = createPlayerDataTAU()
 		return
 	end
 	
@@ -131,35 +139,20 @@ function client.tickPlayerPIST9MM(p, dt)
 	local data = TAUplayers[p]
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+		
 			if data.coolDown < 0 then	
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-					
+				PointLight(mt.pos, 1, 0.75, 0.0, 3)
+				data.angVel = 1000
 				StopSound(data.firesound)
+				data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+				data.aftershocksfx = rnd(0.3, 0.8)
 				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-					ServerCall("server.primaryFirePIST9MM", p)
-				else
-					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					ServerCall("server.primaryFireTAU", p)
 				end
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.6, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
 					
 					-- muzzleflash
 					for i=0, 2 do
@@ -173,12 +166,15 @@ function client.tickPlayerPIST9MM(p, dt)
 						ParticleSticky(0)
 						ParticleEmissive(5, 1)
 						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
+						ParticleColor(1,1,1, 1,0.75,0)
 						SpawnParticle(mt.pos, playervel, 0.125)
 					end
 				
 				end
 				
+				data.coolDown = FIRERATE
+				data.altCoolDown = FIRERATE
+
 				data.recoil = RECOIL_AMNT
 			end
 
@@ -192,33 +188,18 @@ function client.tickPlayerPIST9MM(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
 				if IsPlayerLocal(p) then
-					ServerCall("server.secondaryFirePIST9MM", p)
+					ServerCall("server.secondaryFireTAU", p)
 				end
 				
 				local toolBody = GetToolBody(p)
 				if toolBody ~= 0 then
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					local playervel = GetPlayerVelocity(p)
 					
-					-- shell ejection
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.6, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
 					-- muzzleflash
-					for i=0, 3 do
+					for i=0, 4 do
 						ParticleReset()
 						ParticleGravity(0)
-						ParticleRadius(rnd(0.1, 0.15), 0.33)
+						ParticleRadius(rnd(0.2, 0.3), 0.4)
 						ParticleAlpha(1, 0)
 						ParticleTile(5)
 						ParticleDrag(0)
@@ -226,14 +207,17 @@ function client.tickPlayerPIST9MM(p, dt)
 						ParticleSticky(0)
 						ParticleEmissive(5, 1)
 						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
+						ParticleColor(1,0.9,0.9, 1,0.75,0)
+						SpawnParticle(mt.pos, playervel, 0.15)
 					end
 				
 				end
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 				
+				data.coolDown = ALTFIRERATE
+				data.altCoolDown = ALTFIRERATE
+
 				data.recoil = RECOIL_AMNT
 			end
 
@@ -246,7 +230,17 @@ function client.tickPlayerPIST9MM(p, dt)
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
-	
+	data.angle = data.angle + data.angVel*dt
+	data.angVel = math.max(0, data.angVel - dt*1000)
+
+	if data.aftershocksfx ~= nil then
+		data.aftershocksfx = data.aftershocksfx - dt
+		if data.aftershocksfx <= 0 then
+			data.aftershocksfx = nil
+			PlaySound(LoadSound(AFTERSHOCKSFX), mt.pos, 1)
+		end
+	end
+
 	-- RECOIL
 	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil)
@@ -263,4 +257,21 @@ function client.tickPlayerPIST9MM(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	--Animate barrel around the attachment point
+	local b = GetToolBody(p)
+	local voxSize = 0.04
+	local attach = Transform(Vec(0, 2.5*voxSize, 2.5*voxSize))
+	if data.body ~= b then
+		data.body = b
+		-- Barrel is the second shape in vox file. Remember original position in attachment frame
+		local shapes = GetBodyShapes(b)
+		data.barrel = shapes[6]
+		data.barrelTransform = TransformToLocalTransform(attach, GetShapeLocalTransform(data.barrel))
+	end
+	if data.barrel then
+		attach.rot = QuatEuler(0, 0, -data.angle) -- negative to make it spin the right way
+		t = TransformToParentTransform(attach, data.barrelTransform)
+		SetShapeLocalTransform(data.barrel, t)
+	end
 end
