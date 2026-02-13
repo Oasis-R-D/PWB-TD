@@ -65,6 +65,14 @@ function server.tickPlayerTAU(p, dt)
 	end
 end
 
+function server.shootbeam(primary)
+
+end
+
+function server.startShootbeam(primary)
+
+end
+
 function server.primaryFireTAU(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
@@ -74,7 +82,7 @@ function server.primaryFireTAU(p)
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
-	
+	--server.startShootbeam(true)
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)
 	end
@@ -89,10 +97,7 @@ function server.secondaryFireTAU(p) -- separated for easy modability
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
-	
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	--server.startShootbeam(false)
 end
 
 function client.initTAU()
