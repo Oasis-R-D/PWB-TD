@@ -65,39 +65,47 @@ function server.tickPlayerTAU(p, dt)
 	end
 end
 
-function server.shootbeam(primary)
+function getFullChargeTime()
+	if isMP()
+		return 1.5
+	end
+	return 4
+end
+
+function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary)
+	local data = MP5players[p]
+	
+	local vecSrc = vecOrigSrc;
+	local vecDest = VecAdd(vecSrc, VecScale(vecDir, 208))
+
+	local pentIgnore -- probably the firer
+	--TraceResult tr, beam_tr
+	local flMaxFrac = 1.0
+	local nTotal = 0
+	local fHasPunched = false
+	local fFirstBeam = true
+	local nMaxHits = 10
 
 end
 
 function server.startShootbeam(primary)
+	local data = MP5players[p]
 
-end
-
-function server.primaryFireTAU(p)
+	local flDamage = 0.0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(WPNID, p)
-	local data = TAUplayers[p]
-
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
-	--server.startShootbeam(true)
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
+	local _,vecSrc,_,vecAiming = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
+	if primary == false then
+		if data.chargedTime > getFullChargeTime() then
+			flDamage = 200
+		else
+			flDamage = 200 * (data.chargedTime / getFullChargeTime())
+		end
+	else 
+		-- fixed damage in primary
+		flDamage = 20
 	end
-end
-
-function server.secondaryFireTAU(p) -- separated for easy modability
-	local mt = GetToolLocationWorldTransform("muzzle", p)
-	
-	local ammo = GetToolAmmo(WPNID, p)
-	local data = TAUplayers[p]
-
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
-	--server.startShootbeam(false)
+	server.shootbeam(vecSrc, vecAiming, flDamage, primary);
 end
 
 function client.initTAU()
@@ -144,15 +152,15 @@ function client.tickPlayerTAU(p, dt)
 	local data = TAUplayers[p]
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.75, 0.0, 3)
 				data.angVel = 1000
 				StopSound(data.firesound)
 				data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+				
 				data.aftershocksfx = rnd(0.3, 0.8)
 				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireTAU", p)
+					ServerCall("server.startShootBeam", p)
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -189,6 +197,7 @@ function client.tickPlayerTAU(p, dt)
 	end
 
 	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		if data.altCoolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				
@@ -217,8 +226,6 @@ function client.tickPlayerTAU(p, dt)
 					end
 				
 				end
-				
-				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 				
 				data.coolDown = ALTFIRERATE
 				data.altCoolDown = ALTFIRERATE
