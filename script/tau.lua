@@ -125,6 +125,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				vecDest = VecAdd(vecSrc, VecScale(vecDir * 208))
 
 				-- small explosion here? (no idea how to do radius damage)
+				MakeHole(vecSrc, 0.8, 0.25, 0.075)
 
 				nTotal = nTotal + 34
 
@@ -165,6 +166,8 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				else
 					flDamage = 0
 				end
+			else
+				MakeHole(vecSrc, 0.9, 0.3, 0.12)
 			end
 		else
 			vecSrc = VecAdd(VecAdd(tr.vecEndPos, VecScale(vecDir, raycastDist)), vecDir)
