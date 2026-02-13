@@ -106,10 +106,9 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		nMaxHits = nMaxHits - 1
 		
 		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, 208, 0, pentIgnore)
+		
 		--DrawLine(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.0, 0.1, 0.1, 1)
 		ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary)
-		
-		--DrawLine(vecSrc, vecDest, 0.0, 0.1, 1.0, 1)
 
 		if not raycastHit then
 			break
