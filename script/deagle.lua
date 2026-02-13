@@ -259,6 +259,7 @@ function client.tickPlayerDE357(p, dt)
 				local laser_origin = TransformToParentPoint(transform, Vec(0.05, 0.05, -0.2))
 				dist = dist - 0.1
 				DrawLine(laser_origin, VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
+				--DrawSprite(laserSprite, t, dist, 0.1, 0.3, 1.0, 1.0, 0.1, true, true) -- figure out how to do this
 				if hit then
 					local breakPoint = VecAdd(pos, VecScale(dir, dist))
 					for i=0, 1 do
