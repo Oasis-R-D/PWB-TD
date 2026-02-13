@@ -72,13 +72,13 @@ function getFullChargeTime()
 	return 4
 end
 
-function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary)
+function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local data = MP5players[p]
 	
 	local vecSrc = vecOrigSrc;
 	local vecDest = VecAdd(vecSrc, VecScale(vecDir, 208))
 
-	local pentIgnore -- probably the firer
+	local pentIgnore = p
 	--TraceResult tr, beam_tr
 	local flMaxFrac = 1.0
 	local nTotal = 0
@@ -86,9 +86,94 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary)
 	local fFirstBeam = true
 	local nMaxHits = 10
 
+	while flDamage > 10 and nMaxHits > 0 do 
+		nMaxHits--;
+
+		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, 208, 0, pentIgnore)
+
+		if not raycastHit then
+			break
+		end
+
+		if fFirstBeam == true then
+			--m_pPlayer->pev->effects |= EF_MUZZLEFLASH; -- already done in firing code
+			fFirstBeam = false
+
+			nTotal = nTotal + 26
+		end
+
+		if raycastPlayer ~= 0 then
+			ApplyPlayerDamage(raycastPlayer, flDamage, WPNNAME, p)
+			BloodVFX(vecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir, flDamage, raycastPlayer)
+		end
+
+		if raycastShape ~= 0 then -- hit the world, bounce and or penetrate
+			local n = nil
+
+			pentIgnore = nil -- able to hit the player again
+
+			n = -1 * vecDot(raycastNormal, vecDir);
+
+			if n < 0.5 then -- 60 degrees
+				-- reflect
+				local r = Vec()
+
+				r = VecAdd(VecScale(raycastNormal, 2 * n), vecDir) -- probably not the right math
+				flMaxFrac = flMaxFrac - ((1/208) * raycastDist)
+				vecDir = r;
+				vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecScale(vecDir, 0.2))
+				vecDest = VecAdd(vecSrc, VecScale(vecDir * 208))
+
+				-- small explosion here? (no idea how to do radius damage)
+
+				nTotal = nTotal + 34
+
+				-- lose energy
+				if n == 0 then
+					n = 0.1
+				end
+				flDamage = flDamage * (1 - n);
+
+			else -- penetrate
+				nTotal = nTotal + 13
+
+				-- limit it to one hole punch
+				if fHasPunched == true then
+					break
+				fHasPunched = true
+
+				--- try punching through wall if secondary attack (primary is incapable of breaking through)
+				if primary == false then
+					local _, pencastDist = QueryShot(vecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), vecDir, 208, 0, pentIgnore)
+					if pencastDist >= 0.0625 then
+						local pencast2Hit, pencast2Dist, pencast2Shape, pencast2Player, _, pencast2Normal = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(vecDir, -1), 208, 0, pentIgnore)
+						local n = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist))))
+						if n < flDamage then
+							if n == 0 then
+								n = 1
+							end
+							flDamage = flDamage - n
+							nTotal = nTotal + 21
+
+							nTotal = nTotal + 53
+
+							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist), vecDir)
+						end
+					else
+						flDamage = 0
+					end
+				else
+					flDamage = 0
+				end
+			end
+		else
+			vecSrc = VecAdd(VecAdd(tr.vecEndPos, VecScale(vecDir, raycastDist)), vecDir)
+			--pentIgnore = ENT(pEntity->pev);
+		end
+	end
 end
 
-function server.startShootbeam(primary)
+function server.startShootbeam(primary, p)
 	local data = MP5players[p]
 
 	local flDamage = 0.0
@@ -105,7 +190,7 @@ function server.startShootbeam(primary)
 		-- fixed damage in primary
 		flDamage = 20
 	end
-	server.shootbeam(vecSrc, vecAiming, flDamage, primary);
+	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p);
 end
 
 function client.initTAU()
@@ -160,7 +245,7 @@ function client.tickPlayerTAU(p, dt)
 				
 				data.aftershocksfx = rnd(0.3, 0.8)
 				if IsPlayerLocal(p) then
-					ServerCall("server.startShootBeam", p)
+					ServerCall("server.startShootBeam", true, p)
 				end
 				
 				local toolBody = GetToolBody(p)
