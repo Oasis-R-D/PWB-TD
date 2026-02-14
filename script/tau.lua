@@ -30,6 +30,7 @@ function createPlayerDataTAU()
 		toolAnimator = ToolAnimator(),
 		aftershocksfx = nil,
 		chargedTime = nil,
+		ammoDepletionTimer = nil,
 		firesound = nil,
 		angle = 0.0,
 		angVel = 0.0,
@@ -75,16 +76,14 @@ function getFullChargeTime()
 end
 
 function client.drawlaser(vecSrc, vecDir, raycastDist, clLaserSprite, p, primary)
-	if IsPlayerLocal(p) then
-		local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
-		local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
-		local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform(p).pos))
-		t.rot = QuatAlignXZ(xAxis, zAxis)
-		if primary == true then
-			DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.33, 1.0, 0.5, 0.0, 0.66, true, true)
-		else
-			DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.66, 1.0, 1.0, 1.0, 0.9, true, true) -- 0.9 should be the damage instead.
-		end
+	local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
+	local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
+	local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform(p).pos))
+	t.rot = QuatAlignXZ(xAxis, zAxis)
+	if primary == true then
+		DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.33, 1.0, 0.5, 0.0, 0.66, true, true)
+	else
+		DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.66, 1.0, 1.0, 1.0, 0.9, true, true) -- 0.9 should be the damage instead.
 	end
 end
 
@@ -97,7 +96,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local pentIgnore = p
 	--TraceResult tr, beam_tr
 	local flMaxFrac = 1.0
-	local nTotal = 0
 	local fHasPunched = false
 	local fFirstBeam = true
 	local nMaxHits = 10
@@ -117,8 +115,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		if fFirstBeam == true then
 			--m_pPlayer->pev->effects |= EF_MUZZLEFLASH; -- already done in firing code
 			fFirstBeam = false
-
-			nTotal = nTotal + 26
 		end
 
 		if raycastPlayer ~= 0 then
@@ -127,6 +123,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		end
 
 		if raycastShape ~= 0 then -- hit the world, bounce and or penetrate
+			ApplyBodyImpulse(GetShapeBody(raycastShape), VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecScale(vecDir, flDamage*800))
 			local n = nil
 
 			pentIgnore = nil -- able to hit the player again
@@ -147,8 +144,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				-- small explosion here? (no idea how to do radius damage)
 				MakeHole(vecSrc, 0.9, 0.5, 0.25)
 
-				nTotal = nTotal + 34
-
 				-- lose energy
 				if n == 0 then
 					n = 0.1
@@ -156,8 +151,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				flDamage = flDamage * (1 - n);
 
 			else -- penetrate
-				nTotal = nTotal + 13
-
 				-- limit it to one hole punch
 				if fHasPunched == true then
 					break
@@ -166,7 +159,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 
 				--- try punching through wall if secondary attack (primary is incapable of breaking through)
 				if primary == false then
-					local _, pencastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), vecDir, 208, 0, pentIgnore)
+					local _, pencastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), vecDir, 2, 0, pentIgnore)
 					if pencastDist >= 0.0625 then
 						local pencast2Hit, pencast2Dist, pencast2Shape, pencast2Player, _, pencast2Normal = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(vecDir, -1), 208, 0, pentIgnore)
 						local n = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist))))
@@ -176,13 +169,10 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 								n = 1
 							end
 							flDamage = flDamage - n
-							nTotal = nTotal + 21
-
-							nTotal = nTotal + 53
 
 							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 0.75, 0.5) -- entry hole
 
-							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist), vecDir)
+							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.0625), vecDir)
 
 							MakeHole(vecSrc, 1.25, 0.75, 0.5) -- exit hole
 						end
@@ -206,7 +196,8 @@ end
 function server.startShootbeam(primary, p, chargetime)
 	chargetime = chargetime or 0
 	local data = MP5players[p]
-
+	local ammo = GetToolAmmo(WPNID, p)
+	
 	local flDamage = 0.0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
@@ -227,9 +218,17 @@ function server.startShootbeam(primary, p, chargetime)
 			local hitpos = GetPlayerEyeTransform(p)
 			BloodVFX(hitpos.pos, GetQuatEuler(hitpos.rot), 50, p)
 		end
+
+		local eyeTrans = GetPlayerEyeTransform(p)
+		local back = TransformToParentVec(eyeTrans, Vec(0, 0, 1))
+		local newplayervel = VecAdd(GetPlayerVelocity(p), VecScale(VecNormalize(back), flDamage * 0.0625))
+		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
 	else 
-		-- fixed damage in primary
-		flDamage = 20
+		if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-2, p)
+		end
+
+		flDamage = 20 -- fixed damage in primary
 		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	end
 	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p);
@@ -258,6 +257,13 @@ end
 
 clipamnt = 0
 
+function server.depleteAmmo(p)
+	local ammo = GetToolAmmo(WPNID, p)
+	if ammo < 9999 then
+		SetToolAmmo(WPNID, ammo-1, p)
+	end
+end
+
 function client.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		TAUplayers[p] = createPlayerDataTAU()
@@ -279,7 +285,7 @@ function client.tickPlayerTAU(p, dt)
 	
 	local data = TAUplayers[p]
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("usetool", p) and ammo > 1.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.5, 0.0, 3)
 				data.angVel = 1000
@@ -318,7 +324,7 @@ function client.tickPlayerTAU(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputPressed("grab", p) and ammo > 1.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
 		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		if data.altCoolDown < 0 then
 			data.inAltAttack = true
@@ -327,7 +333,30 @@ function client.tickPlayerTAU(p, dt)
 
 	if data.chargedTime ~= nil and data.inAltAttack == true then -- deplete timer and check if ready
 		data.chargedTime = data.chargedTime + dt -- increase timer for use in damage calc
+
+		if data.ammoDepletionTimer ~= nil then
+			if data.ammoDepletionTimer <= 0 and data.chargedTime < getFullChargeTime() then
+				if IsPlayerLocal(p) then
+					ServerCall("server.depleteAmmo", p)
+				end
+
+				if isMP() == true then
+					data.ammoDepletionTimer = 0.1
+				else
+					data.ammoDepletionTimer = 0.30
+				end
+			end
+
+			data.ammoDepletionTimer = data.ammoDepletionTimer - dt
+		else
+			if isMP() == true then
+				data.ammoDepletionTimer = 0.1
+			else
+				data.ammoDepletionTimer = 0.30
+			end
+		end
 		
+
 		local pitch = (data.chargedTime) * (150 / getFullChargeTime()) + 100
 		if pitch > 250 then
 			pitch = 250
@@ -339,7 +368,7 @@ function client.tickPlayerTAU(p, dt)
 
 		PlayLoop(gaussLoop, mt.pos, 1, true, pitch)
 
-		if (data.chargedTime > 1 and not InputDown("grab", p)) or data.chargedTime > 10 then -- swing start animation done (in opfor)
+		if (data.chargedTime > 0.5 and not InputDown("grab", p)) or data.chargedTime > 10 then -- swing start animation done (in opfor)
 			PointLight(mt.pos, 1, 1, 1, 5)
 
 			local playervel = GetPlayerVelocity(p)
@@ -361,15 +390,20 @@ function client.tickPlayerTAU(p, dt)
 			end
 
 			data.aftershocksfx = rnd(0.3, 0.8)
+			
 			if IsPlayerLocal(p) then
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
+			end
+
+			data.altCoolDown = 1
+			if data.chargedTime > 10 then
+				data.coolDown = 1
 			end
 
 			data.recoil = 2.5 * RECOIL_AMNT
 			data.chargedTime = nil
 			data.inAltAttack = false
-			data.coolDown = 2 * FIRERATE
-			data.altCoolDown = 2 * FIRERATE
+			
 		end
 	elseif data.inAltAttack == true then -- start timer
 		data.chargedTime = 0
