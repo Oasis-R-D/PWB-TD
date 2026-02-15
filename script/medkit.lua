@@ -46,6 +46,11 @@ function server.tickPlayerMED(p, dt)
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
+
+	if ammo >= 9999 then
+		return
+	end
+
 	if ammo > 0 and GetPlayerHealth(p) < 1 then
 		SetPlayerHealth(GetPlayerHealth(p) + 0.15, p)
 		SetToolEnabled(WPNID, true, p)
