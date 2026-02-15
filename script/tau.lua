@@ -93,12 +93,11 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local data = MP5players[p]
 	
 	local vecSrc = vecOrigSrc;
-	local vecDest = VecAdd(vecSrc, VecScale(vecDir, 208.0))
 
 	local pentIgnore = p
 	--TraceResult tr, beam_tr
 	local flMaxFrac = 1.0
-	local fHasPunched = false
+	local iPunches = 0
 	local fFirstBeam = true
 	local nMaxHits = 10.0
 
@@ -115,7 +114,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		end
 
 		if fFirstBeam == true then
-			--m_pPlayer->pev->effects |= EF_MUZZLEFLASH; -- already done in firing code
 			fFirstBeam = false
 		end
 
@@ -140,11 +138,11 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				local oldVecDir = vecDir
 				vecDir = r;
 				vecSrc = VecAdd(VecAdd(vecSrc, VecScale(oldVecDir, raycastDist)), VecScale(vecDir, 0.2))
-				vecDest = VecAdd(vecSrc, VecScale(vecDir, 208.0))
 
 				-- small explosion here? (no idea how to do radius damage)
 				MakeHole(vecSrc, 0.9, 0.5, 0.25)
 				Paint(vecSrc, 1.0, "explosion", 0.6)
+				server.SpawnFireHook(vecSrc, 25)
 
 				-- lose energy
 				if n <= 0.0 then
@@ -154,42 +152,50 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 
 			else -- penetrate
 				-- limit it to one hole punch
-				if fHasPunched == true then
+				if iPunches > 5 then
 					break
 				end
-				fHasPunched = true
+				
+				iPunches = iPunches + 1
 
 				--- try punching through wall if secondary attack (primary is incapable of breaking through)
 				if primary == false then
-					local _, pencastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), vecDir, 2.0, 0.0, pentIgnore)
-					if pencastDist >= 0.0625 then
-						local pencast2Hit, pencast2Dist, pencast2Shape, pencast2Player, _, pencast2Normal = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(vecDir, -1.0), 208.0, 0.0, pentIgnore)
-						local n = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
+					local _, checkPenCastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), vecDir, 4.0, 0.0, pentIgnore)
 
-						if n < flDamage then
-							if n <= 0.0 then
-								n = 1.0
+					if checkPenCastDist >= 0.0625 then
+						local pencast2Hit, pencast2Dist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(vecDir, -1.0), 4.0, 0.0, pentIgnore)
+						local n2 = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
+
+						DebugWatch("penetration n", n2)
+
+						if n2 < flDamage then
+							if n2 <= 0.0 then
+								n2 = 1.0
 							end
-							flDamage = flDamage - n
+							flDamage = flDamage - n2
 
 							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 0.75, 0.5) -- entry hole
 							Paint(vecSrc, 1.33, "explosion", 0.6)
-							
-							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.0625), vecDir)
+
+							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.25), vecDir)
+							server.SpawnFireHook(vecSrc, 50) 
 
 							MakeHole(vecSrc, 1.25, 0.75, 0.5) -- exit hole
 							Paint(vecSrc, 1.33, "explosion", 0.6)
+							server.SpawnFireHook(vecSrc, 50)
 						end
 					else
 						flDamage = 0.0
 						local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
 						MakeHole(origin, 1.25, 0.75, 0.5)	
+						server.SpawnFireHook(origin, 50)
 						Paint(origin, 1.33, "explosion", 0.6)
 					end
 				else
 					flDamage = 0.0
 					local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
 					MakeHole(origin, 1.25, 0.75, 0.5)
+					server.SpawnFireHook(origin, 50)
 					Paint(origin, 1.33, "explosion", 0.6)
 				end
 			end

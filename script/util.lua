@@ -149,3 +149,9 @@ function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, wea
 
 	BloodVFX(SoundPoint, dir, playerdamage, playerhit)
 end
+
+function server.SpawnFireHook(pos, chance)
+	if math.random(0, 100) <= chance then
+		SpawnFire(pos)
+	end
+end
