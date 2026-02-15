@@ -48,6 +48,7 @@ function server.tickPlayerMED(p, dt)
 	local ammo = GetToolAmmo(WPNID, p)
 
 	if ammo >= 9999 then
+		SetToolEnabled(WPNID, false, p)
 		return
 	end
 

@@ -76,9 +76,12 @@ end
 
 function client.drawlaser(vecSrc, vecDir, raycastDist, clLaserSprite, p, primary)
 	local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
+
 	local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
 	local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform(p).pos))
+
 	t.rot = QuatAlignXZ(xAxis, zAxis)
+
 	if primary == true then
 		DrawSprite(LoadSprite("MOD/gfx/tau.png"), t, raycastDist, 0.33, 1.0, 0.5, 0.0, 0.66, true, true)
 	else
@@ -90,19 +93,19 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local data = MP5players[p]
 	
 	local vecSrc = vecOrigSrc;
-	local vecDest = VecAdd(vecSrc, VecScale(vecDir, 208))
+	local vecDest = VecAdd(vecSrc, VecScale(vecDir, 208.0))
 
 	local pentIgnore = p
 	--TraceResult tr, beam_tr
 	local flMaxFrac = 1.0
 	local fHasPunched = false
 	local fFirstBeam = true
-	local nMaxHits = 10
+	local nMaxHits = 10.0
 
-	while flDamage > 10 and nMaxHits > 0 do 
-		nMaxHits = nMaxHits - 1
+	while flDamage > 10.0 and nMaxHits > 0.0 do 
+		nMaxHits = nMaxHits - 1.0
 		
-		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, 208, 0, pentIgnore)
+		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, 208.0, 0.0, pentIgnore)
 		
 		--DrawLine(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.0, 0.1, 0.1, 1)
 		ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary)
@@ -116,38 +119,38 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 			fFirstBeam = false
 		end
 
-		if raycastPlayer ~= 0 then
-			ApplyPlayerDamage(raycastPlayer, flDamage/100, WPNNAME, p)
+		if raycastPlayer ~= 0.0 then
+			ApplyPlayerDamage(raycastPlayer, flDamage/100.0, WPNNAME, p)
 			BloodVFX(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir, flDamage, raycastPlayer)
 		end
 
-		if raycastShape ~= 0 then -- hit the world, bounce and or penetrate
-			ApplyBodyImpulse(GetShapeBody(raycastShape), VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecScale(vecDir, flDamage*800))
-			local n = nil
+		if raycastShape ~= 0.0 then -- hit the world, bounce and or penetrate
+			ApplyBodyImpulse(GetShapeBody(raycastShape), VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecScale(vecDir, flDamage*800.0))
 
 			pentIgnore = nil -- able to hit the player again
 
-			n = -1 * VecDot(raycastNormal, vecDir);
+			local n = -1.0 * VecDot(raycastNormal, vecDir);
 
 			if n < 0.5 then -- 60 degrees
 				-- reflect
 				local r = Vec()
 
-				r = VecAdd(VecScale(raycastNormal, 2 * n), vecDir) -- probably not the right math
-				flMaxFrac = flMaxFrac - ((1/208) * raycastDist)
+				r = VecAdd(VecScale(raycastNormal, 2.0 * n), vecDir) -- probably not the right math
+				flMaxFrac = flMaxFrac - ((1/208.0) * raycastDist)
 				local oldVecDir = vecDir
 				vecDir = r;
 				vecSrc = VecAdd(VecAdd(vecSrc, VecScale(oldVecDir, raycastDist)), VecScale(vecDir, 0.2))
-				vecDest = VecAdd(vecSrc, VecScale(vecDir, 208))
+				vecDest = VecAdd(vecSrc, VecScale(vecDir, 208.0))
 
 				-- small explosion here? (no idea how to do radius damage)
 				MakeHole(vecSrc, 0.9, 0.5, 0.25)
+				Paint(vecSrc, 1.0, "explosion", 0.6)
 
 				-- lose energy
-				if n == 0 then
+				if n <= 0.0 then
 					n = 0.1
 				end
-				flDamage = flDamage * (1 - n);
+				flDamage = flDamage * (1.0 - n);
 
 			else -- penetrate
 				-- limit it to one hole punch
@@ -158,30 +161,36 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 
 				--- try punching through wall if secondary attack (primary is incapable of breaking through)
 				if primary == false then
-					local _, pencastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), vecDir, 2, 0, pentIgnore)
+					local _, pencastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), vecDir, 2.0, 0.0, pentIgnore)
 					if pencastDist >= 0.0625 then
-						local pencast2Hit, pencast2Dist, pencast2Shape, pencast2Player, _, pencast2Normal = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(vecDir, -1), 208, 0, pentIgnore)
-						local n = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist))))
+						local pencast2Hit, pencast2Dist, pencast2Shape, pencast2Player, _, pencast2Normal = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(vecDir, -1.0), 208.0, 0.0, pentIgnore)
+						local n = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
 
 						if n < flDamage then
-							if n == 0 then
-								n = 1
+							if n <= 0.0 then
+								n = 1.0
 							end
 							flDamage = flDamage - n
 
 							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 0.75, 0.5) -- entry hole
-
+							Paint(vecSrc, 1.33, "explosion", 0.6)
+							
 							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.0625), vecDir)
 
 							MakeHole(vecSrc, 1.25, 0.75, 0.5) -- exit hole
+							Paint(vecSrc, 1.33, "explosion", 0.6)
 						end
 					else
-						flDamage = 0
-						MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 0.75, 0.5)
+						flDamage = 0.0
+						local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
+						MakeHole(origin, 1.25, 0.75, 0.5)	
+						Paint(origin, 1.33, "explosion", 0.6)
 					end
 				else
-					flDamage = 0
-					MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 0.75, 0.5)
+					flDamage = 0.0
+					local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
+					MakeHole(origin, 1.25, 0.75, 0.5)
+					Paint(origin, 1.33, "explosion", 0.6)
 				end
 			end
 		else
@@ -212,16 +221,16 @@ function server.startShootbeam(primary, p, chargetime)
 
 		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 350)
 
-		if chargetime > 10 then
-			ApplyPlayerDamage(p, 0.5, "Overcharged")
-			local hitpos = GetPlayerEyeTransform(p)
-			BloodVFX(hitpos.pos, GetQuatEuler(hitpos.rot), 50, p)
-		end
-
 		local eyeTrans = GetPlayerEyeTransform(p)
 		local back = TransformToParentVec(eyeTrans, Vec(0, 0, 1))
 		local newplayervel = VecAdd(GetPlayerVelocity(p), VecScale(VecNormalize(back), flDamage * 0.0625))
 		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
+		
+		if chargetime > 10 then
+			ApplyPlayerDamage(p, 0.5, "Overcharged")
+			local hitpos = GetPlayerEyeTransform(p)
+			BloodVFX(hitpos.pos, VecNormalize(back), 0.5, p)
+		end
 	else 
 		if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)
@@ -324,7 +333,6 @@ function client.tickPlayerTAU(p, dt)
 	end
 
 	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
-		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		if data.altCoolDown < 0 then
 			data.inAltAttack = true
 		end
@@ -375,6 +383,8 @@ function client.tickPlayerTAU(p, dt)
 		if (data.chargedTime > 0.5 and not InputDown("grab", p)) or data.chargedTime > 10 or forceFire == true then -- swing start animation done (in opfor)
 			PointLight(mt.pos, 1, 1, 1, 5)
 
+			data.toolAnimator.forceActionPose = false
+
 			local playervel = GetPlayerVelocity(p)
 				
 			-- muzzleflash
@@ -399,9 +409,11 @@ function client.tickPlayerTAU(p, dt)
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
 			end
 
-			data.altCoolDown = 1
+			data.altCoolDown = 0.6
+			data.coolDown = 0.4
 			if data.chargedTime > 10 then
 				data.coolDown = 1
+				data.altCoolDown = 1
 			end
 
 			data.recoil = 2.5 * RECOIL_AMNT
@@ -410,6 +422,7 @@ function client.tickPlayerTAU(p, dt)
 		end
 	elseif data.inAltAttack == true then -- start timer
 		data.chargedTime = 0
+		data.toolAnimator.forceActionPose = true
 	end
 	
 	-- decrease firing cooldown and recoil

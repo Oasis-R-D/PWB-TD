@@ -118,28 +118,30 @@ end
 
 -- hook the Shoot func to add new stuff
 function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, weaponid, weaponname, times)
-	times = times or 0
+	times = times or 1
 	newrange = range or 100 -- or is only here just because, not needed.
 	playerdamage = playerdamage or 0
 
-	local hit, dist, joint = QueryRaycastRope(pos, dir, range) -- Break Ropes
-	if hit then
-		local breakPoint = VecAdd(pos, VecScale(dir, dist))
-		BreakRope(joint, breakPoint)
+	local ropeHit, ropeDist, ropeJoint = QueryRaycastRope(pos, dir, range) -- Break Ropes
+	if ropeHit then
+		local breakPoint = VecAdd(pos, VecScale(dir, ropeDist))
+		BreakRope(ropeJoint, breakPoint)
 	end
 	
-	local _, pdist, _, playerhit = QueryShot(pos, dir, range, 0, player) -- Play player hit sound and create blud
+	local bHit, pdist, pShape, playerhit = QueryShot(pos, dir, range, 0, player) -- Play player hit sound and create blud
+
+	if bHit then
+		ApplyBodyImpulse(GetShapeBody(pShape), VecAdd(pos, VecScale(dir, pdist)), VecScale(dir, 800 * times))
+	end
+
 	if playerhit == 0 then
-		for i=0, times do
-			Shoot(pos, dir, shoottype, damage, range, player, weaponid)
-		end
+		Shoot(pos, dir, shoottype, damage, range, player, weaponid)
 		return
 	end
 
 	newrange = pdist - 0.5 -- don't actually hit the player so we can do our own damage and vfx
-	for i=0, times do
-		Shoot(pos, dir, shoottype, damage, newrange, player, weaponid)
-	end
+	Shoot(pos, dir, shoottype, damage, newrange, player, weaponid)
+
 	ApplyPlayerDamage(playerhit, playerdamage, weaponname, player)
 
 	local SoundPoint = VecAdd(pos, VecScale(dir, pdist))

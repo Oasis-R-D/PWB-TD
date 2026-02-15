@@ -89,7 +89,7 @@ function server.primaryFireM40(p)
 		dir = VecAdd(dir, rndVec(spread))
 	end
 
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 3)
+	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	
