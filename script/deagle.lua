@@ -214,7 +214,7 @@ function client.tickPlayerDE357(p, dt)
 						data.coolDown = FIRERATE
 						data.altCoolDown = FIRERATE
 					end
-				elseif ammo > 0.5 then
+				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					data.coolDown = RELOAD_TIME
 					data.altCoolDown = RELOAD_TIME

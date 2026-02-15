@@ -210,7 +210,7 @@ function client.tickPlayerM249(p, dt)
 				data.clipamntM249 = data.clipamntM249 - 1
 				if data.clipamntM249 > 0 then
 					data.coolDown = FIRERATE
-				elseif ammo > 0.5 then
+				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					data.coolDown = RELOAD_TIME
 					data.inreload = true

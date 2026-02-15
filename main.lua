@@ -1,5 +1,5 @@
 #version 2
-
+--pm09
 #include "script/mp5.lua"
 #include "script/m727.lua"
 #include "script/shotgun.lua"
@@ -14,8 +14,14 @@
 
 #include "script/tau.lua"
 
+#include "script/medkit.lua"
+
 -- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
--- To remove a weapon, remove it's lua file, xml file and function calls from this file
+
+
+-- to make a mod using this base, choose a weapon below to copy, then copy it's xml and vox (or you can make a new one completely)
+-- in the file, replace all instances of the weapons name (suffix on the functions) then add it's functions here
+-- To remove unused weapons, remove it's lua file, xml file(s), vox, sounds and it's function calls from this file
 
 function server.init()
    server.initCRBR()
@@ -30,7 +36,11 @@ function server.init()
    server.initPIST9MM()
    server.initSG()
 
+   -- SPECIALS
    server.initTAU()
+   
+   -- PICKUPS
+   server.initMED()
 end
 
 
@@ -47,7 +57,11 @@ function server.tick(dt)
    server.tickPIST9MM(dt)
    server.tickSG(dt)
 
+   -- SPECIALS
    server.tickTAU(dt)
+
+   -- PICKUPS
+   server.tickMED(dt)
 end
 
 
@@ -64,7 +78,11 @@ function server.tickPlayer(p, dt)
    server.tickPlayerPIST9MM(p, dt)
    server.tickPlayerSG(p, dt)
 
+   -- SPECIALS
    server.tickPlayerTAU(p, dt)
+
+   -- PICKUPS
+   server.tickPlayerMED(p, dt)
 end
 
 
@@ -81,6 +99,7 @@ function client.init()
    client.initPIST9MM()
    client.initSG()
 
+   -- SPECIALS
    client.initTAU()
 end
 
@@ -98,6 +117,7 @@ function client.tick(dt)
    client.tickPIST9MM(dt)
    client.tickSG(dt)
 
+   -- SPECIALS
    client.tickTAU(dt)
 end
 
@@ -105,6 +125,7 @@ function client.draw()
 	if GetPlayerHealth() <= 0 or GetPlayerVehicle() ~= 0 then
 		return
 	end
+   
 	client.drawM40()
 	client.drawPIST9MM()
 	client.drawDE357()
@@ -128,5 +149,6 @@ function client.tickPlayer(p, dt)
    client.tickPlayerPIST9MM(p, dt)
    client.tickPlayerSG(p, dt)
 
+   -- SPECIALS
    client.tickPlayerTAU(p, dt)
 end

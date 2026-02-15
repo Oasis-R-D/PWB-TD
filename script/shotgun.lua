@@ -232,7 +232,7 @@ function client.tickPlayerSG(p, dt)
 					data.altCoolDown = FIRERATE
 					data.coolDown = FIRERATE
 					data.pumptime = FIRERATE - 0.25 -- 0.5
-				elseif ammo > 0.5 then
+				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = nil
 					local shellsneedingloading = 8 - data.clipamntSG
@@ -297,7 +297,7 @@ function client.tickPlayerSG(p, dt)
 					data.altCoolDown = ALTFIRERATE
 					data.coolDown = ALTFIRERATE
 					data.pumptime = ALTFIRERATE - 0.25
-				elseif ammo > 0.5 then
+				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					

@@ -8,13 +8,12 @@
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/tauFire.ogg"
 local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
-local PICKUP_SIZE = 20.0
+local PICKUP_SIZE = 10.0
 local RECOIL_AMNT = 0.17
 local FIRERATE = 0.2
 local ALTFIRERATE = 0.2
-local DAMAGE = 0.4
-local PLAYERDAMAGE = 0.12
-local MAX_RANGE = 150.0
+local PLAYERDAMAGE = 20 -- divided by 10 later
+local MAX_RANGE = 208.0
 local WPNID = "hltau"
 local WPNNAME = "Tau Cannon"
 
@@ -225,10 +224,10 @@ function server.startShootbeam(primary, p, chargetime)
 		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
 	else 
 		if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-2, p)
+		SetToolAmmo(WPNID, ammo-1, p)
 		end
 
-		flDamage = 20 -- fixed damage in primary
+		flDamage = PLAYERDAMAGE -- fixed damage in primary
 		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	end
 	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p);
@@ -285,7 +284,7 @@ function client.tickPlayerTAU(p, dt)
 	
 	local data = TAUplayers[p]
 
-	if InputDown("usetool", p) and ammo > 1.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
+	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.5, 0.0, 3)
 				data.angVel = 1000
@@ -324,7 +323,7 @@ function client.tickPlayerTAU(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 1.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
+	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
 		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		if data.altCoolDown < 0 then
 			data.inAltAttack = true
@@ -333,26 +332,31 @@ function client.tickPlayerTAU(p, dt)
 
 	if data.chargedTime ~= nil and data.inAltAttack == true then -- deplete timer and check if ready
 		data.chargedTime = data.chargedTime + dt -- increase timer for use in damage calc
-
+		local forceFire = false
 		if data.ammoDepletionTimer ~= nil then
 			if data.ammoDepletionTimer <= 0 and data.chargedTime < getFullChargeTime() then
+
+				if ammo < 2 then
+					forceFire = true
+				end
+
 				if IsPlayerLocal(p) then
 					ServerCall("server.depleteAmmo", p)
 				end
 
 				if isMP() == true then
-					data.ammoDepletionTimer = 0.1
+					data.ammoDepletionTimer = 0.2
 				else
-					data.ammoDepletionTimer = 0.30
+					data.ammoDepletionTimer = 0.6
 				end
 			end
 
 			data.ammoDepletionTimer = data.ammoDepletionTimer - dt
 		else
 			if isMP() == true then
-				data.ammoDepletionTimer = 0.1
+				data.ammoDepletionTimer = 0.2
 			else
-				data.ammoDepletionTimer = 0.30
+				data.ammoDepletionTimer = 0.6
 			end
 		end
 		
@@ -368,7 +372,7 @@ function client.tickPlayerTAU(p, dt)
 
 		PlayLoop(gaussLoop, mt.pos, 1, true, pitch)
 
-		if (data.chargedTime > 0.5 and not InputDown("grab", p)) or data.chargedTime > 10 then -- swing start animation done (in opfor)
+		if (data.chargedTime > 0.5 and not InputDown("grab", p)) or data.chargedTime > 10 or forceFire == true then -- swing start animation done (in opfor)
 			PointLight(mt.pos, 1, 1, 1, 5)
 
 			local playervel = GetPlayerVelocity(p)
@@ -390,7 +394,7 @@ function client.tickPlayerTAU(p, dt)
 			end
 
 			data.aftershocksfx = rnd(0.3, 0.8)
-			
+
 			if IsPlayerLocal(p) then
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
 			end
@@ -403,7 +407,6 @@ function client.tickPlayerTAU(p, dt)
 			data.recoil = 2.5 * RECOIL_AMNT
 			data.chargedTime = nil
 			data.inAltAttack = false
-			
 		end
 	elseif data.inAltAttack == true then -- start timer
 		data.chargedTime = 0

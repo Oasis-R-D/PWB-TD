@@ -190,7 +190,7 @@ function client.tickPlayerM40(p, dt)
 					data.coolDown = FIRERATE
 					data.altCoolDown = SCOPEFIREDELAY
 					data.timetobolt = 0.842
-				elseif ammo > 0.5 then
+				elseif ammo > 1 then
 					data.recoil = 0.05
 					PlaySound(LoadSound(EMPTRELOAD_SOUND), pt.pos)
 					data.coolDown = EMPTYRELOAD_TIME

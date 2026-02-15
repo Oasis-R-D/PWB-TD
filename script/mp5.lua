@@ -216,7 +216,7 @@ function client.tickPlayerMp5(p, dt)
 				if data.clipamntMP5 > 0 then
 					data.coolDown = FIRERATE
 					data.altCoolDown = FIRERATE
-				elseif ammo > 0.5 then
+				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					data.coolDown = RELOAD_TIME
 					data.altCoolDown = RELOAD_TIME

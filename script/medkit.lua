@@ -1,0 +1,69 @@
+-- basic as[h] health pickup for gamemodes
+#version 2
+
+#include "script/include/player.lua"
+
+-- Per weapon constants
+local WPNID = "hlmedkit"
+local WPNNAME = "Medkit"
+
+-- Per weapon data storer
+MEDplayers = {}
+
+function createPlayerDataMED()
+    return {
+		oldTool = "sledge",
+	}
+end
+
+function server.initMED()
+	medSound = LoadSound("MOD/snd/medkit.ogg")
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/medkit.xml", 6)
+	SetToolAmmoPickupAmount(WPNID, 1)
+end
+
+function server.tickMED(dt)
+	for p in PlayersAdded() do
+		MEDplayers[p] = createPlayerDataMED()
+		SetToolEnabled(WPNID, false, p)
+		SetToolAmmo(WPNID, 0, p)
+	end
+
+	for p in PlayersRemoved() do
+		MEDplayers[p] = nil
+	end
+
+	for p in Players() do
+		server.tickPlayerMED(p, dt)
+	end
+end
+
+function server.tickPlayerMED(p, dt)
+	local data = MEDplayers[p]
+
+	if GetPlayerTool(p) ~= WPNID then
+		data.oldTool = GetPlayerTool(p)
+	end
+
+	local ammo = GetToolAmmo(WPNID, p)
+	if ammo > 0 and GetPlayerHealth(p) < 1 then
+		SetPlayerHealth(GetPlayerHealth(p) + 0.15, p)
+		SetToolEnabled(WPNID, true, p)
+		SetToolAmmo(WPNID, ammo-1, p)
+		PlaySound(medSound, GetPlayerPos(p), 0.75)
+		if data.oldTool ~= nil then
+			SetPlayerTool(data.oldTool, p)
+		end
+	elseif ammo == 0 then
+		if data.oldTool ~= nil then
+			SetPlayerTool(data.oldTool, p)
+		end
+		SetToolEnabled(WPNID, false, p)
+	elseif ammo > 0 and GetPlayerHealth(p) >= 1 then
+		SetToolAmmo(WPNID, 0, p)
+		SetToolEnabled(WPNID, false, p)
+		if data.oldTool ~= nil then
+			SetPlayerTool(data.oldTool, p)
+		end
+	end
+end
