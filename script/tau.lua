@@ -158,7 +158,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				
 				iPunches = iPunches + 1
 
-				--- try punching through wall if secondary attack (primary is incapable of breaking through)
+				--- try punching through wall if it's a secondary attack (primary is incapable of breaking through)
 				if primary == false then
 					local _, checkPenCastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), vecDir, 4.0, 0.0, pentIgnore)
 
@@ -174,13 +174,13 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 							end
 							flDamage = flDamage - n2
 
-							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 0.75, 0.5) -- entry hole
+							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 1.0, 0.75) -- entry hole
 							Paint(vecSrc, 1.33, "explosion", 0.6)
 
 							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.25), vecDir)
 							server.SpawnFireHook(vecSrc, 50) 
 
-							MakeHole(vecSrc, 1.25, 0.75, 0.5) -- exit hole
+							MakeHole(vecSrc, 1.25, 1.0, 0.75) -- exit hole
 							Paint(vecSrc, 1.33, "explosion", 0.6)
 							server.SpawnFireHook(vecSrc, 50)
 						end
@@ -202,7 +202,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		else
 			vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir)
 			MakeHole(vecSrc, 1.25, 0.75, 0.5)
-			--pentIgnore = ENT(pEntity->pev);
+			--pentIgnore = ENT(pEntity->pev) -- ignore the hit player/ent next time?
 		end
 	end
 end
