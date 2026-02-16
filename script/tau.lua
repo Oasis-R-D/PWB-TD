@@ -166,7 +166,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 						local pencast2Hit, pencast2Dist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(vecDir, -1.0), 4.0, 0.0, pentIgnore)
 						local n2 = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
 
-						DebugWatch("penetration n", n2)
+						--DebugWatch("penetration n", n2)
 
 						if n2 < flDamage then
 							if n2 <= 0.0 then
@@ -415,8 +415,8 @@ function client.tickPlayerTAU(p, dt)
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
 			end
 
-			data.altCoolDown = 0.4
-			data.coolDown = 0.4
+			data.altCoolDown = 0.2
+			data.coolDown = 0.2
 			if data.chargedTime > 10 then
 				data.coolDown = 1
 				data.altCoolDown = 1
