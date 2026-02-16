@@ -53,7 +53,7 @@ function server.tickPlayerMED(p, dt)
 	end
 
 	if ammo > 0 and GetPlayerHealth(p) < 1 then
-		SetPlayerHealth(GetPlayerHealth(p) + 0.15, p)
+		SetPlayerHealth(GetPlayerHealth(p) + 0.25, p)
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, ammo-1, p)
 		PlaySound(medSound, GetPlayerPos(p), 0.75)

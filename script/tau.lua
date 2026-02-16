@@ -415,7 +415,7 @@ function client.tickPlayerTAU(p, dt)
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
 			end
 
-			data.altCoolDown = 0.6
+			data.altCoolDown = 0.4
 			data.coolDown = 0.4
 			if data.chargedTime > 10 then
 				data.coolDown = 1
