@@ -270,13 +270,6 @@ end
 
 clipamnt = 0
 
-function server.depleteAmmo(p)
-	local ammo = GetToolAmmo(WPNID, p)
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
-end
-
 function client.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		TAUplayers[p] = createPlayerDataTAU()
@@ -354,7 +347,7 @@ function client.tickPlayerTAU(p, dt)
 				end
 
 				if IsPlayerLocal(p) then
-					ServerCall("server.depleteAmmo", p)
+					ServerCall("server.depleteAmmo", p, WPNID)
 				end
 
 				if isMP() == true then

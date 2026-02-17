@@ -17,9 +17,9 @@ local WPNNAME = "Gluon Gun"
 local EGON_PULSE_INTERVAL 0.1
 local EGON_DISCHARGE_INTERVAL 0.1
 
-local EGON_START 1
-local EGON_ON 2
-local EGON_STOP 3
+local EGON_FIREOFF 0
+local EGON_FIRECHARGE 1
+
 
 -- Per weapon data storer
 GLUplayers = {}
@@ -46,9 +46,12 @@ function createPlayerDataGLU()
 		toolAnimator = ToolAnimator(),
 		soundState = 0.0, -- Instead of having different timers for the 3 diff sounds, use another var to tell it which sound is sounding through sound emitting devices connected to the device using a sound cable and/or bluetooth
 		soundTime = nil,
-		serverState = 0.0, -- used in player tick to see if it's firing, starting or stopping (0 for none)
+		firing = false,
+		fireState = EGON_FIREOFF, -- used in player tick to see if it's firing or off (0 for none)
 		clientState = 0.0, -- used in player tick to see if it's firing, starting or stopping (0 for none)
 		ammoDepleteTime = nil,
+		shakeTime = 0.0,
+		damageTime = 0.0,
 	}
 end
 
@@ -78,30 +81,15 @@ function server.tickPlayerGLU(p, dt)
 		GLUplayers[p] = createPlayerDataGLU()
 		return
 	end
-
-	local ammo = GetToolAmmo(WPNID, p)
-	local data = GLUplayers[p]
-
-	if data.ammoDepleteTime ~= nil then 
-		data.ammoDepleteTime = data.ammoDepleteTime - dt
-		if data.ammoDepleteTime <= 0 then
-			SetToolAmmo(WPNID, ammo-1, p)
-		end
-	end
-end
- 
-function server.startGLU(p)
-	local data = GLUplayers[p]
-
-	data.ammoDepleteTime = 0
-	data.serverState = EGON_START
 end
 
-function server.stopGLU(p)
-	local data = GLUplayers[p]
-
-	data.ammoDepleteTime = nil
-	data.serverState = EGON_STOP
+function server.fireGLU(p, dmgTime)
+	local eyeTrans = GetPlayerEyeTransform(p)
+	local front = TransformToParentVec(eyeTrans, Vec(0, 0, 1))
+	local vecDir = VecNormalize(front)
+	local vecOrigSrc = GetPlayerEyeTransform(p).pos
+	local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
+	
 end
 
 function client.initGLU()
@@ -147,45 +135,63 @@ function client.tickPlayerGLU(p, dt)
 	
 	local data = GLUplayers[p]
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then
+	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
+		if data.coolDown < 0 then
+			
+
+			if data.fireState == EGON_FIREOFF then
+				data.ammoDepleteTime = 0
+
+				data.shakeTime = 0
+
+				data.damageTime = EGON_PULSE_INTERVAL
+				data.fireState = EGON_FIRECHARGE
+			else if data.fireState == EGON_FIRECHARGE
+				if IsPlayerLocal(p) then
+					ServerCall("server.fireGLU", p, data.damageTime)
+				end
+
 				if IsPlayerLocal(p) then
 					PointLight(mt.pos, 0.1, 0.1, 0.5, 3) -- add sin wave to the B channel to make it flicker (make it local for less lag?)
 				else
 					PointLight(mt.pos, 0.1, 0.1, 0.5, 3)
 				end
 
-				if IsPlayerLocal(p) then
-					ServerCall("server.startGLU", p)
-				end
-
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local playervel = GetPlayerVelocity(p)
-
-					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.12, 0.17), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(0,0,1, 0.5,0,0.5)
-						SpawnParticle(mt.pos, playervel, 0.125)
+				if ammo <= 0 then
+					if IsPlayerLocal(p) then
+						ServerCall("server.endGLU", p)
 					end
-				
+					data.coolDown = 1
 				end
-					
-				data.coolDown = 0.2 -- placeholder
-				
-				data.recoil = RECOIL_AMNT -- rumble the gun
 			end
 
+			if data.ammoDepleteTime ~= nil then 
+				data.ammoDepleteTime = data.ammoDepleteTime - dt
+				if data.ammoDepleteTime <= 0 then
+					ServerCall("server.depleteAmmo", p, WPNID)
+				end
+			end
+
+			local toolBody = GetToolBody(p)
+			if toolBody ~= 0 then
+				local playervel = GetPlayerVelocity(p)
+
+				-- muzzleflash
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.15, 0.2), 0.35)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(0,0,1, 0.5,0,0.5)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			
+			end
+		end
 		if IsPlayerLocal(p) then
 			PlayHaptic(shootHaptic, 1)
 		end
@@ -194,7 +200,8 @@ function client.tickPlayerGLU(p, dt)
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt
-	
+	data.damageTime = data.damageTime - dt
+
 	-- RECOIL
 	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil)

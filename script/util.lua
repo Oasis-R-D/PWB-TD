@@ -155,3 +155,10 @@ function server.SpawnFireHook(pos, chance)
 		SpawnFire(pos)
 	end
 end
+
+function server.depleteAmmo(p, id) -- used in server calls (mainly in special weapons)
+	local ammo = GetToolAmmo(id, p)
+	if ammo < 9999 then
+		SetToolAmmo(id, ammo-1, p)
+	end
+end
