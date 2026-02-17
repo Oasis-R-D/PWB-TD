@@ -13,6 +13,7 @@
 #include "script/wrench.lua"
 
 #include "script/tau.lua"
+#include "script/gluon.lua"
 
 #include "script/medkit.lua"
 
@@ -38,7 +39,8 @@ function server.init()
 
    -- SPECIALS
    server.initTAU()
-   
+   server.initGLU()
+
    -- PICKUPS
    server.initMED()
 end
@@ -59,6 +61,7 @@ function server.tick(dt)
 
    -- SPECIALS
    server.tickTAU(dt)
+   server.tickGLU(dt)
 
    -- PICKUPS
    server.tickMED(dt)
@@ -80,6 +83,7 @@ function server.tickPlayer(p, dt)
 
    -- SPECIALS
    server.tickPlayerTAU(p, dt)
+   server.tickPlayerGLU(p, dt)
 
    -- PICKUPS
    server.tickPlayerMED(p, dt)
@@ -101,6 +105,7 @@ function client.init()
 
    -- SPECIALS
    client.initTAU()
+   client.initGLU()
 end
 
 
@@ -119,6 +124,7 @@ function client.tick(dt)
 
    -- SPECIALS
    client.tickTAU(dt)
+   client.tickGLU(dt)
 end
 
 function client.draw()
@@ -151,4 +157,5 @@ function client.tickPlayer(p, dt)
 
    -- SPECIALS
    client.tickPlayerTAU(p, dt)
+   client.tickPlayerGLU(p, dt)
 end
