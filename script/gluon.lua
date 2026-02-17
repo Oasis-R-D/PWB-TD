@@ -13,6 +13,7 @@ local PLAYERDAMAGE = 0.15
 local MAX_RANGE = 208
 local WPNID = "hlgluon"
 local WPNNAME = "Gluon Gun"
+local FIRERATE = 0.5
 
 local EGON_PULSE_INTERVAL 0.1
 local EGON_DISCHARGE_INTERVAL 0.1
@@ -51,7 +52,9 @@ function createPlayerDataGLU()
 		clientState = 0.0, -- used in player tick to see if it's firing, starting or stopping (0 for none)
 		ammoDepleteTime = nil,
 		shakeTime = 0.0,
+		shakeDur = 0.0,
 		damageTime = 0.0,
+		checkOff = 0.0,
 	}
 end
 
@@ -109,7 +112,24 @@ function server.fireGLU(p, dmgTime)
 		return
 	end
 
-	if dmgTime <= 0 then
+	if data.dmgTime <= 0 then
+		if pPlayerHit ~= 0 then
+			ApplyPlayerDamage(pPlayerHit, PLAYERDAMAGE, WPNNAME, p)
+			BloodVFX(VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, PLAYERDAMAGE, pPlayerHit)
+		end
+
+		if pShape then
+			ApplyBodyImpulse(GetShapeBody(pShape), VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), VecScale(vecDir, 200.0))
+			local origin = VecAdd(vecOrigSrc, VecScale(vecDir, iDist))
+			MakeHole(origin, 1.25, 0.75, 0.5)	
+			server.SpawnFireHook(origin, 50)
+			Paint(origin, 1.33, "explosion", 0.6)
+		end
+
+		if IsMP() == true then
+			-- radius damage somehow someway
+		end
+		data.dmgTime = EGON_DISCHARGE_INTERVAL
 	end
 end
 
@@ -160,6 +180,8 @@ function client.tickPlayerGLU(p, dt)
 
 				data.shakeTime = 0
 
+				data.checkOff = 0.1
+
 				data.damageTime = EGON_PULSE_INTERVAL
 				data.fireState = EGON_FIRECHARGE
 			else if data.fireState == EGON_FIRECHARGE
@@ -185,6 +207,26 @@ function client.tickPlayerGLU(p, dt)
 				data.ammoDepleteTime = data.ammoDepleteTime - dt
 				if data.ammoDepleteTime <= 0 then
 					ServerCall("server.depleteAmmo", p, WPNID)
+					if IsMP() == true then
+						data.ammoDepleteTime = 0.2
+					else
+						data.ammoDepleteTime = 0.1
+					end
+				end
+			end
+
+			data.shakeTime = data.shakeTime - dt
+
+			if (data.shakeTime < 0)
+				UTIL_ScreenShake(tr.vecEndPos, 5.0, 150.0, 0.75, 250.0);\
+				if IsPlayerLocal(p) then
+					ShakeCamera(rnd(0.4, 0.5))
+				end
+
+				data.shakeDur = data.shakeDur + dt
+				if data.shakeDur >= 0.75 then
+					data.shakeTime = 1.5
+					data.shakeDur = 0
 				end
 			end
 
@@ -210,6 +252,13 @@ function client.tickPlayerGLU(p, dt)
 		end
 		if IsPlayerLocal(p) then
 			PlayHaptic(shootHaptic, 1)
+		end
+	elseif data.fireState ~= EGON_FIREOFF
+		data.checkOff = data.checkOff - dt
+		if data.checkOff <= 0 then
+			data.coolDown = FIRERATE
+
+			data.fireState = EGON_FIREOFF
 		end
 	end
 
