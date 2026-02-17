@@ -40,8 +40,9 @@ function createPlayerDataGLU()
 		coolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
-		soundState = nil, -- Instead of having different timers for the 3 diff sounds, use another var to tell it which sound is sounding through sound emitting devices connected to the device using a sound cable and/or bluetooth
+		soundState = 0.0, -- Instead of having different timers for the 3 diff sounds, use another var to tell it which sound is sounding through sound emitting devices connected to the device using a sound cable and/or bluetooth
 		soundTime = nil,
+		serverState= 0.0,
 	}
 end
 
