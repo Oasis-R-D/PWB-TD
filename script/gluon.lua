@@ -90,6 +90,27 @@ function server.fireGLU(p, dmgTime)
 	local vecOrigSrc = GetPlayerEyeTransform(p).pos
 	local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
 	
+	local data = GLUplayers[p]
+
+	local bHit, iDist, pShape, pPlayerHit = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
+
+	local timedist = (data.damageTime / EGON_DISCHARGE_INTERVAL)
+
+	if timedist < 0 then
+		timedist = 0
+	else if timedist > 1 then
+		timedist = 1
+	end
+	timedist = 1 - timedist
+
+	--UpdateEffect(tmpSrc, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), timedist)
+
+	if not bHit then
+		return
+	end
+
+	if dmgTime <= 0 then
+	end
 end
 
 function client.initGLU()
@@ -124,21 +145,16 @@ function client.tickPlayerGLU(p, dt)
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
-	
+
+	local ammo = GetToolAmmo(WPNID, p)
 	local data = GLUplayers[p]
 
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
 		if data.coolDown < 0 then
-			
-
 			if data.fireState == EGON_FIREOFF then
 				data.ammoDepleteTime = 0
 
@@ -147,7 +163,7 @@ function client.tickPlayerGLU(p, dt)
 				data.damageTime = EGON_PULSE_INTERVAL
 				data.fireState = EGON_FIRECHARGE
 			else if data.fireState == EGON_FIRECHARGE
-				if IsPlayerLocal(p) then
+				if IsPlayerLocal(p) then -- would it be better to do the host here so it doesn't need networked?
 					ServerCall("server.fireGLU", p, data.damageTime)
 				end
 
@@ -165,7 +181,7 @@ function client.tickPlayerGLU(p, dt)
 				end
 			end
 
-			if data.ammoDepleteTime ~= nil then 
+			if data.ammoDepleteTime ~= nil then
 				data.ammoDepleteTime = data.ammoDepleteTime - dt
 				if data.ammoDepleteTime <= 0 then
 					ServerCall("server.depleteAmmo", p, WPNID)
