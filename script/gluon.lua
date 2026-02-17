@@ -17,6 +17,10 @@ local WPNNAME = "Gluon Gun"
 local EGON_PULSE_INTERVAL 0.1
 local EGON_DISCHARGE_INTERVAL 0.1
 
+local EGON_START 1
+local EGON_ON 2
+local EGON_STOP 3
+
 -- Per weapon data storer
 GLUplayers = {}
 
@@ -42,7 +46,9 @@ function createPlayerDataGLU()
 		toolAnimator = ToolAnimator(),
 		soundState = 0.0, -- Instead of having different timers for the 3 diff sounds, use another var to tell it which sound is sounding through sound emitting devices connected to the device using a sound cable and/or bluetooth
 		soundTime = nil,
-		serverState= 0.0,
+		serverState = 0.0, -- used in player tick to see if it's firing, starting or stopping (0 for none)
+		clientState = 0.0, -- used in player tick to see if it's firing, starting or stopping (0 for none)
+		ammoDepleteTime = nil,
 	}
 end
 
@@ -72,21 +78,30 @@ function server.tickPlayerGLU(p, dt)
 		GLUplayers[p] = createPlayerDataGLU()
 		return
 	end
-end
 
-function server.primaryFireGLU(p)
-	local mt = GetToolLocationWorldTransform("muzzle", p)
-	
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = GLUplayers[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
-
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
+	if data.ammoDepleteTime ~= nil then 
+		data.ammoDepleteTime = data.ammoDepleteTime - dt
+		if data.ammoDepleteTime <= 0 then
+			SetToolAmmo(WPNID, ammo-1, p)
+		end
 	end
+end
+ 
+function server.startGLU(p)
+	local data = GLUplayers[p]
+
+	data.ammoDepleteTime = 0
+	data.serverState = EGON_START
+end
+
+function server.stopGLU(p)
+	local data = GLUplayers[p]
+
+	data.ammoDepleteTime = nil
+	data.serverState = EGON_STOP
 end
 
 function client.initGLU()
@@ -141,7 +156,7 @@ function client.tickPlayerGLU(p, dt)
 				end
 
 				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireGLU", p)
+					ServerCall("server.startGLU", p)
 				end
 
 				local toolBody = GetToolBody(p)
