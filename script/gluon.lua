@@ -85,7 +85,7 @@ function server.tickPlayerGLU(p, dt)
 		return
 	end
 end
-
+function client.UpdateEffect(source, endpos, timedist)
 function server.fireGLU(p, dmgTime)
 	local eyeTrans = GetPlayerEyeTransform(p)
 	local front = TransformToParentVec(eyeTrans, Vec(0, 0, 1))
@@ -106,7 +106,7 @@ function server.fireGLU(p, dmgTime)
 	end
 	timedist = 1 - timedist
 
-	--UpdateEffect(tmpSrc, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), timedist)
+	ClientCall(0, "client.UpdateEffect", tmpSrc, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), timedist)
 
 	if not bHit then
 		return
