@@ -20,7 +20,7 @@ local PLAYERDAMAGE = 0.12
 local MAX_RANGE = 125.0
 local WPNID = "hlglock"
 local WPNNAME = "9mm HandGun"
-local CASING_ORG = Vec(0.02, 0.25, 0.1)
+local CASING_ORG = Vec(0.02, 0.25, 0.0)
 
 -- Per weapon data storer
 PIST9MMplayers = {}

@@ -175,13 +175,13 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 							flDamage = flDamage - n2
 
 							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 1.0, 0.75) -- entry hole
-							Paint(vecSrc, 1.33, "explosion", 0.6)
+							Paint(vecSrc, 1.5, "explosion", 0.6)
 
 							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.25), vecDir)
 							server.SpawnFireHook(vecSrc, 50) 
 
 							MakeHole(vecSrc, 1.25, 1.0, 0.75) -- exit hole
-							Paint(vecSrc, 1.33, "explosion", 0.6)
+							Paint(vecSrc, 1.5, "explosion", 0.6)
 							server.SpawnFireHook(vecSrc, 50)
 						end
 					else
@@ -201,7 +201,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 			end
 		else
 			vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir)
-			MakeHole(vecSrc, 1.25, 0.75, 0.5)
 			--pentIgnore = ENT(pEntity->pev) -- ignore the hit player/ent next time?
 		end
 	end
@@ -443,6 +442,7 @@ function client.tickPlayerTAU(p, dt)
 		if data.aftershocksfx <= 0 then
 			data.aftershocksfx = nil
 			PlaySound(LoadSound(AFTERSHOCKSFX), mt.pos, 1)
+			data.recoil = 0.05
 		end
 	end
 
