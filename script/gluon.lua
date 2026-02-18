@@ -6,10 +6,8 @@
 
 -- Per weapon constants
 local PICKUP_SIZE = 20
-local RECOIL_AMNT = 0.05 -- more of a rumble
 local DAMAGE = 0.4
 local PLAYERDAMAGE = 0.14
-local MAX_RANGE = 208.0
 local WPNID = "hlgluon"
 local WPNNAME = "Gluon Gun"
 local FIRERATE = 0.5
@@ -46,9 +44,7 @@ function createPlayerDataGLU()
 		toolAnimator = ToolAnimator(),
 		soundState = 0.0, -- Instead of having different timers for the 3 diff sounds, use another var to tell it which sound is sounding through sound emitting devices connected to the device using a sound cable and/or bluetooth
 		soundTime = nil,
-		firing = false,
 		fireState = EGON_FIREOFF, -- used in player tick to see if it's firing or off (0 for none)
-		clientState = 0.0, -- used in player tick to see if it's firing, starting or stopping (0 for none)
 		ammoDepleteTime = nil,
 		shakeTime = 0.0,
 		shakeDur = 0.0,
@@ -105,24 +101,24 @@ function client.UpdateEffect(source, endpos, vecDir, dist, timedist, player)
 		local p = VecLerp(last, endpos, tt)
 		p = VecAdd(p, rndVec(0.2*tt))
 		--DrawLine(last, p, 0.5, 0.5, 1.0)
-		if IsPlayerLocal(player) then
-			local length = VecLength(VecSub(last, p))
-			client.drawlaserGLU(last, vecDir, length, player) -- to-do: figure out how to get direction from 2 vectors
 
-			local playervel = GetPlayerVelocity(player)
-			ParticleReset()
-			ParticleGravity(0)
-			ParticleRadius(rnd(0.15, 0.2), 0.35)
-			ParticleAlpha(1, 0)
-			ParticleTile(5)
-			ParticleDrag(0)
-			ParticleRotation(rnd(10, -10), 0)
-			ParticleSticky(0)
-			ParticleEmissive(5, 1)
-			ParticleCollide(0)
-			ParticleColor(0,0,1, 0.5,0,0.5)
-			SpawnParticle(last, playervel, 0.125)
-		end
+		local length = VecLength(VecSub(last, p))
+		client.drawlaserGLU(last, vecDir, length, player) -- to-do: figure out how to get direction from 2 vectors
+
+		local playervel = GetPlayerVelocity(player)
+		ParticleReset()
+		ParticleGravity(0)
+		ParticleRadius(rnd(0.15, 0.2), 0.35)
+		ParticleAlpha(1, 0)
+		ParticleTile(5)
+		ParticleDrag(0)
+		ParticleRotation(rnd(10, -10), 0)
+		ParticleSticky(0)
+		ParticleEmissive(5, 1)
+		ParticleCollide(0)
+		ParticleColor(0,0,1, 0.5,0,0.5)
+		SpawnParticle(last, playervel, 0.125)
+
 		last = p
 	end
 end
