@@ -9,13 +9,14 @@
 #include "script/python.lua"
 #include "script/glock.lua"
 
-#include "script/crowber.lua" -- :3
-#include "script/wrench.lua"
+#include "script/melee/crowber.lua" -- :3
+#include "script/melee/wrench.lua"
 
-#include "script/tau.lua"
-#include "script/gluon.lua"
+#include "script/special/tau.lua"
+#include "script/special/gluon.lua"
 
-#include "script/medkit.lua"
+#include "script/items/medkit.lua"
+#include "script/items/grenade.lua"
 
 -- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
 
