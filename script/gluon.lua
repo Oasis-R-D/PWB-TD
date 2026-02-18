@@ -248,9 +248,6 @@ function client.tickPlayerGLU(p, dt)
 				end
 
 				if ammo <= 0 then
-					if IsPlayerLocal(p) then
-						ServerCall("server.endGLU", p)
-					end
 					data.coolDown = 1
 				end
 			end
@@ -258,7 +255,10 @@ function client.tickPlayerGLU(p, dt)
 			if data.ammoDepleteTime ~= nil then
 				data.ammoDepleteTime = data.ammoDepleteTime - dt
 				if data.ammoDepleteTime <= 0 then
-					ServerCall("server.depleteAmmo", p, WPNID)
+					if IsPlayerLocal(p) then
+						ServerCall("server.depleteAmmo", p, WPNID)
+					end
+
 					if isMP() == true then
 						data.ammoDepleteTime = 0.2
 					else
