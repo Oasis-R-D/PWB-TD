@@ -229,7 +229,7 @@ function server.startShootbeam(primary, p, chargetime)
 		local eyeTrans = GetPlayerEyeTransform(p)
 		local back = TransformToParentVec(eyeTrans, Vec(0, 0, 1))
 		local newplayervel = VecAdd(GetPlayerVelocity(p), VecScale(VecNormalize(back), flDamage * 0.0625))
-		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
+		SetPlayerVelocity(newplayervel, p)
 		
 		if chargetime > 10 then
 			ApplyPlayerDamage(p, 0.5, "Overcharged")
