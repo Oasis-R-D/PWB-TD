@@ -42,8 +42,9 @@ function server.init()
    server.initTAU()
    server.initGLU()
 
-   -- PICKUPS
+   -- ITEMS
    server.initMED()
+   server.initFRAG()
 end
 
 
@@ -64,8 +65,9 @@ function server.tick(dt)
    server.tickTAU(dt)
    server.tickGLU(dt)
 
-   -- PICKUPS
+   -- ITEMS
    server.tickMED(dt)
+   server.tickFRAG(dt)
 end
 
 
@@ -86,8 +88,9 @@ function server.tickPlayer(p, dt)
    server.tickPlayerTAU(p, dt)
    server.tickPlayerGLU(p, dt)
 
-   -- PICKUPS
+   -- ITEMS
    server.tickPlayerMED(p, dt)
+   server.tickPlayerFRAG(p, dt)
 end
 
 
@@ -107,6 +110,9 @@ function client.init()
    -- SPECIALS
    client.initTAU()
    client.initGLU()
+
+   -- ITEMS
+   client.initFRAG()
 end
 
 
@@ -126,6 +132,9 @@ function client.tick(dt)
    -- SPECIALS
    client.tickTAU(dt)
    client.tickGLU(dt)
+
+   -- ITEMS
+   client.tickFRAG(dt)
 end
 
 function client.draw()
@@ -159,4 +168,7 @@ function client.tickPlayer(p, dt)
    -- SPECIALS
    client.tickPlayerTAU(p, dt)
    client.tickPlayerGLU(p, dt)
+
+   -- ITEMS
+   client.tickPlayerFRAG(p, dt)
 end
