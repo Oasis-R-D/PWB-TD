@@ -95,16 +95,17 @@ function server.secondaryFireMp5(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local crouch = GetPlayerCrouch(p)
-	
-	local spread = 0.05234/8 -- assuming spread is a radian value and this is the diameter of the cone
-	if crouch > 0.1 then
-		spread = 0.03490/8
-	end
-	
-	dir = VecAdd(dir, rndVec(spread))
-	Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID) -- TO-DO: make this an actual object
-	
+	--Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID) -- TO-DO: make this an actual object
+	local pvel = GetPlayerVelocity(p)
+
+	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
+	local xml = "MOD/prefab/gren_m203.xml"
+	grenade_ent = Spawn(xml, GrenTrans)
+	SetTag(grenade_ent[2], "grenType", "m203")
+	SetTag(grenade_ent[2], "grenStyle", "impact")
+	SetTag(grenade_ent[2], "playerThrew", p)
+	SetBodyVelocity(grenade_ent[2], VecAdd(pvel, VecScale(dir, 20)))
+
 	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
 end
 
