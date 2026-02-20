@@ -66,9 +66,10 @@ function server.primaryFireFRAG(p, cookedTime)
 
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
 	local xml = "MOD/prefab/groundgrenade.xml"
-	local grenade_ent = Spawn(xml, GrenTrans)
-	SetBodyVelocity(grenade_ent[1], TransformToParentVec(GetPlayerCameraTransform(p), Vec(0, 0, -100000)))
-	SetTag(grenade_ent[1], "cooked_time", 0)
+	grenade_ent = Spawn(xml, GrenTrans)
+	SetTag(grenade_ent[2], "cooked_time", cookedTime)
+	SetTag(grenade_ent[2], "playerThrew", p)
+	SetBodyVelocity(grenade_ent[2], TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -20)))
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 
