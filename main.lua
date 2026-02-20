@@ -1,5 +1,6 @@
 #version 2
 --pm09
+
 #include "script/mp5.lua"
 #include "script/m727.lua"
 #include "script/shotgun.lua"
@@ -9,12 +10,15 @@
 #include "script/python.lua"
 #include "script/glock.lua"
 
-#include "script/melee/crowber.lua" -- :3
+-- MELEE
+#include "script/melee/crowber.lua"
 #include "script/melee/wrench.lua"
 
+-- SPECIAL
 #include "script/special/tau.lua"
 #include "script/special/gluon.lua"
 
+-- ITEMS
 #include "script/items/medkit.lua"
 #include "script/items/grenade.lua"
 
@@ -26,6 +30,7 @@
 -- To remove unused weapons, remove it's lua file, xml file(s), vox, sounds and it's function calls from this file
 
 function server.init()
+   -- MELEE
    server.initCRBR()
    server.initWRNCH()
 
@@ -49,6 +54,7 @@ end
 
 
 function server.tick(dt)
+   -- MELEE
    server.tickCRBR(dt)
    server.tickWRNCH(dt)
 
@@ -72,6 +78,7 @@ end
 
 
 function server.tickPlayer(p, dt)
+   -- MELEE
    server.tickPlayerCRBR(p, dt)
    server.tickPlayerWRNCH(p, dt)
 
@@ -95,6 +102,7 @@ end
 
 
 function client.init()
+   -- MELEE
    client.initCRBR()
    client.initWRNCH()
 
@@ -117,6 +125,7 @@ end
 
 
 function client.tick(dt)
+   -- MELEE
    client.tickCRBR(dt)
    client.tickWRNCH(dt)
 
@@ -153,6 +162,7 @@ function client.draw()
 end
 
 function client.tickPlayer(p, dt)
+   -- MELEE
    client.tickPlayerCRBR(p, dt)
    client.tickPlayerWRNCH(p, dt)
 
