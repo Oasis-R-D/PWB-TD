@@ -18,9 +18,12 @@ function server.init()
 
 	server.playerThrew = tonumber(GetTagValue(grenBody, "playerThrew"))
 
-	server.grenType = GetTagValue(grenBody, "grenType")
-	server.grenStyle = GetTagValue(grenBody, "grenStyle")
-	server.gravMult = 0.5 -- imp and timer have 0.5
+	server.grenType = GetTagValue(grenBody, "grenType") -- specific properties
+	server.grenStyle = GetTagValue(grenBody, "grenStyle") -- general properties
+
+	if server.grenType == "frag" or server.grenType == "m203" then 
+		server.gravMult = 0.5 -- imp and timer have 0.5
+	end
 
 	server.explTimer = 0
 	server.shouldExplode = false
@@ -56,8 +59,17 @@ function server.explode(pos, grenType)
 end
 
 function server.think(dt)
+	local pos = GetBodyTransform(grenBody).pos
+	if server.grenStyle == "impact" then
+		QueryRejectBody(grenBody)
+		local pHit = queryShot(pos, VecNormalize, 0.1, 0, server.playerThrew)
+		if pHit then
+			server.shouldExplode = true
+		end
+	end
+
 	if server.shouldExplode == true then
-		server.explode(GetBodyTransform(grenBody).pos, server.grenType)
+		server.explode(pos, server.grenType)
 		server.exploded = true
 		return
 	end
@@ -65,9 +77,6 @@ function server.think(dt)
 	server.thinkTime = THINKTIME
 	local grenVel = GetBodyVelocity(grenBody)
 	SetBodyVelocity(grenBody, VecScale(grenVel, AIRRESISTMULT))
-
-	pHit(queryShot())
-	if 
 end
 
 function server.tick(dt)
@@ -85,7 +94,7 @@ function server.tick(dt)
 	
 	if server.explTimer ~= -1 and server.explTimer < COOKTIME then
 		server.explTimer = server.explTimer + dt
-	else
+	elseif server.explTimer ~= -1 then
 		server.shouldExplode = true
 	end
 
@@ -112,6 +121,6 @@ function server.tick(dt)
 
 	local pvel = GetBodyVelocity(grenBody)
 	local gravity = GetGravity()
-	local newVel = VecAdd(pvel, VecScale(gravity, -dt))
+	local newVel = VecAdd(pvel, VecScale(gravity, dt * server.gravMult))
 	SetBodyVelocity(grenBody, newVel)
 end
