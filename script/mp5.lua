@@ -103,7 +103,7 @@ function server.secondaryFireMp5(p)
 	end
 	
 	dir = VecAdd(dir, rndVec(spread))
-	Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID)
+	Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID) -- TO-DO: make this an actual object
 	
 	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
 end
