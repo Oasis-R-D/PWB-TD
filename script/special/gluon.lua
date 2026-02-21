@@ -123,7 +123,7 @@ function client.UpdateEffect(source, endpos, vecDir, dist, timedist, player)
 	end
 end
 
-function server.fireGLU(p, dmgTime)
+function server.fireGLU(p, dmgTime, dt)
 	local eyeTrans = GetPlayerEyeTransform(p)
 	local front = TransformToParentVec(eyeTrans, Vec(0, 0, -1))
 	local vecDir = VecNormalize(front)
@@ -143,7 +143,8 @@ function server.fireGLU(p, dmgTime)
 	end
 	timedist = 1 - timedist
 
-	ClientCall(0, "client.UpdateEffect", tmpSrc.pos, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p)
+	local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
+	ClientCall(0, "client.UpdateEffect", beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
 
 	if not bHit then
 		return
@@ -227,7 +228,7 @@ function client.tickPlayerGLU(p, dt)
 				data.fireState = EGON_FIRECHARGE
 			elseif data.fireState == EGON_FIRECHARGE then
 				if IsPlayerLocal(p) then -- would it be better to do the host here so it doesn't need networked?
-					ServerCall("server.fireGLU", p, data.damageTime)
+					ServerCall("server.fireGLU", p, data.damageTime, dt)
 				end
 
 				if data.damageTime <= 0 then

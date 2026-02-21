@@ -6,15 +6,13 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-local PRIM_FIRESOUND = "MOD/snd/gren.ogg"
-local BOUNCESOUND = "MOD/snd/grenBounce0"
 local PICKUP_SIZE = 5.0
 local RECOIL_AMNT = 0.075
 local FIRERATE = 0.5
 local EXPLSIZE = 2.0
 local FUZESTART = 3.0
 local WPNID = "hlgrenade"
-local WPNNAME = "M1 Frag"
+local WPNNAME = "Mk2 Frag"
 
 -- Per weapon data storer
 FRAGplayers = {}
@@ -38,7 +36,7 @@ function server.tickFRAG(dt)
 	for p in PlayersAdded() do
 		FRAGplayers[p] = createPlayerDataFRAG()
 		SetToolEnabled(WPNID, true, p)
-		SetToolAmmo(WPNID, 250, p)
+		SetToolAmmo(WPNID, 10, p)
 	end
 
 	for p in PlayersRemoved() do
@@ -91,8 +89,6 @@ function server.primaryFireFRAG(p, cookedTime)
 	SetTag(grenade_ent[2], "playerThrew", p)
 
 	SetBodyVelocity(grenade_ent[2], velocity)
-
-	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)

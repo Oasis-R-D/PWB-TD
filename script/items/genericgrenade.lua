@@ -20,7 +20,7 @@ function server.initTags()
 	server.grenType = GetTagValue(grenBody, "grenType") -- specific properties
 	server.grenStyle = GetTagValue(grenBody, "grenStyle") -- general properties
 
-	if server.grenType == "frag" or server.grenType == "m203" then
+	if server.grenType == "frag" or server.grenType == "m203" or server.grenType == "satchel" then
 		server.gravMult = 0.51 -- half-life 1's gravity is 800 (HU?) which is around 20MS, TD's is 10 so 1/2 20 = 10
 	else
 		server.gravMult = 1.0
@@ -49,12 +49,12 @@ end
 
 function server.explode(pos, grenType)
 	if grenType == "frag" then
-		Explosion(pos, 1.0)
+		Explosion(pos, 1.5)
 	elseif grenType == "m203" then
 		Explosion(pos, 1.0)
-	elseif grentype == "satchel" then
-		Explosion(pos, 2.0)
-	elseif grentype == "mine" then
+	elseif grenType == "satchel" then
+		Explosion(pos, 2.5)
+	elseif grenType == "mine" then
 		Explosion(pos, 2.0)
 	end
 end
@@ -116,7 +116,13 @@ function server.tick(dt)
 		end
 	elseif server.grenStyle == "remote" then
 		if HasTag(grenBody, "detonate") then
-			server.shouldExplode = true 
+			server.shouldExplode = true
+		end
+
+		if (GetPlayerHealth(server.playerThrew) == nil or GetPlayerHealth(server.playerThrew) <= 0.0) and not HasTag(grenBody, "detonate") then
+			 -- owner died or left, that doesn't matter if it is already exploding though (does weird things if it has the detonate tag here)
+			Delete(grenBody)
+			return
 		end
 	end
 	-- END DETONATION CHECKS
