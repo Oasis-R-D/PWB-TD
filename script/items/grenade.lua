@@ -8,7 +8,7 @@
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/gren.ogg"
 local BOUNCESOUND = "MOD/snd/grenBounce0"
-local PICKUP_SIZE = 5
+local PICKUP_SIZE = 5.0
 local RECOIL_AMNT = 0.075
 local FIRERATE = 0.5
 local EXPLSIZE = 2.0
@@ -21,6 +21,8 @@ FRAGplayers = {}
 
 function createPlayerDataFRAG()
 	return {
+		inAttack = false,
+		chargedTime = nil,
 		coolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
@@ -56,22 +58,39 @@ function server.tickPlayerFRAG(p, dt)
 end
 
 function server.primaryFireFRAG(p, cookedTime)
+	cookedTime = cookedTime or 0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = FRAGplayers[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local pvel = GetPlayerVelocity(p)
+	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
+	
+	if angThrow[1] < 0 then
+		angThrow[1] = -0.254 + angThrow[1] * ((2.286 - 0.254) / 2.286)
+	else
+		angThrow[1] = -0.254 + angThrow[1] * ((2.286 + 0.254) / 2.286)
+	end
 
-	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
+	local flVel = (2.286 - angThrow[1]) * 6.5
+	if flVel > 25.4 then
+		flVel = 25.4
+	end
+
+	DebugWatch("flVel", flVel)
+
+	local velocity = VecAdd(GetPlayerVelocity(p), TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -flVel)))
+
+	local GrenTrans = Transform(pos, QuatLookAt(Vec(), angThrow))
 	local xml = "MOD/prefab/gren_frag.xml"
 	grenade_ent = Spawn(xml, GrenTrans)
+
 	SetTag(grenade_ent[2], "grenType", "frag")
 	SetTag(grenade_ent[2], "grenStyle", "timed")
-	SetTag(grenade_ent[2], "timer", 3 - cookedTime)
+	SetTag(grenade_ent[2], "timer", FUZESTART - cookedTime)
 	SetTag(grenade_ent[2], "playerThrew", p)
-	SetBodyVelocity(grenade_ent[2], VecAdd(pvel, TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -20))))
+
+	SetBodyVelocity(grenade_ent[2], velocity)
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 
@@ -107,6 +126,7 @@ function client.tickPlayerFRAG(p, dt)
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		FRAGplayers[p] = createPlayerDataFRAG()
 		return
 	end
 
@@ -118,22 +138,42 @@ function client.tickPlayerFRAG(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireFRAG", p)
-				end
-
-				data.coolDown = FIRERATE
-				
-				data.recoil = RECOIL_AMNT
-
-				data.toolAnimator.timeSinceFire = 0.0
+				data.inAttack = true
 			end
-
 		if IsPlayerLocal(p) then
 			PlayHaptic(shootHaptic, 1)
 		end
 	end
 
+	if data.chargedTime ~= nil and data.inAttack == true then -- deplete timer and check if ready
+		data.chargedTime = data.chargedTime + dt -- cook the grenade
+
+		local pitch = (data.chargedTime) * (150 / FUZESTART) + 100
+		if pitch > 250 then
+			pitch = 250
+		end
+		pitch = pitch / 100
+
+		data.recoil = math.min(0.05, data.recoil + (pitch * 0.1))
+
+		if (data.chargedTime > 0.5 and not InputDown("usetool", p)) then -- swing start animation done (in opfor)
+			data.toolAnimator.forceSecondaryActionPose = false
+
+			if IsPlayerLocal(p) then
+				ServerCall("server.primaryFireFRAG", p, data.chargedTime)
+			end
+
+			data.coolDown = 0.5
+
+			data.recoil = RECOIL_AMNT
+			data.chargedTime = nil
+			data.inAttack = false
+		end
+	elseif data.inAttack == true then -- start timer
+		data.chargedTime = 0
+		data.toolAnimator.forceSecondaryActionPose = true
+	end
+	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.recoil = data.recoil - dt

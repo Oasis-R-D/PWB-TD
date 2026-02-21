@@ -96,7 +96,6 @@ function server.secondaryFireMp5(p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	--Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID) -- TO-DO: make this an actual object
-	local pvel = GetPlayerVelocity(p)
 
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
 	local xml = "MOD/prefab/gren_m203.xml"
@@ -104,7 +103,8 @@ function server.secondaryFireMp5(p)
 	SetTag(grenade_ent[2], "grenType", "m203")
 	SetTag(grenade_ent[2], "grenStyle", "impact")
 	SetTag(grenade_ent[2], "playerThrew", p)
-	SetBodyVelocity(grenade_ent[2], VecAdd(pvel, VecScale(dir, 20)))
+	SetBodyVelocity(grenade_ent[2], VecScale(dir, 20.32))
+	SetBodyAngularVelocity(grenade_ent[2], TransformToParentVec(GetPlayerEyeTransform(p), Vec(-rnd(2.54, 12.7), 0, 0)))
 
 	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
 end

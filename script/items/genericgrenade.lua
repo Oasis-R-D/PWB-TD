@@ -9,48 +9,49 @@ local EXPLSIZE = 1.0
 local IMPDMGTHRESH = 2.54 -- 100 inches to meters
 local WPNNAME = "M1 Frag"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
-local AIRRESISTMULT = 0.5
+local AIRRESISTMULT = 0.99
 
 
-
-function server.init()
-	grenBody = FindBody(BODYTAG)
+function server.initTags()
+	server.tagsRecieved = true
 
 	server.playerThrew = tonumber(GetTagValue(grenBody, "playerThrew"))
 
 	server.grenType = GetTagValue(grenBody, "grenType") -- specific properties
 	server.grenStyle = GetTagValue(grenBody, "grenStyle") -- general properties
 
-	if server.grenType == "frag" or server.grenType == "m203" then 
-		server.gravMult = 0.5 -- imp and timer have 0.5
-	end
-
-	server.explTimer = 0
-	server.shouldExplode = false
-
-	server.thinkTime = THINKTIME
-	local timer = tonumber(GetTagValue(grenBody, "timer"))
-	if timer ~= nil then
-		server.explTimer = (timer)
+	if server.grenType == "frag" or server.grenType == "m203" then
+		server.gravMult = 0.51 -- half-life 1's gravity is 800 (HU?) which is around 20MS, TD's is 10 so 1/2 20 = 10
 	else
-		server.explTimer = -1
+		server.gravMult = 1.0
 	end
 
-	server.exploded = false
+	if server.grenStyle == "timed" then
+		local timer = tonumber(GetTagValue(grenBody, "timer"))
+		server.explTimer = timer
+	end
+
+	DebugWatch("explTimer", server.explTimer)
+	DebugWatch("gravMult", server.gravMult)
+	DebugWatch("grenType", server.grenType)
+	DebugWatch("grenStyle", server.grenStyle)
 end
 
-function server.negateGravity(dt)
-	local pvel = GetBodyVelocity(grenBody)
-	local gravity = GetGravity()
-	local newVel = VecAdd(pvel, VecScale(gravity, -dt))
-	SetBodyVelocity(grenBody, newVel)
+function server.init()
+	grenBody = FindBody(BODYTAG)
+
+	server.thinkTime = THINKTIME
+
+	server.shouldExplode = false
+	server.exploded = false
+	server.tagsRecieved = false
 end
 
 function server.explode(pos, grenType)
 	if grenType == "frag" then
 		Explosion(pos, 1.0)
-	elseif greType == "m203" then
-		Explosion(pos, 0.75)
+	elseif grenType == "m203" then
+		Explosion(pos, 1.0)
 	elseif grentype == "satchel" then
 		Explosion(pos, 2.0)
 	elseif grentype == "mine" then
@@ -60,13 +61,7 @@ end
 
 function server.think(dt)
 	local pos = GetBodyTransform(grenBody).pos
-	if server.grenStyle == "impact" then
-		QueryRejectBody(grenBody)
-		local pHit = queryShot(pos, VecNormalize, 0.1, 0, server.playerThrew)
-		if pHit then
-			server.shouldExplode = true
-		end
-	end
+	local grenVel = GetBodyVelocity(grenBody)
 
 	if server.shouldExplode == true then
 		server.explode(pos, server.grenType)
@@ -75,8 +70,9 @@ function server.think(dt)
 	end
 
 	server.thinkTime = THINKTIME
-	local grenVel = GetBodyVelocity(grenBody)
-	SetBodyVelocity(grenBody, VecScale(grenVel, AIRRESISTMULT))
+	
+	--SetBodyVelocity(grenBody, VecScale(grenVel, AIRRESISTMULT))
+	--server.gravMult = server.gravMult * 1.011
 end
 
 function server.tick(dt)
@@ -84,43 +80,61 @@ function server.tick(dt)
 		Delete(grenBody)
 		return
 	end
-	
+
+	if server.tagsRecieved == false then
+		if HasTag(grenBody, "grenStyle") then
+			server.initTags()
+			return
+		else
+			return -- haven't received tags yet
+		end
+	end
+
 	if IsBodyBroken(grenBody) then
 		server.explode(GetBodyTransform(grenBody).pos, server.grenType)
 		server.exploded = true
 		Delete(grenBody)
 		return
 	end
-	
-	if server.explTimer ~= -1 and server.explTimer < COOKTIME then
-		server.explTimer = server.explTimer + dt
-	elseif server.explTimer ~= -1 then
-		server.shouldExplode = true
+
+	local grenVel = GetBodyVelocity(grenBody)
+
+	-- BEGIN DETONATION CHECKS
+	if server.grenStyle == "timed" then -- decrease timer
+		server.explTimer = server.explTimer - dt
+		if server.explTimer < 0 then
+			server.shouldExplode = true
+		end
+	elseif server.grenStyle == "impact" then -- check if impacting
+		local grenspeed = VecLength(grenVel)
+		QueryRejectBody(grenBody)
+		QueryInclude("tool")
+		QueryInclude("player")
+		local pHit = QueryRaycast(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), grenspeed * dt + 0.2, 0.33)
+		if pHit or grenspeed <= 0.01 then
+			server.shouldExplode = true
+		end
+	elseif server.grenStyle == "remote" then
+		if HasTag(grenBody, "detonate") then
+			server.shouldExplode = true 
+		end
 	end
+	-- END DETONATION CHECKS
 
-	if server.grenStyle == "timed" and VecLength(GetBodyVelocity(grenBody)) >= IMPDMGTHRESH then -- stolen from throwing knife mod	
-		local players = GetAllPlayers()
-		for v=1, #players do 
-			local playerID = players[v]
-			local camtr = GetPlayerEyeTransform(playerID)
-				
-			if playerID ~= server.playerThrew and VecLength(VecSub(camtr.pos, GetBodyTransform(grenBody).pos)) < 1 then
-				ApplyPlayerDamage(playerID, 0.01, WPNNAME, server.playerThrew) -- can't do blood here since util.lua cannot be included (for whatever fucking reason)
-			end
-		end		
-	end
-
-	-- remove gravity
-	server.negateGravity(dt)
-
-	-- think (check impact and explode, apply air resist, friction etc etc)
+	-- think (check explode, apply air resist, friction etc etc)
 	server.thinkTime = server.thinkTime - dt
 	if server.thinkTime <= 0 then
 		server.think(dt)
 	end
 
+	-- remove gravity
 	local pvel = GetBodyVelocity(grenBody)
 	local gravity = GetGravity()
-	local newVel = VecAdd(pvel, VecScale(gravity, dt * server.gravMult))
+	local newVel = VecAdd(pvel, VecScale(gravity, -dt))
 	SetBodyVelocity(grenBody, newVel)
+
+	-- add faked gravity
+	local newgravity = VecScale(GetGravity(), server.gravMult)
+	local finalVel = VecAdd(newVel, VecScale(newgravity, dt))
+	SetBodyVelocity(grenBody, finalVel)
 end
