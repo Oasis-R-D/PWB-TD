@@ -78,12 +78,8 @@ function server.primaryFireM40(p)
 	local data = M40players[p]
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.0005 -- assuming spread is a radian value and this is the diameter of the cone
-	if crouch > 0.1 then
-		spread = 0.00025
-	end
 	
 	if not data.scoped == true then -- make fire from center of screen?
 		dir = VecAdd(dir, rndVec(spread))

@@ -22,6 +22,7 @@
 #include "script/items/medkit.lua"
 #include "script/items/grenade.lua"
 #include "script/items/satchel.lua"
+#include "script/items/tripmine.lua"
 
 -- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
 
@@ -52,6 +53,7 @@ function server.init()
    server.initMED()
    server.initFRAG()
    server.initSATCH()
+   server.initTRIP()
 end
 
 
@@ -77,6 +79,7 @@ function server.tick(dt)
    server.tickMED(dt)
    server.tickFRAG(dt)
    server.tickSATCH(dt)
+   server.tickTRIP(dt)
 end
 
 
@@ -102,6 +105,7 @@ function server.tickPlayer(p, dt)
    server.tickPlayerMED(p, dt)
    server.tickPlayerFRAG(p, dt)
    server.tickPlayerSATCH(p, dt)
+   server.tickPlayerTRIP(p, dt)
 end
 
 
@@ -126,6 +130,7 @@ function client.init()
    -- ITEMS
    client.initFRAG()
    client.initSATCH()
+   client.initTRIP()
 end
 
 
@@ -150,6 +155,7 @@ function client.tick(dt)
    -- ITEMS
    client.tickFRAG(dt)
    client.tickSATCH(dt)
+   client.tickTRIP(dt)
 end
 
 function client.draw()
@@ -188,4 +194,5 @@ function client.tickPlayer(p, dt)
    -- ITEMS
    client.tickPlayerFRAG(p, dt)
    client.tickPlayerSATCH(p, dt)
+   client.tickPlayerTRIP(p, dt)
 end

@@ -71,13 +71,8 @@ end
 
 function server.primaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
-	if crouch > 0.1 then
-		spread = 0.06976/2
-	end
 	
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]
@@ -97,13 +92,8 @@ end
 
 function server.secondaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
-	if crouch > 0.1 then
-		spread = 0.06976/2
-	end
 	
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]

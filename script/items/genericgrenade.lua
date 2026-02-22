@@ -31,20 +31,28 @@ function server.initTags()
 		server.explTimer = timer
 	end
 
-	DebugWatch("explTimer", server.explTimer)
-	DebugWatch("gravMult", server.gravMult)
-	DebugWatch("grenType", server.grenType)
-	DebugWatch("grenStyle", server.grenStyle)
+	if server.grenStyle == "lasermine" then
+		server.laserDist = nil
+	end
+
+	TM_ON = LoadSound("MOD/snd/mine_activate.ogg")
+	--DebugWatch("explTimer", server.explTimer)
+	--DebugWatch("gravMult", server.gravMult)
+	--DebugWatch("grenType", server.grenType)
+	--DebugWatch("grenStyle", server.grenStyle)
 end
 
 function server.init()
 	grenBody = FindBody(BODYTAG)
+	grenRig = FindRig("hlgrenade_rig")
 
 	server.thinkTime = THINKTIME
 
 	server.shouldExplode = false
 	server.exploded = false
 	server.tagsRecieved = false
+
+	server.runTime = 0.0
 end
 
 function server.explode(pos, grenType)
@@ -55,8 +63,23 @@ function server.explode(pos, grenType)
 	elseif grenType == "satchel" then
 		Explosion(pos, 2.5)
 	elseif grenType == "mine" then
-		Explosion(pos, 2.0)
+		Explosion(pos, 1.75)
 	end
+end
+
+function client.init()
+	LaserSPR = LoadSprite("gfx/laser.png")
+end
+
+function client.drawGrenlaser(vecSrc, vecDir, raycastDist)
+		local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
+
+		local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
+		local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform().pos))
+
+		t.rot = QuatAlignXZ(xAxis, zAxis)
+
+		DrawSprite(LaserSPR, t, raycastDist, 0.1, 0.0, 0.83, 0.77, 0.25, true, true)
 end
 
 function server.think(dt)
@@ -76,6 +99,8 @@ function server.think(dt)
 end
 
 function server.tick(dt)
+	server.runTime = server.runTime + dt
+
 	if server.exploded == true then
 		Delete(grenBody)
 		return
@@ -124,6 +149,35 @@ function server.tick(dt)
 			Delete(grenBody)
 			return
 		end
+	elseif server.grenStyle == "lasermine" then
+		if server.runTime >= 2.5 and server.laserMineOn ~= true then
+			server.laserMineOn = true 
+			PlaySound(TM_ON, GetBodyTransform(grenBody).pos, 10)
+		end -- activate after 2 seconds
+
+		if server.laserMineOn == true then
+			SetRigWorldTransform(grenRig, GetBodyTransform(grenBody))
+			local laserStartTrans = GetRigLocationWorldTransform(grenRig, "muzzle")
+			local laserStartVec = laserStartTrans.pos
+			local direction = TransformToParentVec(laserStartTrans, Vec(0, 0, -1))
+
+			QueryRejectBody(grenBody)
+			QueryInclude("player")
+			local pHit, pDist = QueryRaycast(laserStartVec, direction, 75, 0.0, true)
+			
+			if server.laserDist == nil then
+				server.laserDist = pDist
+			else -- check if the mine is tripped
+				if math.abs(server.laserDist - pDist) >= 0.25 then 
+					server.shouldExplode = true 
+					server.laserDist = pDist
+				end
+			end
+
+			DebugWatch("laserlen", pDist)
+			DrawLine(laserStartVec, VecAdd(laserStartVec, VecScale(direction, pDist)), 0.0, 0.83, 0.77, 0.25)
+			ClientCall(0, "client.drawGrenlaser", laserStartVec, direction, pDist)
+		end
 	end
 	-- END DETONATION CHECKS
 
@@ -144,3 +198,4 @@ function server.tick(dt)
 	local finalVel = VecAdd(newVel, VecScale(newgravity, dt))
 	SetBodyVelocity(grenBody, finalVel)
 end
+

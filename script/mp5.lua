@@ -73,12 +73,8 @@ function server.primaryFireMp5(p)
 	local data = MP5players[p]
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local crouch = GetPlayerCrouch(p)
 	
 	local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
-	if crouch > 0.1 then
-		spread = 0.03490/2
-	end
 	
 	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
@@ -95,7 +91,7 @@ function server.secondaryFireMp5(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	--Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID) -- TO-DO: make this an actual object
+	--Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID)
 
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
 	local xml = "MOD/prefab/gren_m203.xml"
