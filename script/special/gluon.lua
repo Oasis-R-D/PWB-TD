@@ -211,7 +211,7 @@ function client.tickPlayerGLU(p, dt)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = GLUplayers[p]
 
-	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
+	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and ammo > 0 then
 		if data.coolDown < 0 then
 			if data.fireState == EGON_FIREOFF then
 				data.ammoDepleteTime = 0
