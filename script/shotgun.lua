@@ -15,7 +15,9 @@ local CLIP_SIZE = 8
 local PICKUP_SIZE = 12
 local RECOIL_AMNT = 0.2
 local FIRERATE = 0.75
+local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 1.5
+local CAMALTMOVETIME = (2 * math.pi) * (0.5 / ALTFIRERATE) -- Cam movement sine multiplier, ALTFIRERATE is how long until it's over
 local DAMAGE = 0.35
 local PLAYERDAMAGE = 0.1
 local MAX_RANGE = 60.0
@@ -38,6 +40,7 @@ function createPlayerDataSG()
 		shellinserttime = nil,
 		shellstoload = 0,
 		shellstopump = 0.0,
+		camAltMove = false,
 	}
 end
 
@@ -191,6 +194,8 @@ function client.tickPlayerSG(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireSG", p)
+					camSineTime = 0
+					data.camAltMove = false
 				end
 
 				local toolBody = GetToolBody(p)
@@ -253,6 +258,8 @@ function client.tickPlayerSG(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.secondaryFireSG", p)
+					camSineTime = 0
+					data.camAltMove = true
 				end
 
 				local toolBody = GetToolBody(p)
@@ -401,6 +408,33 @@ function client.tickPlayerSG(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	-- CAMERA MOVEMENT
+	if IsPlayerLocal(p) then
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -30 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 1000-- how intense (y at the peak will not equal this though)
+
+			local equation = nil
+			if data.camAltMove == true then
+				balance = -15
+				amp = 1000
+				equation = amp * ((math.sin(CAMALTMOVETIME * x) * e^(balance * x)) * x)
+			else
+				equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+			end
+
+			DebugWatch("cammove", equation)
+			DebugWatch("sinetime", camSineTime)
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.75, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+	end
 end
 
 function client.drawSG()

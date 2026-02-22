@@ -15,7 +15,9 @@ local CLIP_SIZE = 7.0
 local PICKUP_SIZE = 15.0
 local RECOIL_AMNT = 0.25
 local FIRERATE = 0.22 -- laser off
+local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local LASERFIRERATE = 0.5 -- laser on
+local CAMLASERMOVETIME = (2 * math.pi) * (0.5 / LASERFIRERATE)
 local ALTFIRERATE = 0.125
 local DAMAGE = 0.5
 local PLAYERDAMAGE = 0.34
@@ -166,6 +168,7 @@ function client.tickPlayerDE357(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireDE357", p)
+					camSineTime = 0
 				end
 
 				local toolBody = GetToolBody(p)
@@ -336,6 +339,26 @@ function client.tickPlayerDE357(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	-- CAMERA MOVEMENT
+	if IsPlayerLocal(p) then
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 25 -- how intense (y at the peak will not equal this though)
+
+			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+
+			DebugWatch("cammove", equation)
+			DebugWatch("sinetime", camSineTime)
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+	end
 end
 
 function client.drawDE357()

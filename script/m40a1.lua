@@ -17,6 +17,7 @@ local CLIP_SIZE = 5.0
 local PICKUP_SIZE = 15.0
 local RECOIL_AMNT = 0.25
 local FIRERATE = 2.0
+local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
 local DAMAGE = 0.6 -- x5
@@ -161,6 +162,7 @@ function client.tickPlayerM40(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireM40", p)
+					camSineTime = 0
 				end
 				
 				local playervel = GetPlayerVelocity(p)
@@ -293,6 +295,26 @@ function client.tickPlayerM40(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	-- CAMERA MOVEMENT
+	if IsPlayerLocal(p) then
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 800 -- how intense (y at the peak will not equal this though)
+
+			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+
+			DebugWatch("cammove", equation)
+			DebugWatch("sinetime", camSineTime)
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.33, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+	end
 end
 
 function client.drawM40()

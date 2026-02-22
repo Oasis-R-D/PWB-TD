@@ -14,6 +14,7 @@ local CLIP_SIZE = 17.0
 local PICKUP_SIZE = 17.0
 local RECOIL_AMNT = 0.17
 local FIRERATE = 0.3
+local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.2
 local DAMAGE = 0.4
 local PLAYERDAMAGE = 0.12
@@ -166,6 +167,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 					ServerCall("server.primaryFirePIST9MM", p)
+					camSineTime = 0
 				else
 					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
@@ -234,6 +236,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 					ServerCall("server.secondaryFirePIST9MM", p)
+					camSineTime = 0
 				else
 					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
@@ -328,6 +331,26 @@ function client.tickPlayerPIST9MM(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	-- CAMERA MOVEMENT
+	if IsPlayerLocal(p) then
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 15 -- how intense (y at the peak will not equal this though)
+
+			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+
+			DebugWatch("cammove", equation)
+			DebugWatch("sinetime", camSineTime)
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+	end
 end
 
 function client.drawPIST9MM()

@@ -28,7 +28,7 @@ function createPlayerDataSATCH()
 end
 
 function server.initSATCH()
-	RegisterTool(WPNID, WPNNAME, "MOD/prefab/grenade.xml", 4)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/satchel.xml", 4)
 	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 
@@ -52,6 +52,11 @@ function server.tickPlayerSATCH(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		SATCHplayers[p] = createPlayerDataSATCH()
 		return
+	end
+
+	local ammo = GetToolAmmo(WPNID, p)
+	if ammo < 9999 and ammo > 10 then
+		SetToolAmmo(WPNID, 10, p)
 	end
 end
 

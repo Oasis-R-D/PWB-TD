@@ -13,6 +13,7 @@ local CLIP_SIZE = 50
 local PICKUP_SIZE = 100
 local RECOIL_AMNT = 0.2
 local FIRERATE = 0.067 -- NO
+local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local DAMAGE = 0.4
 local PLAYERDAMAGE = 0.15
 local MAX_RANGE = 125.0
@@ -162,6 +163,7 @@ function client.tickPlayerM249(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireM249", p)
+					camSineTime = 0
 				end
 
 				local toolBody = GetToolBody(p)
@@ -282,6 +284,26 @@ function client.tickPlayerM249(p, dt)
 	end
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	-- CAMERA MOVEMENT
+	if IsPlayerLocal(p) then
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 7.5 -- how intense (y at the peak will not equal this though)
+
+			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+
+			DebugWatch("cammove", equation)
+			DebugWatch("sinetime", camSineTime)
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+	end
 end
 
 function client.drawM249()

@@ -14,7 +14,9 @@ local CLIP_SIZE = 50
 local PICKUP_SIZE = 50
 local RECOIL_AMNT = 0.2
 local FIRERATE = 0.1
+local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 1
+local CAMALTMOVETIME = (2 * math.pi) * (0.5 / ALTFIRERATE) -- Cam movement sine multiplier, ALTFIRERATE is how long until it's over
 local DAMAGE = 0.45
 local PLAYERDAMAGE = 0.12
 local MAX_RANGE = 100.0
@@ -35,6 +37,7 @@ function createPlayerDataMP5()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
+		camAltMove = false,
 	}
 end
 
@@ -170,6 +173,8 @@ function client.tickPlayerMp5(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireMp5", p)
+					camSineTime = 0
+					data.camAltMove = false
 				end
 
 				local toolBody = GetToolBody(p)
@@ -233,6 +238,8 @@ function client.tickPlayerMp5(p, dt)
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.secondaryFireMp5", p)
+					camSineTime = 0
+					data.camAltMove = true
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -306,6 +313,33 @@ function client.tickPlayerMp5(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	-- CAMERA MOVEMENT
+	if IsPlayerLocal(p) then
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 10 -- how intense (y at the peak will not equal this though)
+
+			local equation = nil
+			if data.camAltMove == true then
+				balance = -20
+				amp = 800
+				equation = amp * ((math.sin(CAMALTMOVETIME * x) * e^(balance * x)) * x)
+			else
+				equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+			end
+
+			DebugWatch("cammove", equation)
+			DebugWatch("sinetime", camSineTime)
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+	end
 end
 
 function client.drawMp5()

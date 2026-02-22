@@ -51,6 +51,11 @@ function server.tickPlayerTRIP(p, dt)
 		TRIPplayers[p] = createPlayerDataTRIP()
 		return
 	end
+
+	local ammo = GetToolAmmo(WPNID, p)
+	if ammo < 9999 and ammo > 15 then
+		SetToolAmmo(WPNID, 15, p)
+	end
 end
 
 function server.primaryFireTRIP(p)
