@@ -178,7 +178,7 @@ function client.tickPlayerM249(p, dt)
 					ParticleGravity(rnd(-2, -8))
 					ParticleRadius(0.02)
 					ParticleAlpha(1)
-					if data.alteject == true then -- this is unrealistic, it should eject BOTH at the same time but HLOPFOR works like this soooooo
+					if data.alteject == true then -- this is unrealistic, it should eject BOTH at the same time but HLOPFOR works like this
 						ParticleColor(0.8, 0.6, 0)
 					else
 						ParticleColor(0.5, 0.5, 0.5)
