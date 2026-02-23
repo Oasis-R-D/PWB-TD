@@ -75,8 +75,6 @@ function server.primaryFireTRIP(p)
 		SetTag(satch_ent[2], "grenStyle", "lasermine")
 		SetTag(satch_ent[2], "playerThrew", p)
 
-		--PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-
 		if ammo < 9999 then
 			SetToolAmmo(WPNID, ammo-1, p)
 		end
@@ -168,7 +166,6 @@ function client.tickPlayerTRIP(p, dt)
 		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
 	end 
 	-- END RECOIL
-	
 	local toolBody = GetToolBody(p)
 	if toolBody ~= 0 then -- hide shells if low ammo
 		local shapes = GetBodyShapes(toolBody)

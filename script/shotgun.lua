@@ -426,8 +426,6 @@ function client.tickPlayerSG(p, dt)
 				equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
 			end
 
-			DebugWatch("cammove", equation)
-			DebugWatch("sinetime", camSineTime)
 			if equation >= 0 then
 				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.75, 0), equation))
 				SetPlayerCameraOffsetTransform(t)

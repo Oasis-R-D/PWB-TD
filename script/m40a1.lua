@@ -306,8 +306,6 @@ function client.tickPlayerM40(p, dt)
 
 			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
 
-			DebugWatch("cammove", equation)
-			DebugWatch("sinetime", camSineTime)
 			if equation >= 0 then
 				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.33, 0), equation))
 				SetPlayerCameraOffsetTransform(t)

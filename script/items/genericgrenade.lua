@@ -11,7 +11,6 @@ local WPNNAME = "M1 Frag"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
 local AIRRESISTMULT = 0.99
 
-
 function server.initTags()
 	server.tagsRecieved = true
 
@@ -33,18 +32,12 @@ function server.initTags()
 
 	if server.grenStyle == "lasermine" then
 		server.laserDist = nil
+		server.laserMineOn = false
 	end
-
-	TM_ON = LoadSound("MOD/snd/mine_activate.ogg")
-	--DebugWatch("explTimer", server.explTimer)
-	--DebugWatch("gravMult", server.gravMult)
-	--DebugWatch("grenType", server.grenType)
-	--DebugWatch("grenStyle", server.grenStyle)
 end
 
 function server.init()
 	grenBody = FindBody(BODYTAG)
-	grenRig = FindRig("hlgrenade_rig")
 
 	server.thinkTime = THINKTIME
 
@@ -53,6 +46,8 @@ function server.init()
 	server.tagsRecieved = false
 
 	server.runTime = 0.0
+	
+	TM_ON = LoadSound("MOD/snd/mine_activate.ogg")
 end
 
 function server.explode(pos, grenType)
@@ -61,7 +56,7 @@ function server.explode(pos, grenType)
 	elseif grenType == "m203" then
 		Explosion(pos, 1.0)
 	elseif grenType == "satchel" then
-		Explosion(pos, 2.5)
+		Explosion(pos, 2.0)
 	elseif grenType == "mine" then
 		Explosion(pos, 1.75)
 	end
@@ -100,7 +95,7 @@ end
 
 function server.tick(dt)
 	server.runTime = server.runTime + dt
-
+	
 	if server.exploded == true then
 		Delete(grenBody)
 		return
@@ -130,6 +125,7 @@ function server.tick(dt)
 		if server.explTimer < 0 then
 			server.shouldExplode = true
 		end
+
 	elseif server.grenStyle == "impact" then -- check if impacting
 		local grenspeed = VecLength(grenVel)
 		QueryRejectBody(grenBody)
@@ -139,7 +135,8 @@ function server.tick(dt)
 		if pHit or grenspeed <= 0.01 then
 			server.shouldExplode = true
 		end
-	elseif server.grenStyle == "remote" then
+
+	elseif server.grenStyle == "remote" then -- check if owner has given it the explode tag
 		if HasTag(grenBody, "detonate") then
 			server.shouldExplode = true
 		end
@@ -149,17 +146,17 @@ function server.tick(dt)
 			Delete(grenBody)
 			return
 		end
-	elseif server.grenStyle == "lasermine" then
+
+	elseif server.grenStyle == "lasermine" then -- check if the mine is tripped and draw laser
 		if server.runTime >= 2.5 and server.laserMineOn ~= true then
 			server.laserMineOn = true 
 			PlaySound(TM_ON, GetBodyTransform(grenBody).pos, 10)
 		end -- activate after 2 seconds
 
 		if server.laserMineOn == true then
-			SetRigWorldTransform(grenRig, GetBodyTransform(grenBody))
-			local laserStartTrans = GetRigLocationWorldTransform(grenRig, "muzzle")
+			local laserStartTrans = TransformToParentTransform(GetBodyTransform(grenBody), Transform(Vec(0.02, -0.02, -0.18), GetBodyTransform(grenBody).rot))
 			local laserStartVec = laserStartTrans.pos
-			local direction = TransformToParentVec(laserStartTrans, Vec(0, 0, -1))
+			local direction = TransformToParentVec(GetBodyTransform(grenBody), Vec(0, 0, -1))
 
 			QueryRejectBody(grenBody)
 			QueryInclude("player")
@@ -167,14 +164,14 @@ function server.tick(dt)
 			
 			if server.laserDist == nil then
 				server.laserDist = pDist
-			else -- check if the mine is tripped
+			else
 				if math.abs(server.laserDist - pDist) >= 0.25 then 
-					server.shouldExplode = true 
+					server.shouldExplode = true
 					server.laserDist = pDist
 				end
 			end
 
-			DebugWatch("laserlen", pDist)
+			-- draw
 			DrawLine(laserStartVec, VecAdd(laserStartVec, VecScale(direction, pDist)), 0.0, 0.83, 0.77, 0.25)
 			ClientCall(0, "client.drawGrenlaser", laserStartVec, direction, pDist)
 		end

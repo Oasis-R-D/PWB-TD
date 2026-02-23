@@ -331,8 +331,6 @@ function client.tickPlayerMp5(p, dt)
 				equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
 			end
 
-			DebugWatch("cammove", equation)
-			DebugWatch("sinetime", camSineTime)
 			if equation >= 0 then
 				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
 				SetPlayerCameraOffsetTransform(t)
