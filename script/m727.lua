@@ -77,7 +77,7 @@ function server.primaryFireM727(p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	
-	local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = isMP() and GLOBAL_6DEGREES or GLOBAL_3DEGREES
 	
 	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)

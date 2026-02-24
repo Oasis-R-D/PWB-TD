@@ -79,9 +79,9 @@ function server.primaryFireDE357(p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	
-	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = 0.1
 	if data.laseron == true then
-		spread = 0.001/2
+		spread = GLOBAL_1DEGREE
 	end
 
 	dir = VecAdd(dir, rndVec(spread))

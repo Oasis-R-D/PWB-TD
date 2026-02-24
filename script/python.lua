@@ -77,7 +77,7 @@ function server.primaryFirePYTH(p)
 	local data = PYTHplayers[p]
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local spread = 0.001/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = GLOBAL_1DEGREE
 
 	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 1.5)

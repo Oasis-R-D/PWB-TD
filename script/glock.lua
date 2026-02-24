@@ -72,7 +72,7 @@ function server.primaryFirePIST9MM(p)
 	local data = PIST9MMplayers[p]
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local spread = 0.01/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = 0.01
 
 	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
@@ -89,7 +89,7 @@ function server.secondaryFirePIST9MM(p) -- separated for easy modability
 	local data = PIST9MMplayers[p]
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local spread = 0.1/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = 0.1
 
 	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)

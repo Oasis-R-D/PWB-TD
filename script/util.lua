@@ -116,7 +116,9 @@ function BloodVFX(pos, dir, damage, playerhit)
 	end
 end
 
-function getAimVector(pos, range, spreadRad, p)
+function getAimVector(pos, range, spreadRad, p, spreadRadVert)
+	spreadRadVert = spreadRadVert or spreadRad
+
 	local newPos = pos --VecAdd(pos, VecScale(GetPlayerVelocity(p), dt))
 	local _,pos,_,dir = GetPlayerAimInfo(newPos, range, p)
 
@@ -131,7 +133,7 @@ function getAimVector(pos, range, spreadRad, p)
 	until (z > 1)
 
 	local xFact = VecScale(vecRight, x * spreadRad)
-	local yFact = VecScale(vecUp, y * spreadRad)
+	local yFact = VecScale(vecUp, y * spreadRadVert)
 	local combined = VecAdd(xFact, yFact)
 	local newDir = VecAdd(dir, combined)
 

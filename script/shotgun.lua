@@ -75,8 +75,9 @@ end
 function server.primaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
-	local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
-	
+	local spread = GLOBAL_10DEGREES
+	local vertSpread = isMP() and GLOBAL_5DEGREES or GLOBAL_10DEGREES
+
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]
 
@@ -96,7 +97,8 @@ end
 function server.secondaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
-	local spread = 0.08716/2 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = isMP() and GLOBAL_20DEGREES or GLOBAL_10DEGREES
+	local vertSpread = isMP() and GLOBAL_5DEGREES or GLOBAL_10DEGREES
 	
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]
