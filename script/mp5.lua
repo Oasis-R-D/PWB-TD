@@ -75,10 +75,11 @@ function server.primaryFireMp5(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = MP5players[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
+	--local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	
-	local spread = 0.05234/2 -- assuming spread is a radian value and this is the diameter of the cone
-	
+	local spread = 0.05234 -- assuming spread is a radian value and this is the diameter of the cone
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, spread, p)
+
 	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	

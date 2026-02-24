@@ -116,6 +116,28 @@ function BloodVFX(pos, dir, damage, playerhit)
 	end
 end
 
+function getAimVector(pos, range, spreadRad, p)
+	local newPos = pos --VecAdd(pos, VecScale(GetPlayerVelocity(p), dt))
+	local _,pos,_,dir = GetPlayerAimInfo(newPos, range, p)
+
+	local vecRight = TransformToParentVec(GetPlayerEyeTransform(p), Vec(1, 0, 0))
+	local vecUp = TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 1, 0))
+
+	local x, y, z
+	repeat
+		x = rnd(-0.5, 0.5) + rnd(-0.5, 0.5)
+		y = rnd(-0.5, 0.5) + rnd(-0.5, 0.5)
+		z = (x*x) + (y*y)
+	until (z > 1)
+
+	local xFact = VecScale(vecRight, x * spreadRad)
+	local yFact = VecScale(vecUp, y * spreadRad)
+	local combined = VecAdd(xFact, yFact)
+	local newDir = VecAdd(dir, combined)
+
+	return newPos, newdir
+end
+
 -- hook the Shoot func to add new stuff
 function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, weaponid, weaponname, times)
 	times = times or 1
