@@ -1,6 +1,8 @@
 #version 2
 --pm09
 
+GLOBAL_HEADSHOTMULT = 2.0 -- 3.0 in the OG Half-Life
+
 #include "script/mp5.lua"
 #include "script/m727.lua"
 #include "script/shotgun.lua"
@@ -25,7 +27,6 @@
 #include "script/items/tripmine.lua"
 
 -- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
-
 
 -- to make a mod using this base, choose a weapon below to copy, then copy it's xml and vox (or you can make a new one completely)
 -- in the file, replace all instances of the weapons name (suffix on the functions) then add it's functions here

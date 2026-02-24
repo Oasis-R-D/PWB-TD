@@ -53,8 +53,8 @@ end
 
 function client.BloodParticles(pos, dir, damage, playerhit)
 	local impactsize = damage
-	if impactsize > 0.4 then
-		impactsize = 0.4
+	if impactsize > 0.3 then
+		impactsize = 0.3
 	end
 
 	local playervel = GetPlayerVelocity(playerhit)
@@ -139,14 +139,26 @@ function ShootHook(pos, dir, shoottype, damage, playerdamage, range, player, wea
 		return
 	end
 
-	newrange = pdist - 0.5 -- don't actually hit the player so we can do our own damage and vfx
-	Shoot(pos, dir, shoottype, damage, newrange, player, weaponid)
-
-	ApplyPlayerDamage(playerhit, playerdamage, weaponname, player)
-
 	local SoundPoint = VecAdd(pos, VecScale(dir, pdist))
 	PlaySound(LoadSound("MOD/snd/bullet_hit0.ogg"), SoundPoint, 2)
 
+	newrange = pdist - 0.125 -- don't actually hit the player so we can do our own damage and vfx
+	if newrange < 0 then newrange = 0 end
+	Shoot(pos, dir, shoottype, damage, newrange, player, weaponid)
+
+	-- check what bodypart was hit
+	QueryRequire("player")
+	QueryInclude("player")
+	local _, _, _, bodyPart = QueryRaycast(pos, dir, range + 0.125, 0.1) -- Play player hit sound and create blud
+
+	local hitPart = GetTagValue(GetShapeBody(bodyPart), "bone")
+	if hitPart == "head" then
+		playerdamage = playerdamage * GLOBAL_HEADSHOTMULT
+	elseif hitPart == "neck" then
+		playerdamage = playerdamage * (GLOBAL_HEADSHOTMULT/2)
+	end
+
+	ApplyPlayerDamage(playerhit, playerdamage, weaponname, player)
 	BloodVFX(SoundPoint, dir, playerdamage, playerhit)
 end
 

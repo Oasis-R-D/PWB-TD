@@ -21,7 +21,7 @@ local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multip
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
 local DAMAGE = 0.6 -- x5
-local PLAYERDAMAGE = 1 -- instakills in opfor
+local PLAYERDAMAGE = 0.75 -- instakills in opfor
 local MAX_RANGE = 500.0
 local WPNID = "opform40a1"
 local WPNNAME = "M40A1"
@@ -214,13 +214,13 @@ function client.tickPlayerM40(p, dt)
 	end
 
 	if data.scoped == false or data.clipamntM40 < 0 or ammo <= 0 then
-		data.toolAnimator.forceActionPose = false
+		data.toolAnimator.forceSecondaryActionPose = false
 
 		if IsPlayerLocal(p) then
 			scopeddraw = false
 		end
 	elseif data.scoped == true then
-		data.toolAnimator.forceActionPose = true
+		data.toolAnimator.forceSecondaryActionPose = true
 
 		if IsPlayerLocal(p) then
 			scopeddraw = true
