@@ -76,15 +76,14 @@ function server.primaryFireDE357(p)
 
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = DE357players[p]
-
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	
 	local spread = 0.1
 	if data.laseron == true then
-		spread = GLOBAL_1DEGREE
+		spread = 0.001
 	end
 
-	dir = VecAdd(dir, rndVec(spread))
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, spread, p)
+
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	StopSound(data.firesound)

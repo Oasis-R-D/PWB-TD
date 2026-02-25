@@ -74,16 +74,12 @@ end
 
 function server.primaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-	
-	local spread = GLOBAL_10DEGREES
-	local vertSpread = isMP() and GLOBAL_5DEGREES or GLOBAL_10DEGREES
 
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]
 
 	for i=0, 5 do
-		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-		dir = VecAdd(dir, rndVec(spread))
+		local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_10DEGREES, p)
 		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
 	
@@ -97,15 +93,11 @@ end
 function server.secondaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
-	local spread = isMP() and GLOBAL_20DEGREES or GLOBAL_10DEGREES
-	local vertSpread = isMP() and GLOBAL_5DEGREES or GLOBAL_10DEGREES
-	
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = SGplayers[p]
 
 	for i=0, 11 do
-		local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-		dir = VecAdd(dir, rndVec(spread))
+		local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_10DEGREES, p)
 		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
 	

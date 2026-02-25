@@ -119,25 +119,31 @@ end
 function getAimVector(pos, range, spreadRad, p, spreadRadVert)
 	spreadRadVert = spreadRadVert or spreadRad
 
-	local newPos = pos --VecAdd(pos, VecScale(GetPlayerVelocity(p), dt))
-	local _,pos,_,dir = GetPlayerAimInfo(newPos, range, p)
+	local _,newPos,_,dir = GetPlayerAimInfo(pos, range, p)
 
-	local vecRight = TransformToParentVec(GetPlayerEyeTransform(p), Vec(1, 0, 0))
-	local vecUp = TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 1, 0))
+	if spreadRad <= 0 then
+		return newPos, dir
+	end
+	
+	-- BEGIN BORROWED CODE (Thanks Novena)
+	local cosAngle = math.cos(spreadRad)
+	local z = 1 - math.random()*(1 - cosAngle)
+	local phi = math.random()*math.pi*2
+	local r = math.sqrt(1 - z*z)
+	local x = r * math.cos(phi)
+	local y = r * math.sin(phi)
+	local vec = Vec(x, y, z)
+	if dir[3] > 0.9999 then
+		return newPos, vec
+	elseif dir[3] < -0.9999 then
+		return newPos, VecScale(vec,-1)
+	end
 
-	local x, y, z
-	repeat
-		x = rnd(-0.5, 0.5) + rnd(-0.5, 0.5)
-		y = rnd(-0.5, 0.5) + rnd(-0.5, 0.5)
-		z = (x*x) + (y*y)
-	until (z > 1)
+	local quat = QuatLookAt(Vec(0,0,0),VecScale(dir,-1))
+	local newDir = TransformToParentVec(Transform(Vec(0,0,0),quat),vec)
+	-- END BORROWED CODE
 
-	local xFact = VecScale(vecRight, x * spreadRad)
-	local yFact = VecScale(vecUp, y * spreadRadVert)
-	local combined = VecAdd(xFact, yFact)
-	local newDir = VecAdd(dir, combined)
-
-	return newPos, newdir
+	return newPos, newDir
 end
 
 -- hook the Shoot func to add new stuff

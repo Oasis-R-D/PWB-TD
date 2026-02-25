@@ -77,20 +77,20 @@ function server.primaryFireM249(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = M249players[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	local crouch = GetPlayerCrouch(p)
 	local pvel = GetPlayerVelocity(p)
 
-	local spread = 0.03490 -- assuming spread is a radian value and this is the diameter of the cone
+	local spread = GLOBAL_4DEGREES -- assuming spread is a radian value and this is the diameter of the cone
 	if crouch > 0.1 then
-		spread = 0.01745
+		spread = GLOBAL_2DEGREES
 	end
 	
 	if not IsPlayerGrounded(p) or VecLength(pvel) > (GetPlayerWalkingSpeed() * 0.75) then
-		spread = 0.08716
+		spread = GLOBAL_10DEGREES
 	end
 
-	dir = VecAdd(dir, rndVec(spread))
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, spread, p)
+
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	
 	StopSound(data.firesound)

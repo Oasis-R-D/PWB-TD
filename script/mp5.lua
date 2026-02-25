@@ -74,12 +74,9 @@ function server.primaryFireMp5(p)
 
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = MP5players[p]
-
-	--local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 	
-	local pos, dir = getAimVector(mt.pos, MAX_RANGE, isMP() and GLOBAL_6DEGREES or GLOBAL_3DEGREES, p)
-
-	dir = VecAdd(dir, rndVec(spread))
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_3DEGREES, p)
+	
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	
 	StopSound(data.firesound)

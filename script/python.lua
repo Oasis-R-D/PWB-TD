@@ -76,10 +76,8 @@ function server.primaryFirePYTH(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = PYTHplayers[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local spread = GLOBAL_1DEGREE
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_1DEGREE, p)
 
-	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 1.5)
 
 	StopSound(data.firesound)

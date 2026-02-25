@@ -78,13 +78,7 @@ function server.primaryFireM40(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = M40players[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	
-	local spread = GLOBAL_1DEGREE -- assuming spread is a radian value and this is the diameter of the cone
-	
-	if not data.scoped == true then -- make fire from center of screen?
-		dir = VecAdd(dir, rndVec(spread))
-	end
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 

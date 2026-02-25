@@ -71,10 +71,8 @@ function server.primaryFirePIST9MM(p)
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = PIST9MMplayers[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local spread = 0.01
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.01, p)
 
-	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	if ammo < 9999 then
@@ -88,10 +86,8 @@ function server.secondaryFirePIST9MM(p) -- separated for easy modability
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = PIST9MMplayers[p]
 
-	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	local spread = 0.1
+	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
-	dir = VecAdd(dir, rndVec(spread))
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	if ammo < 9999 then
