@@ -109,6 +109,7 @@ function client.tickPYTH(dt)
 end
 
 clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerPYTH(p, dt)
 	if GetPlayerHealth(p) <= 0 then

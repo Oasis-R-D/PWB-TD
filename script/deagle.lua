@@ -120,6 +120,7 @@ function client.tickDE357(dt)
 end
 
 clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerDE357(p, dt)
 	if GetPlayerHealth(p) <= 0 then

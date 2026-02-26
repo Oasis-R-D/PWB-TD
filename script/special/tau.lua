@@ -271,6 +271,8 @@ function client.tickTAU(dt)
 	end
 end
 
+local camSineTime = nil
+
 function client.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		TAUplayers[p] = createPlayerDataTAU()
