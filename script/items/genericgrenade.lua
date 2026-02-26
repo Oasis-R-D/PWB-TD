@@ -6,7 +6,6 @@
 local COOKTIME = 3
 local BODYTAG = "hlgrenade"
 local EXPLSIZE = 1.0
-local IMPDMGTHRESH = 2.54 -- 100 inches to meters
 local WPNNAME = "M1 Frag"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
 local AIRRESISTMULT = 0.99
@@ -129,6 +128,9 @@ function server.tick(dt)
 	elseif server.grenStyle == "impact" then -- check if impacting
 		local grenspeed = VecLength(grenVel)
 		QueryRejectBody(grenBody)
+		if server.runTime <= 1 then -- don't hit the player directly after firing
+			QueryRejectPlayer(server.playerThrew)
+		end
 		QueryInclude("tool")
 		QueryInclude("player")
 		local pHit = QueryRaycast(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), grenspeed * dt + 0.2, 0.33)

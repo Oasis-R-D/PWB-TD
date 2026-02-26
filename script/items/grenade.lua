@@ -69,6 +69,8 @@ function server.primaryFireFRAG(p, cookedTime)
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	
+	pos = VecAdd(pos, VecScale(angThrow, 0.25))
+	
 	if angThrow[1] < 0 then
 		angThrow[1] = -0.254 + angThrow[1] * ((2.286 - 0.254) / 2.286)
 	else

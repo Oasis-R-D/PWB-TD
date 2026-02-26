@@ -91,8 +91,9 @@ function server.secondaryFireMp5(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
-	--Shoot(pos, dir, "rocket", DAMAGE, MAX_RANGE * 2, p, WPNID)
 
+	pos = VecAdd(pos, VecScale(dir, 0.25))
+	
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
 	local xml = "MOD/prefab/gren_m203.xml"
 	grenade_ent = Spawn(xml, GrenTrans)

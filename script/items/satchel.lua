@@ -66,6 +66,8 @@ function server.primaryFireSATCH(p)
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 
+	pos = VecAdd(pos, VecScale(angThrow, 0.25))
+
 	local velocity = VecAdd(GetPlayerVelocity(p), TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -6.9596)))
 
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), angThrow))

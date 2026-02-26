@@ -271,8 +271,6 @@ function client.tickTAU(dt)
 	end
 end
 
-clipamnt = 0
-
 function client.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		TAUplayers[p] = createPlayerDataTAU()

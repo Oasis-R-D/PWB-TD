@@ -217,7 +217,7 @@ function client.tickPlayerPYTH(p, dt)
 			local fov = 40 --math.min(ADSFOV, data.adsFov)
 			SetCameraFov(fov)
 		end
-		data.adsFov = data.adsFov + (2*dt)
+		--data.adsFov = data.adsFov + (2*dt)
 	end
 
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
