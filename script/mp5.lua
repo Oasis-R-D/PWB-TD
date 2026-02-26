@@ -127,6 +127,7 @@ end
 
 clipamnt = 0
 altclipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerMp5(p, dt)
 	if GetPlayerHealth(p) <= 0 then

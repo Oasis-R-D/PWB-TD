@@ -271,7 +271,7 @@ function client.tickTAU(dt)
 	end
 end
 
-clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerTAU(p, dt)
 	if GetPlayerHealth(p) <= 0 then

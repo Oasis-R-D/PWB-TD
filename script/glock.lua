@@ -116,6 +116,7 @@ function client.tickPIST9MM(dt)
 end
 
 clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerPIST9MM(p, dt)
 	if GetPlayerHealth(p) <= 0 then

@@ -127,6 +127,7 @@ end
 
 clipamnt = 0
 altclipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerM727(p, dt)
 	if GetPlayerHealth(p) <= 0 then

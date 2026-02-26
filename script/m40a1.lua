@@ -111,6 +111,7 @@ end
 
 scopeddraw = false
 clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerM40(p, dt)
 	if GetPlayerHealth(p) <= 0 then

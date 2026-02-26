@@ -122,6 +122,7 @@ function client.tickM249(dt)
 end
 
 clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerM249(p, dt)
 	if GetPlayerHealth(p) <= 0 then

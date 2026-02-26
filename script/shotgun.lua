@@ -129,6 +129,7 @@ function client.tickSG(dt)
 end
 
 clipamnt = 0
+local camSineTime = nil
 
 function client.tickPlayerSG(p, dt)
 	if GetPlayerHealth(p) <= 0 then
