@@ -41,7 +41,7 @@ function createPlayerDataDISP()
 end
 
 function server.initDISP()
-	RegisterTool(WPNID, WPNNAME, "MOD/prefab/tau.xml", 6)
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/displacer.xml", 6)
 	SetToolAmmoPickupAmount(WPNID, PICKUP_SIZE)
 end
 

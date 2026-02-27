@@ -46,6 +46,15 @@ GLOBAL_20DEGREES = 0.17365
 -- in the file, replace all instances of the weapons name (suffix on the functions) then add it's functions here
 -- To remove unused weapons, remove it's lua file, xml file(s), vox, sounds and it's function calls from this file
 
+-- Weapon order in the HUD is set by the order they are in the server.init
+
+-- TO-DO: 
+-- - see if the player tick functions here are even called by the engine
+-- - Displacer radius damage
+-- - Displacer radius shockwave vfx
+-- - gluon gun circular beam
+-- -
+
 function server.init()
    -- MELEE
    server.initCRBR()
