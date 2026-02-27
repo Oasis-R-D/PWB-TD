@@ -129,6 +129,7 @@ function client.tickPlayerDE357(p, dt)
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		camSineTime = nil
 		return
 	end
 

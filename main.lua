@@ -32,6 +32,7 @@ GLOBAL_20DEGREES = 0.17365
 -- SPECIAL
 #include "script/special/tau.lua"
 #include "script/special/gluon.lua"
+#include "script/special/displacer.lua"
 
 -- ITEMS
 #include "script/items/medkit.lua"
@@ -62,6 +63,7 @@ function server.init()
    -- SPECIALS
    server.initTAU()
    server.initGLU()
+   server.initDISP()
 
    -- ITEMS
    server.initMED()
@@ -88,6 +90,7 @@ function server.tick(dt)
    -- SPECIALS
    server.tickTAU(dt)
    server.tickGLU(dt)
+   server.tickDISP(dt)
 
    -- ITEMS
    server.tickMED(dt)
@@ -114,6 +117,7 @@ function server.tickPlayer(p, dt)
    -- SPECIALS
    server.tickPlayerTAU(p, dt)
    server.tickPlayerGLU(p, dt)
+   server.tickPlayerDISP(p, dt)
 
    -- ITEMS
    server.tickPlayerMED(p, dt)
@@ -140,6 +144,7 @@ function client.init()
    -- SPECIALS
    client.initTAU()
    client.initGLU()
+   client.initDISP()
 
    -- ITEMS
    client.initFRAG()
@@ -165,6 +170,7 @@ function client.tick(dt)
    -- SPECIALS
    client.tickTAU(dt)
    client.tickGLU(dt)
+   client.tickDISP(dt)
 
    -- ITEMS
    client.tickFRAG(dt)
@@ -204,6 +210,7 @@ function client.tickPlayer(p, dt)
    -- SPECIALS
    client.tickPlayerTAU(p, dt)
    client.tickPlayerGLU(p, dt)
+   client.tickPlayerDISP(p, dt)
 
    -- ITEMS
    client.tickPlayerFRAG(p, dt)

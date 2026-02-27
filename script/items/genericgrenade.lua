@@ -131,7 +131,6 @@ function server.tick(dt)
 		if server.runTime <= 1 then -- don't hit the player directly after firing
 			QueryRejectPlayer(server.playerThrew)
 		end
-		QueryInclude("tool")
 		QueryInclude("player")
 		local pHit = QueryRaycast(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), grenspeed * dt + 0.2, 0.33)
 		if pHit or grenspeed <= 0.01 then

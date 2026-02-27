@@ -280,6 +280,7 @@ function client.tickPlayerTAU(p, dt)
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		camSineTime = nil
 		return
 	end
 
