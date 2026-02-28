@@ -17,7 +17,7 @@ local BODYTAG = "opfordisplaceball"
 local EXPLSIZE = 1.0
 local WPNNAME = "Displacer Cannon"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
-local BEAMDIST = 30
+local BEAMDIST = 20
 
 function server.initTags()
 	server.tagsRecieved = true
@@ -49,6 +49,8 @@ function client.init()
 end
 
 function server.Killthink()
+	ClientCall(0, "client.explFX")
+
 	-- kill hit enemy
 	if server.hitPlayer ~= nil then
 		local bodyDisposal = Transform(Vec(9999))
@@ -94,6 +96,7 @@ function server.Explodethink(dt)
 		end
     end
 	
+	-- Delete and suck in objects
 	local strength = 10.0	--Strength of blower
 	local maxMass = 1048576	--The maximum mass for a body to be affected
 	local maxDist = 12	--The maximum distance for bodies to be affected
@@ -194,6 +197,58 @@ function server.tick(dt)
 		elseif server.think == "ExplodeThink" then
 			server.Explodethink(dt)
 		end
+	end
+end
+
+function client.explFX()
+	local pos = GetBodyTransform(grenBody).pos
+
+	ParticleReset()
+	ParticleColor(0.09, 0.859, 0.176)
+	ParticleEmissive(0.75)
+	ParticleRadius(0.25)
+	ParticleAlpha(1, 0, "easeout")
+	ParticleTile(1)
+	ParticleSticky(1.0)
+	for a=0, math.pi*2, 0.049 do
+		local x = math.cos(a)*1
+		local y = 0.25
+		local z = math.sin(a)*1
+		local d = VecNormalize(Vec(x, y, z))
+		local d2 = VecNormalize(Vec(x, 0, z))
+		SpawnParticle(VecAdd(pos, d), VecScale(d2, 10), 0.5)
+	end
+
+	ParticleReset()
+	ParticleColor(0.906, 0.549, 0.155)
+	ParticleEmissive(1)
+	ParticleRadius(0.33)
+	ParticleAlpha(1, 0, "easeout")
+	ParticleTile(1)
+	ParticleSticky(1.0)
+	for a=0, math.pi*2, 0.049 do
+		local x = math.cos(a)*1
+		local y = 0.0
+		local z = math.sin(a)*1
+		local d = VecNormalize(Vec(x, y, z))
+		local d2 = VecNormalize(Vec(x, 0, z))
+		SpawnParticle(VecAdd(pos, d), VecScale(d2, 10), 0.5)
+	end
+
+	ParticleReset()
+	ParticleColor(0.09, 0.859, 0.176)
+	ParticleEmissive(0.75)
+	ParticleRadius(0.25)
+	ParticleAlpha(1, 0, "easeout")
+	ParticleTile(1)
+	ParticleSticky(1.0)
+	for a=0, math.pi*2, 0.049 do
+		local x = math.cos(a)*1
+		local y = -0.25
+		local z = math.sin(a)*1
+		local d = VecNormalize(Vec(x, y, z))
+		local d2 = VecNormalize(Vec(x, 0, z))
+		SpawnParticle(VecAdd(pos, d), VecScale(d2, 10), 0.5)
 	end
 end
 

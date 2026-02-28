@@ -93,7 +93,7 @@ function client.drawlaserGLU(vecSrc, vecDir, raycastDist, p)
 	DrawSprite(LoadSprite("MOD/gfx/egonBeam.png"), t, raycastDist, 0.33, 1.0, 1.0, 1.0, 1.0, true, true)
 end
 
-function client.UpdateEffect(source, endpos, vecDir, dist, timedist, player)
+function client.UpdateEffectGlu(source, endpos, vecDir, dist, timedist, player)
 	--Draw laser line in ten segments with random offset -- NOTE: gluon gun actually does have something like this where the further you fire, the more the beam wanders
 	local last = source
 	for i=1, 20 do
@@ -144,7 +144,7 @@ function server.fireGLU(p, dmgTime, dt)
 	timedist = 1 - timedist
 
 	local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
-	ClientCall(0, "client.UpdateEffect", beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
+	ClientCall(0, "client.UpdateEffectGlu", beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
 
 	if not bHit then
 		return

@@ -386,18 +386,20 @@ function client.tickPlayerDISP(p, dt)
 
 	--Animate barrel around the attachment point
 	local b = GetToolBody(p)
-	local voxSize = 0.04
-	local attach = Transform(Vec(0, 2.5*voxSize, 2.5*voxSize))
+	local voxSize = 0.0333
+	local attach = Transform(Vec(0, 6.66*voxSize, 6.66*voxSize))
+	
 	if data.body ~= b then
 		data.body = b
 		-- Barrel is the second shape in vox file. Remember original position in attachment frame
 		local shapes = GetBodyShapes(b)
-		data.barrel = shapes[6]
+		data.barrel = shapes[2]
 		data.barrelTransform = TransformToLocalTransform(attach, GetShapeLocalTransform(data.barrel))
 	end
 	if data.barrel then
 		attach.rot = QuatEuler(0, 0, -data.angle) -- negative to make it spin the right way
 		t = TransformToParentTransform(attach, data.barrelTransform)
 		SetShapeLocalTransform(data.barrel, t)
+		DebugTransform(TransformToLocalTransform(attach, GetShapeLocalTransform(data.barrel)))
 	end
 end
