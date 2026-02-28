@@ -8,7 +8,7 @@
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/gren.ogg"
 local BOUNCESOUND = "MOD/snd/grenBounce0"
-local PICKUP_SIZE = 5.0
+local PICKUP_SIZE = 3.0
 local RECOIL_AMNT = 0.075
 local FIRERATE = 0.5
 local WPNID = "hltripmine"
@@ -53,8 +53,8 @@ function server.tickPlayerTRIP(p, dt)
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
-	if ammo < 9999 and ammo > 15 then
-		SetToolAmmo(WPNID, 15, p)
+	if ammo < 9999 and ammo > 9 then
+		SetToolAmmo(WPNID, 9, p)
 	end
 end
 

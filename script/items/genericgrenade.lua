@@ -128,9 +128,7 @@ function server.tick(dt)
 	elseif server.grenStyle == "impact" then -- check if impacting
 		local grenspeed = VecLength(grenVel)
 		QueryRejectBody(grenBody)
-		if server.runTime <= 1 then -- don't hit the player directly after firing
-			QueryRejectPlayer(server.playerThrew)
-		end
+		QueryRejectPlayer(server.playerThrew)
 		QueryInclude("player")
 		local pHit = QueryRaycast(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), grenspeed * dt + 0.2, 0.33)
 		if pHit or grenspeed <= 0.01 then
@@ -161,7 +159,7 @@ function server.tick(dt)
 
 			QueryRejectBody(grenBody)
 			QueryInclude("player")
-			local pHit, pDist = QueryRaycast(laserStartVec, direction, 75, 0.0, true)
+			local pHit, pDist = QueryRaycast(laserStartVec, direction, 48, 0.0, true)
 			
 			if server.laserDist == nil then
 				server.laserDist = pDist

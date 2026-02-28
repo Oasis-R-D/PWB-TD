@@ -6,13 +6,14 @@
 -- Per weapon constants
 local WPNID = "hlmedkit"
 local WPNNAME = "Medkit"
+local HEAL_AMNT = 0.33
 
 -- Per weapon data storer
 MEDplayers = {}
 
 function createPlayerDataMED()
     return {
-		oldTool = "sledge",
+		oldTool = "wrench",
 	}
 end
 
@@ -53,7 +54,7 @@ function server.tickPlayerMED(p, dt)
 	end
 
 	if ammo > 0 and GetPlayerHealth(p) < 1 then
-		SetPlayerHealth(GetPlayerHealth(p) + 0.25, p)
+		SetPlayerHealth(GetPlayerHealth(p) + HEAL_AMNT, p)
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, ammo-1, p)
 		PlaySound(medSound, GetPlayerPos(p), 0.75)

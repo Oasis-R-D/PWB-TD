@@ -54,25 +54,28 @@ GLOBAL_20DEGREES = 0.17365
 -- - Displacer prongs
 
 function server.init()
-   -- MELEE
+   -- MELEE (SLOT 1)
    server.initCRBR()
    server.initWRNCH()
 
+   -- SLOT 3
    server.initMp5()
    server.initM727()
-   server.initM40()
-   server.initM249()
    server.initDE357()
    server.initPYTH()
    server.initPIST9MM()
    server.initSG()
 
-   -- SPECIALS
+   -- SLOT 6
+   server.initM40()
+   server.initM249()
+
+   -- SPECIALS (SLOT 6)
    server.initTAU()
    server.initGLU()
    server.initDISP()
 
-   -- ITEMS
+   -- ITEMS (SLOT 5/NONE)
    server.initMED()
    server.initFRAG()
    server.initSATCH()

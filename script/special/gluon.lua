@@ -317,6 +317,8 @@ function client.tickPlayerGLU(p, dt)
 		data.checkOff = data.checkOff - dt
 		if data.checkOff <= 0 then
 			data.coolDown = FIRERATE
+			SetSoundLoopProgress(loopSND, 0.0)
+			SetSoundLoopProgress(startSND, 0.0)
 			PlaySound(stopSND, mt.pos, 100)
 			StopSound(data.currentSnd)
 			data.soundTime = nil

@@ -10,7 +10,7 @@ local PRIM_FIRESOUND = "MOD/snd/displacer_fire.ogg"
 local ALT_FIRESOUND = "MOD/snd/displacer_teleport_player.ogg"
 local ALTALT_FIRESOUND = "MOD/snd/displacer_self.ogg"
 local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
-local PICKUP_SIZE = 3.0
+local PICKUP_SIZE = 1.0
 local RECOIL_AMNT = 0.3
 local FIRERATE = 2.5
 local CAMMOVETIME = (2 * math.pi) * (0.5 / (FIRERATE-1)) -- Cam movement sine multiplier, FIRERATE is how long until it's over
@@ -64,6 +64,11 @@ end
 function server.tickPlayerDISP(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		DISPplayers[p] = createPlayerDataDISP()
+	end
+
+	local ammo = GetToolAmmo(WPNID, p)
+	if ammo < 9999 and ammo > 6 then
+		SetToolAmmo(WPNID, 6, p)
 	end
 end
 
@@ -256,7 +261,7 @@ function client.tickPlayerDISP(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
+	if InputPressed("grab", p) and ammo > 2.5 and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
 		if data.altCoolDown < 0 then
 			data.inAttack = true
 			data.inAltAttack = true
@@ -299,7 +304,6 @@ function client.tickPlayerDISP(p, dt)
 		SpawnParticle(mt.pos, playervel, 0.125)
 
 		if data.chargedTime > 1 then
-
 			SetSoundLoopProgress(spinLoop, 0.0)
 			SetSoundLoopProgress(spinLoopAlt, 0.0)
 
