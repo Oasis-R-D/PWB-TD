@@ -30,7 +30,6 @@ function createPlayerDataDISP()
 		inAttack = false,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
-		aftershocksfx = nil,
 		chargedTime = nil,
 		angle = 0.0,
 		angVel = 0.0,
@@ -113,7 +112,7 @@ function client.drawlaserDISP(vecSrc, vecDir, raycastDist)
 	DrawSprite(LoadSprite("MOD/gfx/egonBeam.png"), t, raycastDist, 0.33, 0.36, 0.5, 0.063, 1.0, true, true)
 end
 
-function client.UpdateEffect(source, endpos, vecDir, dist)
+function client.UpdateEffectDISP(source, endpos, vecDir, dist)
 	--Draw laser line in ten segments with random offset -- NOTE: gluon gun actually does have something like this where the further you fire, the more the beam wanders
 	if IsPlayerLocal(GetLocalPlayer()) then
 		PointLight(source, 0.36, 0.5, 0.063, 5)
@@ -195,7 +194,7 @@ function server.secondaryFireDISP(p) -- separated for easy modability
 			local hit, dist = QueryRaycast(lghtngPos, vecDir, 30)
 			if hit then
 				local endpos = VecAdd(lghtngPos, VecScale(vecDir, dist))
-				ClientCall(0, "client.UpdateEffect", lghtngPos, endpos, vecDir, dist)
+				ClientCall(0, "client.UpdateEffectDISP", lghtngPos, endpos, vecDir, dist)
 			end
 		end
 	end
@@ -275,7 +274,7 @@ function client.tickPlayerDISP(p, dt)
 		end
 		pitch = pitch / 100
 
-		data.angVel = math.min(1750, data.angVel + (pitch * 20))
+		data.angVel = math.min(1000, data.angVel + (pitch * 30))
 		data.recoil = math.min(0.1, data.recoil + (pitch * 0.5))
 
 		if data.inAltAttack == true then
@@ -308,8 +307,6 @@ function client.tickPlayerDISP(p, dt)
 
 			data.toolAnimator.forceActionPose = false
 
-			data.aftershocksfx = rnd(0.3, 0.8)
-
 			if data.inAltAttack == true then
 				if IsPlayerLocal(p) then
 					PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 20)
@@ -339,15 +336,6 @@ function client.tickPlayerDISP(p, dt)
 	data.recoil = data.recoil - dt
 	data.angle = data.angle + data.angVel*dt
 	data.angVel = math.max(0, data.angVel - dt*1000)
-
-	if data.aftershocksfx ~= nil then
-		data.aftershocksfx = data.aftershocksfx - dt
-		if data.aftershocksfx <= 0 then
-			data.aftershocksfx = nil
-			PlaySound(LoadSound(AFTERSHOCKSFX), mt.pos, 1)
-			data.recoil = 0.05
-		end
-	end
 
 	-- RECOIL
 	if data.recoil > -0.5 then

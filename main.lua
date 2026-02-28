@@ -49,11 +49,9 @@ GLOBAL_20DEGREES = 0.17365
 -- Weapon order in the HUD is set by the order they are in the server.init
 
 -- TO-DO: 
--- - see if the player tick functions here are even called by the engine
--- - Displacer radius damage
--- - Displacer radius shockwave vfx
--- - gluon gun circular beam
--- -
+-- - Gluon gun circular beam
+-- - Finish gluon gun and displacer model
+-- - Displacer prongs
 
 function server.init()
    -- MELEE
@@ -107,34 +105,6 @@ function server.tick(dt)
    server.tickSATCH(dt)
    server.tickTRIP(dt)
 end
-
-
-function server.tickPlayer(p, dt)
-   -- MELEE
-   server.tickPlayerCRBR(p, dt)
-   server.tickPlayerWRNCH(p, dt)
-
-   server.tickPlayerMp5(p, dt)
-   server.tickPlayerM727(p, dt)
-   server.tickPlayerM40(p, dt)
-   server.tickPlayerM249(p, dt)
-   server.tickPlayerDE357(p, dt)
-   server.tickPlayerPYTH(p, dt)
-   server.tickPlayerPIST9MM(p, dt)
-   server.tickPlayerSG(p, dt)
-
-   -- SPECIALS
-   server.tickPlayerTAU(p, dt)
-   server.tickPlayerGLU(p, dt)
-   server.tickPlayerDISP(p, dt)
-
-   -- ITEMS
-   server.tickPlayerMED(p, dt)
-   server.tickPlayerFRAG(p, dt)
-   server.tickPlayerSATCH(p, dt)
-   server.tickPlayerTRIP(p, dt)
-end
-
 
 function client.init()
    -- MELEE
@@ -200,29 +170,4 @@ function client.draw()
 	client.drawPYTH()
 	client.drawM249()
 	client.drawSG()
-end
-
-function client.tickPlayer(p, dt)
-   -- MELEE
-   client.tickPlayerCRBR(p, dt)
-   client.tickPlayerWRNCH(p, dt)
-
-   client.tickPlayerMp5(p, dt)
-   client.tickPlayerM727(p, dt)
-   client.tickPlayerM40(p, dt)
-   client.tickPlayerM249(p, dt)
-   client.tickPlayerDE357(p, dt)
-   client.tickPlayerPYTH(p, dt)
-   client.tickPlayerPIST9MM(p, dt)
-   client.tickPlayerSG(p, dt)
-
-   -- SPECIALS
-   client.tickPlayerTAU(p, dt)
-   client.tickPlayerGLU(p, dt)
-   client.tickPlayerDISP(p, dt)
-
-   -- ITEMS
-   client.tickPlayerFRAG(p, dt)
-   client.tickPlayerSATCH(p, dt)
-   client.tickPlayerTRIP(p, dt)
 end
