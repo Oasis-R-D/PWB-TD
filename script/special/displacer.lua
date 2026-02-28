@@ -7,9 +7,10 @@
 
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/displacer_fire.ogg"
-local ALT_FIRESOUND = "MOD/snd/displacer_self.ogg"
+local ALT_FIRESOUND = "MOD/snd/displacer_teleport_player.ogg"
+local ALTALT_FIRESOUND = "MOD/snd/displacer_self.ogg"
 local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
-local PICKUP_SIZE = 10.0
+local PICKUP_SIZE = 3.0
 local RECOIL_AMNT = 0.3
 local FIRERATE = 2.5
 local CAMMOVETIME = (2 * math.pi) * (0.5 / (FIRERATE-1)) -- Cam movement sine multiplier, FIRERATE is how long until it's over
@@ -88,7 +89,7 @@ function server.primaryFireDISP(p)
 
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), angThrow))
 	local xml = "MOD/prefab/disp_proj.xml"
-	dispBall_ent = Spawn(xml, GrenTrans)
+	local dispBall_ent = Spawn(xml, GrenTrans)
 
 	SetTag(dispBall_ent[2], "playerThrew", p)
 
@@ -101,6 +102,54 @@ function server.primaryFireDISP(p)
 	end
 end
 
+function client.drawlaserDISP(vecSrc, vecDir, raycastDist)
+	local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
+
+	local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
+	local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform().pos))
+
+	t.rot = QuatAlignXZ(xAxis, zAxis)
+
+	DrawSprite(LoadSprite("MOD/gfx/egonBeam.png"), t, raycastDist, 0.33, 0.36, 0.5, 0.063, 1.0, true, true)
+end
+
+function client.UpdateEffect(source, endpos, vecDir, dist)
+	--Draw laser line in ten segments with random offset -- NOTE: gluon gun actually does have something like this where the further you fire, the more the beam wanders
+	if IsPlayerLocal(GetLocalPlayer()) then
+		PointLight(source, 0.36, 0.5, 0.063, 5)
+		local t = Transform(source)
+		t.rot = GetPlayerCameraTransform().rot
+
+		DrawSprite(LoadSprite("MOD/gfx/portal.png"), t, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, true, true)
+
+		local last = source
+		for i=1, 20 do
+			local tt = i/20 -- tf is a tt?
+			local p = VecLerp(last, endpos, tt)
+			p = VecAdd(p, rndVec(tt))
+			DrawLine(last, p, 0.72, 1.0, 0.126)
+
+			local length = VecLength(VecSub(last, p))
+			client.drawlaserDISP(last, vecDir, length) -- to-do: figure out how to get direction from 2 vectors
+
+			ParticleReset()
+			ParticleGravity(0)
+			ParticleRadius(rnd(0.15, 0.2), 0.35)
+			ParticleAlpha(1, 0)
+			ParticleTile(1)
+			ParticleDrag(0)
+			ParticleRotation(rnd(10, -10), 0)
+			ParticleSticky(0)
+			ParticleEmissive(5, 1)
+			ParticleCollide(0)
+			ParticleColor(0.36, 0.5, 0.063)
+			SpawnParticle(last, Vec(), 0.125)
+
+			last = p
+		end
+	end
+end
+
 function server.secondaryFireDISP(p) -- separated for easy modability
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
@@ -109,12 +158,50 @@ function server.secondaryFireDISP(p) -- separated for easy modability
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
-	
-	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 100)
+	local spawns = FindLocations("playerspawn", true)
+	if spawns == nil then
+		--PlaySound(LoadSound(FAILSOUND), mt.pos, 1)
+		return
+	end
 
+	local chosenSpawn = math.random(1, #spawns)
+	if spawns[chosenSpawn] ~= nil then
+		-- Fire a ball downwards for funny
+		local velocity = TransformToParentVec(GetPlayerEyeTransform(p), GetGravity())
+
+		local GrenTrans = Transform(pos, QuatLookAt(Vec(), VecNormalize(velocity)))
+		local xml = "MOD/prefab/disp_proj.xml"
+		local dispBall_ent = Spawn(xml, GrenTrans)
+
+		SetTag(dispBall_ent[2], "playerThrew", p)
+
+		SetBodyVelocity(dispBall_ent[2], velocity)
+
+		-- Teleport the Player
+		local playerVel = GetPlayerVelocity(p)
+
+		local trans = GetLocationTransform(spawns[chosenSpawn])
+
+		SetPlayerTransform(trans, p)
+		SetPlayerVelocity(playerVel, p)
+
+		PlaySound(LoadSound(ALTALT_FIRESOUND), trans.pos, 50)
+
+		-- Cool VFX
+		local lghtngPos = VecAdd(trans.pos, GetPlayerUp(p))
+		for i=0, 6 do
+			local vecDir = GetRandomDirection()
+			QueryRejectBody(grenBody)
+			local hit, dist = QueryRaycast(lghtngPos, vecDir, 30)
+			if hit then
+				local endpos = VecAdd(lghtngPos, VecScale(vecDir, dist))
+				ClientCall(0, "client.UpdateEffect", lghtngPos, endpos, vecDir, dist)
+			end
+		end
+	end
+	
 	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
+		SetToolAmmo(WPNID, ammo-3, p)
 	end
 end
 
@@ -225,6 +312,7 @@ function client.tickPlayerDISP(p, dt)
 
 			if data.inAltAttack == true then
 				if IsPlayerLocal(p) then
+					PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 20)
 					ServerCall("server.secondaryFireDISP", p)
 					camSineTime = 0
 				end

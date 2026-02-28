@@ -71,8 +71,73 @@ end
 function server.Explodethink(dt)
 	local vecPos = GetBodyTransform(grenBody).pos
 	PlaySound(LoadSound("MOD/snd/displacer_teleport.ogg"), vecPos, 100)
+	
+	Paint(vecPos, 4.5, "explosion", 0.6)
+
 	for i=0, 10 do MakeHole(vecPos, 3.0, 3.0, 3.0) end
-	SpawnFire(vecPos)
+
+	for id in Players() do
+        local playerPos = TransformToParentPoint(GetPlayerTransform(id), Vec(0, 1))
+		local dist = VecLength(VecSub(vecPos, playerPos))
+		if dist <= 7.62 then
+			QueryRejectBody(grenBody)
+			local pHit = QueryRaycast(playerPos, VecNormalize(VecSub(vecPos, playerPos)), dist+0.1)
+			if not pHit then
+				dist = dist * 39.37
+				local damage = 250
+				local falloff = damage / 300 -- 7.62 meters in approx HU
+				local flAdjustedDamage = damage - (dist * falloff)
+				if flAdjustedDamage > 0 then
+					ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, server.playerThrew)
+				end
+			end
+		end
+    end
+	
+	local strength = 10.0	--Strength of blower
+	local maxMass = 1048576	--The maximum mass for a body to be affected
+	local maxDist = 12	--The maximum distance for bodies to be affected
+	local mi = VecAdd(vecPos, Vec(-maxDist/2, -maxDist/2, -maxDist/2))
+	local ma = VecAdd(vecPos, Vec(maxDist/2, maxDist/2, maxDist/2))
+	QueryRequire("physical dynamic")
+	local bodies = QueryAabbBodies(mi, ma)
+
+	for i=1,#bodies do
+		local b = bodies[i]
+
+		--Compute body center point and distance
+		local bmi, bma = GetBodyBounds(b)
+		local bc = VecLerp(bmi, bma, 0.5)
+		local dir = VecSub(vecPos, bc)
+		local dist = VecLength(dir)
+		
+		--Get body mass
+		local mass = GetBodyMass(b)
+
+		if dist <= 2 and mass < 128 then
+			Delete(b)
+		else
+				
+			dir = VecScale(dir, 1.0/dist)
+			
+			--Check if body is should be affected
+			if dist < maxDist and mass < maxMass then
+				--Make sure direction is always pointing slightly upwards
+				dir = VecNormalize(dir)
+		
+				--Compute how much velocity to add
+				local massScale = 1 - math.min(mass/maxMass, 1.0)
+				local distScale = 1 - math.min(dist/maxDist, 1.0)
+				local add = VecScale(dir, strength * massScale * distScale)
+				
+				--Add velocity to body
+				local vel = GetBodyVelocity(b)
+				vel = VecAdd(vel, add)
+				SetBodyVelocity(b, vel)
+			end
+		end
+	end
+
 	shared.deleted = true
 	Delete(grenBody)
 end
@@ -103,6 +168,7 @@ function server.tick(dt)
 
 		local pHit = QueryShot(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), 0.25, 0.5, server.playerThrew)
 		if pHit then
+			Paint(GetBodyTransform(grenBody).pos, 2.0, "explosion", 0.8)
 			server.think = "KillThink"
 			server.thinkTime = 0.2
 
