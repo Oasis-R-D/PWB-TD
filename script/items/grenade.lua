@@ -155,7 +155,8 @@ function client.tickPlayerFRAG(p, dt)
 		end
 		pitch = pitch / 100
 
-		data.recoil = math.min(0.05, data.recoil + (pitch * 0.1))
+		if data.recoil < 0 then data.recoil = 0 end
+		data.recoil = math.min(0.025, data.recoil + (pitch * 0.01))
 
 		if (data.chargedTime > 0.5 and not InputDown("usetool", p)) then -- swing start animation done (in opfor)
 			data.toolAnimator.forceSecondaryActionPose = false

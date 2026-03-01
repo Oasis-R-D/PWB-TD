@@ -176,7 +176,7 @@ function server.tick(dt)
 		QueryRejectPlayer(server.playerThrew)
 		QueryInclude("player")
 
-		local pHit = QueryShot(grenPos, VecNormalize(grenVel), 0.25, 0.5, server.playerThrew)
+		local pHit = QueryShot(grenPos, VecNormalize(grenVel), 0.25, 0.2, server.playerThrew)
 		if pHit then
 			Paint(grenPos, 2.0, "explosion", 0.8)
 			server.think = "KillThink"

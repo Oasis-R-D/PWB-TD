@@ -9,6 +9,7 @@
 local PRIM_FIRESOUND = "MOD/snd/displacer_fire.ogg"
 local ALT_FIRESOUND = "MOD/snd/displacer_teleport_player.ogg"
 local ALTALT_FIRESOUND = "MOD/snd/displacer_self.ogg"
+local FAILSOUND = "MOD/snd/displacer_fail.ogg"
 local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
 local PICKUP_SIZE = 1.0
 local RECOIL_AMNT = 0.3
@@ -163,8 +164,8 @@ function server.secondaryFireDISP(p) -- separated for easy modability
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
 	local spawns = FindLocations("playerspawn", true)
-	if spawns == nil then
-		--PlaySound(LoadSound(FAILSOUND), mt.pos, 1)
+	if spawns == nil or #spawns == 0 then
+		PlaySound(LoadSound(FAILSOUND), mt.pos, 1)
 		return
 	end
 
@@ -240,7 +241,9 @@ function client.tickPlayerDISP(p, dt)
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		camSineTime = nil
+		if IsPlayerLocal(p) then
+			camSineTime = nil
+		end
 		return
 	end
 
@@ -274,7 +277,7 @@ function client.tickPlayerDISP(p, dt)
 
 	if data.chargedTime ~= nil and data.inAttack == true then -- deplete timer and check if ready
 		data.chargedTime = data.chargedTime + dt -- increase timer for use in damage calc
-
+		PointLight(mt.pos, 0.36, 0.5, 0.063, data.chargedTime*2)
 		local pitch = (data.chargedTime) * (150 / getFullChargeTime()) + 100
 		if pitch > 250 then
 			pitch = 250

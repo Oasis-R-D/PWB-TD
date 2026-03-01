@@ -1,5 +1,13 @@
 #version 2
---pm09
+
+-- Feel free to make mods using this base.
+-- Most I ask is just including the base name (and maybe the logo) so it's easy to find weapons based on it (but mostly to fuel my ever expanding ego)
+-- PM09
+
+-- EXTERNAL CREDITS:
+-- - VALVe
+-- - GearBox Software
+-- - Novena (gaussian spread code)
 
 GLOBAL_HEADSHOTMULT = 2.0 -- 3.0 in the OG Half-Life
 
@@ -42,11 +50,11 @@ GLOBAL_20DEGREES = 0.17365
 
 -- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
 
--- to make a mod using this base, choose a weapon below to copy, then copy it's xml and vox (or you can make a new one completely)
--- in the file, replace all instances of the weapons name (suffix on the functions) then add it's functions here
--- To remove unused weapons, remove it's lua file, xml file(s), vox, sounds and it's function calls from this file
+-- to make a mod using this base, choose a weapon below to copy, then copy it's xml, vox and lua file (or you can make new ones completely)
+-- in the .LUA file, replace all instances of the weapons name (suffix on the functions, some variables) and then add it's functions here
+-- To remove unused/unwanted weapons, remove it's lua file, xml file(s), vox, sounds and then it's function calls and #include from this file
 
--- Weapon order in the HUD is set by the order they are in the server.init
+-- Weapon order in the HUD is set by the order they are called in the server.init()
 
 -- TO-DO: 
 -- - Gluon gun circular beam
