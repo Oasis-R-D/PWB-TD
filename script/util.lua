@@ -1,7 +1,6 @@
 #version 2
 
 #include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
 
 --Return a random vector of desired length
 function rndVec(length)
@@ -85,7 +84,7 @@ function client.BloodParticles(pos, dir, damage, playerhit)
 	end
 end
 
-function BloodVFX(pos, dir, damage, playerhit)
+function BloodVFX(pos, dir, damage, playerhit, ignore)
 	ClientCall(0, "client.BloodParticles", pos, dir, damage, playerhit)
 
 	local count = 1
@@ -103,6 +102,7 @@ function BloodVFX(pos, dir, damage, playerhit)
 
 	for i=0, count do 
 		local newdir = VecAdd(VecAdd(dir, rndVec(noise)), VecScale(GetGravity(), 0.01))
+		if ignore ~= nil then QueryRejectBody(ignore) end
 		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5)
 		if bloodhit ~= 0 then
 			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.16, 0.33), 0.33, 0.01, 0.0, 1.0, rnd(0.66, 0.99))
@@ -110,6 +110,7 @@ function BloodVFX(pos, dir, damage, playerhit)
 	end
 	
 	local newestdir = VecAdd(dir, VecScale(GetGravity(), 0.01))
+	if ignore ~= nil then QueryRejectBody(ignore) end
 	local bigbloodhit, bigblooddist = QueryRaycast(pos, newestdir, 3.75)
 	if bigbloodhit ~= 0 then
 		PaintRGBA(VecAdd(pos, VecScale(dir, bigblooddist)), 0.5, 0.33, 0.01, 0.0, 1.0, 0.66)
