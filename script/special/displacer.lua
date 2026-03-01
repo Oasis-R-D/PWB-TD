@@ -231,6 +231,8 @@ function client.tickDISP(dt)
 	end
 end
 
+local camSineTime = nil
+
 function client.tickPlayerDISP(p, dt)
 	if GetPlayerHealth(p) <= 0 then
 		DISPplayers[p] = createPlayerDataDISP()
@@ -392,6 +394,5 @@ function client.tickPlayerDISP(p, dt)
 		attach.rot = QuatEuler(0, 0, -data.angle) -- negative to make it spin the right way
 		t = TransformToParentTransform(attach, data.barrelTransform)
 		SetShapeLocalTransform(data.barrel, t)
-		DebugTransform(TransformToLocalTransform(attach, GetShapeLocalTransform(data.barrel)))
 	end
 end

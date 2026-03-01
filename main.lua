@@ -52,6 +52,7 @@ GLOBAL_20DEGREES = 0.17365
 -- - Gluon gun circular beam
 -- - Finish gluon gun and displacer model
 -- - Displacer prongs
+-- - figure out why blood doesn't work sometimes
 
 function server.init()
    -- MELEE (SLOT 1)

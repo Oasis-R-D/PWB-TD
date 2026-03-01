@@ -10,6 +10,12 @@ local WPNNAME = "M1 Frag"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
 local AIRRESISTMULT = 0.99
 
+function getBodyCenter(body)
+	local bmi, bma = GetBodyBounds(body)
+	local bc = VecLerp(bmi, bma, 0.5)
+	return bc
+end
+
 function server.initTags()
 	server.tagsRecieved = true
 
@@ -77,11 +83,12 @@ function client.drawGrenlaser(vecSrc, vecDir, raycastDist)
 end
 
 function server.think(dt)
-	local pos = GetBodyTransform(grenBody).pos
+	local grenPos = getBodyCenter(grenBody)
+
 	local grenVel = GetBodyVelocity(grenBody)
 
 	if server.shouldExplode == true then
-		server.explode(pos, server.grenType)
+		server.explode(grenPos, server.grenType)
 		server.exploded = true
 		return
 	end
@@ -108,9 +115,10 @@ function server.tick(dt)
 			return -- haven't received tags yet
 		end
 	end
-
+	local grenPos = getBodyCenter(grenBody)
+	
 	if IsBodyBroken(grenBody) then
-		server.explode(GetBodyTransform(grenBody).pos, server.grenType)
+		server.explode(grenPos, server.grenType)
 		server.exploded = true
 		Delete(grenBody)
 		return
@@ -130,7 +138,7 @@ function server.tick(dt)
 		QueryRejectBody(grenBody)
 		QueryRejectPlayer(server.playerThrew)
 		QueryInclude("player")
-		local pHit = QueryRaycast(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), grenspeed * dt + 0.2, 0.33)
+		local pHit = QueryRaycast(grenPos, VecNormalize(grenVel), grenspeed * dt + 0.2, 0.33)
 		if pHit or grenspeed <= 0.01 then
 			server.shouldExplode = true
 		end

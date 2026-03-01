@@ -19,6 +19,12 @@ local WPNNAME = "Displacer Cannon"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
 local BEAMDIST = 20
 
+function getBodyCenter(body)
+	local bmi, bma = GetBodyBounds(body)
+	local bc = VecLerp(bmi, bma, 0.5)
+	return bc
+end
+
 function server.initTags()
 	server.tagsRecieved = true
 
@@ -71,7 +77,7 @@ function server.Killthink()
 end
 
 function server.Explodethink(dt)
-	local vecPos = GetBodyTransform(grenBody).pos
+	local vecPos = getBodyCenter(grenBody)
 	PlaySound(LoadSound("MOD/snd/displacer_teleport.ogg"), vecPos, 100)
 	
 	Paint(vecPos, 4.5, "explosion", 0.6)
@@ -160,6 +166,7 @@ function server.tick(dt)
 	end
 
 	local grenVel = GetBodyVelocity(grenBody)
+	local grenPos = getBodyCenter(grenBody)
 
 	-- BEGIN DETONATION CHECKS
 	if server.think == "nil" then
@@ -169,9 +176,9 @@ function server.tick(dt)
 		QueryRejectPlayer(server.playerThrew)
 		QueryInclude("player")
 
-		local pHit = QueryShot(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), 0.25, 0.5, server.playerThrew)
+		local pHit = QueryShot(grenPos, VecNormalize(grenVel), 0.25, 0.5, server.playerThrew)
 		if pHit then
-			Paint(GetBodyTransform(grenBody).pos, 2.0, "explosion", 0.8)
+			Paint(grenPos, 2.0, "explosion", 0.8)
 			server.think = "KillThink"
 			server.thinkTime = 0.2
 
@@ -179,7 +186,7 @@ function server.tick(dt)
 			QueryRequire("player")
 
 			-- raycast again but for players because teardown sucks and hates me
-			local pHit2, _, _, playerId = QueryShot(GetBodyTransform(grenBody).pos, VecNormalize(grenVel), 0.25, 1.0, server.playerThrew)
+			local pHit2, _, _, playerId = QueryShot(grenPos, VecNormalize(grenVel), 0.25, 1.0, server.playerThrew)
 			if pHit2 then
 				server.hitPlayer = playerId
 				ApplyPlayerDamage(server.hitPlayer, 1.0, WPNNAME, server.playerThrew)
@@ -201,7 +208,7 @@ function server.tick(dt)
 end
 
 function client.explFX()
-	local pos = GetBodyTransform(grenBody).pos
+	local pos = getBodyCenter(grenBody)
 
 	ParticleReset()
 	ParticleColor(0.09, 0.859, 0.176)
@@ -294,7 +301,7 @@ end
 
 function client.tick(dt)
 	if shared.deleted == true then return end
-	local pos = GetBodyTransform(grenBody).pos
+	local pos = getBodyCenter(grenBody)
 	PointLight(pos, 0.36, 0.5, 0.063, 5)
 
 	if IsPlayerLocal(GetLocalPlayer()) then

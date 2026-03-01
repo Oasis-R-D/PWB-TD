@@ -82,8 +82,6 @@ function server.primaryFireFRAG(p, cookedTime)
 		flVel = 25.4
 	end
 
-	DebugWatch("flVel", flVel)
-
 	local velocity = VecAdd(GetPlayerVelocity(p), TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -flVel)))
 
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), angThrow))

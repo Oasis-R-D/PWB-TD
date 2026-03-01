@@ -233,7 +233,7 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			if IsPlayerLocal(p) then
 				ServerCall("server.secondaryFireDE357", p)
@@ -259,15 +259,15 @@ function client.tickPlayerDE357(p, dt)
 			local hit, dist = QueryRaycast(VecSub(pos, Vec(0.0, 0.15, 0.0)), dir, 100)
 			local toolBody = GetToolBody(p)
 			if toolBody ~= 0 then
+				local playervel = GetPlayerVelocity(p)
 				local transform = GetBodyTransform(toolBody)
 				local laser_origin = TransformToParentPoint(transform, Vec(0.05, 0.05, -0.2))
 				dist = dist - 0.1
-				DrawLine(laser_origin, VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
+				DrawLine(VecAdd(laser_origin, VecScale(playervel, dt)), VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
 				--DrawSprite(laserSprite, t, dist, 0.1, 0.3, 1.0, 1.0, 0.1, true, true) -- figure out how to do this
 				if hit then
 					local breakPoint = VecAdd(pos, VecScale(dir, dist))
 					for i=0, 1 do
-						local playervel = GetPlayerVelocity(p)
 						ParticleReset()
 						ParticleGravity(0)
 						ParticleRadius(0.1)

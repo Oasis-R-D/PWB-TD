@@ -92,7 +92,7 @@ function server.secondaryFireM727(p)
 
 	local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 
-	pos = VecAdd(pos, VecScale(dir, 0.25))
+	pos = VecAdd(pos, VecScale(dir, 0.5))
 	
 	local GrenTrans = Transform(pos, QuatLookAt(Vec(), dir))
 	local xml = "MOD/prefab/gren_m203.xml"
