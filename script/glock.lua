@@ -32,6 +32,7 @@ function createPlayerDataPIST9MM()
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
+		tertiaryCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
@@ -339,6 +340,13 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	end
 	
+	if InputPressed("g", p) and GetPlayerCanUseTool(p) == true then
+		if data.tertiaryCoolDown < 0 then
+			data.tertiaryCoolDown = 0.5
+			data.suppressed = true
+		end
+	end
+
 	if IsPlayerLocal(p) then -- UPD AMMO HUD
 		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntPIST9MM
@@ -353,6 +361,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
 	data.altCoolDown = data.altCoolDown - dt
+	data.tertiaryCoolDown = data.tertiaryCoolDown - dt
 	data.recoil = data.recoil - dt
 	
 	-- RECOIL
