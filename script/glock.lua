@@ -35,6 +35,7 @@ function createPlayerDataPIST9MM()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
+		suppressed = false,
 	}
 end
 
@@ -161,15 +162,20 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then	
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-					
+				if data.suppressed == false then
+					PointLight(mt.pos, 1, 0.7, 0.5, 3)
+				end
+
 				StopSound(data.firesound)
-				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-					ServerCall("server.primaryFirePIST9MM", p)
-					camSineTime = 0
-				else
-					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+				
+				if data.suppressed == false then
+					if IsPlayerLocal(p) then
+						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+						ServerCall("server.primaryFirePIST9MM", p)
+						camSineTime = 0
+					else
+						data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					end
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -192,21 +198,36 @@ function client.tickPlayerPIST9MM(p, dt)
                     SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
 					
 					-- muzzleflash
-					for i=0, 2 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.08, 0.13), 0.3)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
+					if data.suppressed == false then
+						for i=0, 2 do
+							ParticleReset()
+							ParticleGravity(0)
+							ParticleRadius(rnd(0.08, 0.13), 0.3)
+							ParticleAlpha(1, 0)
+							ParticleTile(5)
+							ParticleDrag(0)
+							ParticleRotation(rnd(10, -10), 0)
+							ParticleSticky(0)
+							ParticleEmissive(5, 1)
+							ParticleCollide(0)
+							ParticleColor(1,0.35,0, 1,0,0)
+							SpawnParticle(mt.pos, playervel, 0.125)
+						end
+					else
+						for i=0, 2 do
+							ParticleReset()
+							ParticleGravity(0)
+							ParticleRadius(rnd(0.08, 0.12), 0.2)
+							ParticleAlpha(0.75, 0)
+							ParticleTile(5)
+							ParticleDrag(0)
+							ParticleRotation(rnd(10, -10), 0)
+							ParticleSticky(0)
+							ParticleCollide(0)
+							ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
+							SpawnParticle(mt.pos, playervel, 0.125)
+						end
 					end
-				
 				end
 					
 				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
@@ -230,15 +251,19 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+				if data.suppressed == false then
+					PointLight(mt.pos, 1, 0.7, 0.5, 3)
+				end
 				
 				StopSound(data.firesound)
-				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-					ServerCall("server.secondaryFirePIST9MM", p)
-					camSineTime = 0
-				else
-					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+				if data.suppressed == false then
+					if IsPlayerLocal(p) then
+						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+						ServerCall("server.primaryFirePIST9MM", p)
+						camSineTime = 0
+					else
+						data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					end
 				end
 				
 				local toolBody = GetToolBody(p)
@@ -261,21 +286,36 @@ function client.tickPlayerPIST9MM(p, dt)
                     SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
 					
 					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.1, 0.15), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
+					if data.suppressed == false then
+						for i=0, 2 do
+							ParticleReset()
+							ParticleGravity(0)
+							ParticleRadius(rnd(0.08, 0.13), 0.3)
+							ParticleAlpha(1, 0)
+							ParticleTile(5)
+							ParticleDrag(0)
+							ParticleRotation(rnd(10, -10), 0)
+							ParticleSticky(0)
+							ParticleEmissive(5, 1)
+							ParticleCollide(0)
+							ParticleColor(1,0.35,0, 1,0,0)
+							SpawnParticle(mt.pos, playervel, 0.125)
+						end
+					else
+						for i=0, 2 do
+							ParticleReset()
+							ParticleGravity(0)
+							ParticleRadius(rnd(0.08, 0.12), 0.2)
+							ParticleAlpha(0.75, 0)
+							ParticleTile(5)
+							ParticleDrag(0)
+							ParticleRotation(rnd(10, -10), 0)
+							ParticleSticky(0)
+							ParticleCollide(0)
+							ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
+							SpawnParticle(mt.pos, playervel, 0.125)
+						end
 					end
-				
 				end
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
