@@ -100,10 +100,18 @@ function BloodVFX(pos, dir, damage, playerhit, ignore)
 		count = 12;
 	end
 
+	-- debug
+	debugpos = {}
+
 	for i=0, count do 
 		local newdir = VecAdd(VecAdd(dir, rndVec(noise)), VecScale(GetGravity(), 0.01))
 		if ignore ~= nil then QueryRejectBody(ignore) end
 		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5)
+
+		-- debug
+		table.insert(debugpos, pos))
+		table.insert(debugpos, VecAdd(pos, VecScale(newdir, blooddist)))
+
 		if bloodhit ~= 0 then
 			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.16, 0.33), 0.33, 0.01, 0.0, 1.0, rnd(0.66, 0.99))
 		end
@@ -112,6 +120,10 @@ function BloodVFX(pos, dir, damage, playerhit, ignore)
 	local newestdir = VecAdd(dir, VecScale(GetGravity(), 0.01))
 	if ignore ~= nil then QueryRejectBody(ignore) end
 	local bigbloodhit, bigblooddist = QueryRaycast(pos, newestdir, 3.75)
+
+	-- debug
+	table.insert(debugpos, VecAdd(pos, VecScale(newestdir, bigblooddist)))
+
 	if bigbloodhit ~= 0 then
 		PaintRGBA(VecAdd(pos, VecScale(dir, bigblooddist)), 0.5, 0.33, 0.01, 0.0, 1.0, 0.66)
 	end

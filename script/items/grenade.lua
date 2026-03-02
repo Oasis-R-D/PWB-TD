@@ -9,7 +9,6 @@
 local PICKUP_SIZE = 5.0
 local RECOIL_AMNT = 0.075
 local FIRERATE = 0.5
-local EXPLSIZE = 2.0
 local FUZESTART = 3.0
 local WPNID = "hlgrenade"
 local WPNNAME = "Mk2 Frag"
@@ -165,7 +164,7 @@ function client.tickPlayerFRAG(p, dt)
 				ServerCall("server.primaryFireFRAG", p, data.chargedTime)
 			end
 
-			data.coolDown = 0.5
+			data.coolDown = FIRERATE
 
 			data.recoil = RECOIL_AMNT
 			data.chargedTime = nil

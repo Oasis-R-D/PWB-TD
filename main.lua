@@ -116,6 +116,13 @@ function server.tick(dt)
    server.tickFRAG(dt)
    server.tickSATCH(dt)
    server.tickTRIP(dt)
+
+   -- debug
+   if debugpos ~= nil then
+      for i=2, #debugpos do
+         DebugLine(debugpos[1], debugpos[i], 0.5, 0.0, 0.0)
+      end
+   end
 end
 
 function client.init()

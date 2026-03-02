@@ -6,8 +6,6 @@
 #include "script/util.lua"
 
 -- Per weapon constants
-local PRIM_FIRESOUND = "MOD/snd/gren.ogg"
-local BOUNCESOUND = "MOD/snd/grenBounce0"
 local PICKUP_SIZE = 3.0
 local RECOIL_AMNT = 0.075
 local FIRERATE = 0.5
