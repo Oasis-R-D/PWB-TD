@@ -31,6 +31,7 @@ function server.initTags()
 	end
 
 	if server.grenStyle == "timed" then
+		SetProperty(grenBody, "restitution", 0.66)
 		local timer = tonumber(GetTagValue(grenBody, "timer"))
 		server.explTimer = timer
 	end
