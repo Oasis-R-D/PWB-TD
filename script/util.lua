@@ -63,24 +63,33 @@ function client.BloodParticles(pos, dir, damage, playerhit)
 		ParticleType("smoke")
 		ParticleRadius(impactsize)
 		ParticleAlpha(10, 0)
-		ParticleColor(0.4, 0.01, 0)
+		ParticleColor(0.5, 0.0, 0)
 		ParticleCollide(0)
 		SpawnParticle(pos, playervel, 0.5)
 	end
-		
-	for i=0, (impactsize * 50) do
+	
+	for i=0, (impactsize * 40) do
+		local size = impactsize/5
+		if size > 0.035 then
+			size = 0.035
+		elseif size <= 0.02 then
+			size = 0.02
+		end
+
+		size = size + rnd(-0.01, 0.005)
+		newPos = VecAdd(pos, rndVec(0.25))
 		ParticleReset()
-		ParticleGravity(rnd(-7, -10))
-		ParticleRadius(rnd(0.01, 0.03))
+		ParticleGravity(rnd(-20, -25))
+		ParticleRadius(size)
 		ParticleAlpha(1, 0, "easein") 
 		ParticleColor(0.33, 0.01, 0)
 		ParticleTile(6)
 		ParticleDrag(0.0625)
 		ParticleSticky(0.5)
-		ParticleCollide(0, 1, "easein")
+		ParticleCollide(0, 1, "easeout")
 		ParticleRotation(0.2, 0)
 		ParticleStretch(1, 0, "easein")
-		SpawnParticle(pos, VecAdd(VecScale(VecAdd(dir, rndVec(1)), rnd(1, 4)), playervel), 3)
+		SpawnParticle(newPos, VecAdd(VecScale(GetRandomDirection(), rnd(2, 6)), playervel), 3)
 	end
 end
 
@@ -101,31 +110,35 @@ function BloodVFX(pos, dir, damage, playerhit, ignore)
 	end
 
 	-- debug
-	debugpos = {}
+	--debugpos = {}
 
 	for i=0, count do 
-		local newdir = VecAdd(VecAdd(dir, rndVec(noise)), VecScale(GetGravity(), 0.01))
+		local newPos = VecAdd(pos, rndVec(0.2))
+
+		local newdir = VecNormalize(VecAdd(VecAdd(dir, rndVec(noise)), VecScale(GetGravity(), 0.025)))
 		if ignore ~= nil then QueryRejectBody(ignore) end
-		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5)
+		QueryRejectPlayer(playerhit)
+		local bloodhit, blooddist = QueryRaycast(pos, newdir, 5.5)
 
 		-- debug
-		table.insert(debugpos, pos))
-		table.insert(debugpos, VecAdd(pos, VecScale(newdir, blooddist)))
+		--table.insert(debugpos, pos)
+		--table.insert(debugpos, VecAdd(pos, VecScale(newdir, blooddist)))
 
 		if bloodhit ~= 0 then
-			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.16, 0.33), 0.33, 0.01, 0.0, 1.0, rnd(0.66, 0.99))
+			PaintRGBA(VecAdd(pos, VecScale(newdir, blooddist)), rnd(0.166, 0.3), rnd(0.166, 0.2), 0.0, 0.0, 1.0, rnd(0.75, 1.0))
 		end
 	end
 	
-	local newestdir = VecAdd(dir, VecScale(GetGravity(), 0.01))
+	local newestdir = VecNormalize(VecAdd(dir, VecScale(GetGravity(), 0.025)))
 	if ignore ~= nil then QueryRejectBody(ignore) end
-	local bigbloodhit, bigblooddist = QueryRaycast(pos, newestdir, 3.75)
+	QueryRejectPlayer(playerhit)
+	local bigbloodhit, bigblooddist = QueryRaycast(pos, newestdir, 4)
 
 	-- debug
-	table.insert(debugpos, VecAdd(pos, VecScale(newestdir, bigblooddist)))
+	--table.insert(debugpos, VecAdd(pos, VecScale(newestdir, bigblooddist)))
 
 	if bigbloodhit ~= 0 then
-		PaintRGBA(VecAdd(pos, VecScale(dir, bigblooddist)), 0.5, 0.33, 0.01, 0.0, 1.0, 0.66)
+		PaintRGBA(VecAdd(pos, VecScale(dir, bigblooddist)), 0.5, rnd(0.166, 0.2), 0.0, 0.0, 1.0, 1.0)
 	end
 end
 

@@ -216,7 +216,6 @@ function client.explFX()
 	ParticleRadius(0.25)
 	ParticleAlpha(1, 0, "easeout")
 	ParticleTile(1)
-	ParticleSticky(1.0)
 	for a=0, math.pi*2, 0.049 do
 		local x = math.cos(a)*1
 		local y = 0.25
@@ -232,7 +231,6 @@ function client.explFX()
 	ParticleRadius(0.33)
 	ParticleAlpha(1, 0, "easeout")
 	ParticleTile(1)
-	ParticleSticky(1.0)
 	for a=0, math.pi*2, 0.049 do
 		local x = math.cos(a)*1
 		local y = 0.0
@@ -248,7 +246,6 @@ function client.explFX()
 	ParticleRadius(0.25)
 	ParticleAlpha(1, 0, "easeout")
 	ParticleTile(1)
-	ParticleSticky(1.0)
 	for a=0, math.pi*2, 0.049 do
 		local x = math.cos(a)*1
 		local y = -0.25

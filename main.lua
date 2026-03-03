@@ -60,7 +60,6 @@ GLOBAL_20DEGREES = 0.17365
 -- - Gluon gun circular beam
 -- - Finish gluon gun and displacer model
 -- - Displacer prongs
--- - figure out why blood doesn't work sometimes
 
 function server.init()
    -- MELEE (SLOT 1)
@@ -116,13 +115,6 @@ function server.tick(dt)
    server.tickFRAG(dt)
    server.tickSATCH(dt)
    server.tickTRIP(dt)
-
-   -- debug
-   if debugpos ~= nil then
-      for i=2, #debugpos do
-         DebugLine(debugpos[1], debugpos[i], 0.5, 0.0, 0.0)
-      end
-   end
 end
 
 function client.init()
