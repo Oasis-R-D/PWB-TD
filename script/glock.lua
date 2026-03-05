@@ -10,6 +10,8 @@ local RELOAD_TIME = 1.5 -- seconds
 local RELOAD_SOUND = "MOD/snd/glockR.ogg"
 local PRIM_FIRESOUND = "MOD/snd/glockFR.ogg"
 local NONCLIENTPRIM_FIRESOUND = "MOD/snd/glockFRnc.ogg" -- glock has diff sounds when shot by NPCs (in this case, other players)
+local SUPPRIM_FIRESOUND = "MOD/snd/supglockFR.ogg"
+local SUPNONCLIENTPRIM_FIRESOUND = "MOD/snd/supglockFRnc.ogg" -- glock has diff sounds when shot by NPCs (in this case, other players)
 local CLIP_SIZE = 17.0
 local PICKUP_SIZE = 17.0
 local RECOIL_AMNT = 0.17
@@ -67,8 +69,10 @@ function server.tickPlayerPIST9MM(p, dt)
 	end
 end
 
-function server.primaryFirePIST9MM(p)
+function server.primaryFirePIST9MM(p, silenced)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
+
+	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = PIST9MMplayers[p]
@@ -82,9 +86,11 @@ function server.primaryFirePIST9MM(p)
 	end
 end
 
-function server.secondaryFirePIST9MM(p) -- separated for easy modability
+function server.secondaryFirePIST9MM(p, silenced) -- separated for easy modability
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
+	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
+
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = PIST9MMplayers[p]
 
@@ -172,10 +178,18 @@ function client.tickPlayerPIST9MM(p, dt)
 				if data.suppressed == false then
 					if IsPlayerLocal(p) then
 						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-						ServerCall("server.primaryFirePIST9MM", p)
+						ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
 						camSineTime = 0
 					else
 						data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					end
+				else
+					if IsPlayerLocal(p) then
+						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 69)
+						ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
+						camSineTime = 0
+					else
+						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 69)
 					end
 				end
 				
@@ -260,10 +274,18 @@ function client.tickPlayerPIST9MM(p, dt)
 				if data.suppressed == false then
 					if IsPlayerLocal(p) then
 						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-						ServerCall("server.primaryFirePIST9MM", p)
+						ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
 						camSineTime = 0
 					else
 						data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+					end
+				else
+					if IsPlayerLocal(p) then
+						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 69)
+						ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
+						camSineTime = 0
+					else
+						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 69)
 					end
 				end
 				
@@ -340,10 +362,10 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	end
 	
-	if InputPressed("g", p) and GetPlayerCanUseTool(p) == true then
+	if InputPressed("mmb", p) and GetPlayerCanUseTool(p) == true then
 		if data.tertiaryCoolDown < 0 then
 			data.tertiaryCoolDown = 0.5
-			data.suppressed = true
+			data.suppressed = not data.suppressed
 		end
 	end
 
@@ -377,6 +399,16 @@ function client.tickPlayerPIST9MM(p, dt)
 
 		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
 	end 
+
+	local toolBody = GetToolBody(p)
+	if toolBody ~= 0 then -- hide silencer
+		local shapes = GetBodyShapes(toolBody)
+		if data.suppressed == false then
+			SetTag(shapes[5], "invisible")
+		elseif HasTag(shapes[5], "invisible") == true then
+			RemoveTag(shapes[5], "invisible")
+		end
+	end
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)

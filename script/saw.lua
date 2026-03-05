@@ -284,7 +284,6 @@ function client.tickPlayerM249(p, dt)
 		elseif HasTag(shapes[1], "invisible") == true then
 			RemoveTag(shapes[1], "invisible")
 		end
-		
 	end
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
