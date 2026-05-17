@@ -102,6 +102,9 @@ function server.think()
 	local grenVel = GetBodyVelocity(grenBody)
 
 	if server.shouldExplode == true then
+		if server.grenStyle == "lasermine" then
+			ClientCall(0, "client.updateLaser", nil, nil, nil)
+		end
 		server.explode(grenPos, server.grenType)
 		server.exploded = true
 		return
@@ -132,6 +135,9 @@ function server.tick(dt)
 	local grenPos = getBodyCenter(grenBody)
 	
 	if IsBodyBroken(grenBody) then
+		if server.grenStyle == "lasermine" then
+			ClientCall(0, "client.updateLaser", nil, nil, nil)
+		end
 		server.explode(grenPos, server.grenType)
 		server.exploded = true
 		Delete(grenBody)
@@ -200,7 +206,6 @@ function server.tick(dt)
 				if math.abs(server.laserDist - pDist) >= 0.0625 then 
 					server.shouldExplode = true
 					server.laserDist = pDist
-					ClientCall(0, "client.updateLaser", nil, nil, nil)
 					server.think() -- think now so you don't notice that the laser doesn't upd
 					return
 				end
