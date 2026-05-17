@@ -19,14 +19,14 @@
 			<vox pos="0.02 0.04 0.08" file="MOD/vox/python.vox" object="right" scale="0.4"/>
 			<vox pos="0.005 0.215 -0.12" file="MOD/vox/python.vox" object="barrelatt" scale="0.3"/>
 		</body>
-		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_secaction_rh" tags="name=tp_secaction_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_crouch_rh" tags="name=tp_crouch_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_action_lh" tags="name=tp_action_lh ik_hand" pos="0.0 0.0 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_secaction_lh" tags="name=tp_secaction_lh ik_hand" pos="0.0 0.0 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_run_lh" tags="name=tp_run_lh ik_hand" pos="0.0 0.0 0.0" rot="0.0 90.0 0.0"/>
-		<location name="tp_crouch_lh" tags="name=tp_crouch_lh ik_hand" pos="0.0 0.0 0.0" rot="0.0 90.0 0.0"/>
+		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.0 0.15 0.1" rot="0.0 90.0 0.0"/>
+		<location name="tp_secaction_rh" tags="name=tp_secaction_rh ik_hand" pos="0.0 0.15 0.1" rot="0.0 90.0 0.0"/>
+		<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.0 0.15 0.1" rot="0.0 90.0 0.0"/>
+		<location name="tp_crouch_rh" tags="name=tp_crouch_rh ik_hand" pos="0.0 0.15 0.1" rot="0.0 90.0 0.0"/>
+		<location name="tp_action_lh" tags="name=tp_action_lh ik_hand" pos="0.0 0.1 0.15" rot="0.0 90.0 0.0"/>
+		<location name="tp_secaction_lh" tags="name=tp_secaction_lh ik_hand" pos="0.0 0.1 0.15" rot="0.0 90.0 0.0"/>
+		<location name="tp_run_lh" tags="name=tp_run_lh ik_hand" pos="0.0 0.1 0.15" rot="0.0 90.0 0.0"/>
+		<location name="tp_crouch_lh" tags="name=tp_crouch_lh ik_hand" pos="0.0 0.1 0.15" rot="0.0 90.0 0.0"/>
 		<location name="muzzle" tags="name=muzzle" pos="0.02 0.26 -0.24" rot="0 0 0"/>
 	</group>
 </group>

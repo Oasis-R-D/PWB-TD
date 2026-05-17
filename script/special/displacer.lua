@@ -266,12 +266,19 @@ function client.tickPlayerDISP(p, dt)
 		end
 	end
 
-	if InputPressed("grab", p) and ammo > 2.5 and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
+	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
 		if data.altCoolDown < 0 then
-			data.inAttack = true
-			data.inAltAttack = true
 			data.altCoolDown = FIRERATE
 			data.coolDown = FIRERATE
+			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
+			local spawns = FindLocations("playerspawn", true)
+			if spawns == nil or #spawns == 0 or ammo < 3 then
+				PlaySound(LoadSound(FAILSOUND), mt.pos, 1)
+				return
+			else
+				data.inAttack = true
+				data.inAltAttack = true
+			end
 		end
 	end
 

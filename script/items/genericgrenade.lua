@@ -70,20 +70,33 @@ end
 
 function client.init()
 	LaserSPR = LoadSprite("gfx/laser.png")
+
+	client.vecSrc = nil
+	client.vecDir = nil
+	client.raycastDist = nil
 end
 
-function client.drawGrenlaser(vecSrc, vecDir, raycastDist)
-		local t = Transform(VecLerp(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 0.5))
+function client.updateLaser(vecSrc, vecDir, raycastDist)
+	client.vecSrc = vecSrc
+	client.vecDir = vecDir
+	client.raycastDist = raycastDist
+end
 
-		local xAxis = VecNormalize(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecSrc))
-		local zAxis = VecNormalize(VecSub(vecSrc, GetCameraTransform().pos))
+function client.tick(dt)
+	if client.raycastDist ~= nil then
+		local t = Transform(VecLerp(client.vecSrc, VecAdd(client.vecSrc, VecScale(client.vecDir, client.raycastDist)), 0.5))
+
+		local xAxis = VecNormalize(VecSub(VecAdd(client.vecSrc, VecScale(client.vecDir, client.raycastDist)), client.vecSrc))
+		local zAxis = VecNormalize(VecSub(client.vecSrc, GetCameraTransform().pos))
 
 		t.rot = QuatAlignXZ(xAxis, zAxis)
 
-		DrawSprite(LaserSPR, t, raycastDist, 0.1, 0.0, 0.83, 0.77, 0.25, true, true)
+		DrawSprite(LaserSPR, t, client.raycastDist, 0.1, 0.0, 0.83, 0.77, 0.25, true, true)
+		DrawLine(client.vecSrc, VecAdd(client.vecSrc, VecScale(client.vecDir,  client.raycastDist)), 0.0, 0.83, 0.77, 0.25)
+	end
 end
 
-function server.think(dt)
+function server.think()
 	local grenPos = getBodyCenter(grenBody)
 
 	local grenVel = GetBodyVelocity(grenBody)
@@ -159,6 +172,17 @@ function server.tick(dt)
 		if server.runTime >= 2.5 and server.laserMineOn ~= true then
 			server.laserMineOn = true 
 			PlaySound(TM_ON, GetBodyTransform(grenBody).pos, 10)
+
+			local laserStartTrans = TransformToParentTransform(GetBodyTransform(grenBody), Transform(Vec(0.02, -0.02, -0.18), GetBodyTransform(grenBody).rot))
+			local laserStartVec = laserStartTrans.pos
+			local direction = TransformToParentVec(GetBodyTransform(grenBody), Vec(0, 0, -1))
+
+			QueryRejectBody(grenBody)
+			QueryInclude("player")
+			local pHit, pDist = QueryRaycast(laserStartVec, direction, 48, 0.0, true)
+
+			-- draw
+			ClientCall(0, "client.updateLaser", laserStartVec, direction, pDist)
 		end -- activate after 2 seconds
 
 		if server.laserMineOn == true then
@@ -173,15 +197,18 @@ function server.tick(dt)
 			if server.laserDist == nil then
 				server.laserDist = pDist
 			else
-				if math.abs(server.laserDist - pDist) >= 0.25 then 
+				if math.abs(server.laserDist - pDist) >= 0.0625 then 
 					server.shouldExplode = true
 					server.laserDist = pDist
+					ClientCall(0, "client.updateLaser", nil, nil, nil)
+					server.think() -- think now so you don't notice that the laser doesn't upd
+					return
 				end
 			end
 
 			-- draw
-			DrawLine(laserStartVec, VecAdd(laserStartVec, VecScale(direction, pDist)), 0.0, 0.83, 0.77, 0.25)
-			ClientCall(0, "client.drawGrenlaser", laserStartVec, direction, pDist)
+			--DrawLine(laserStartVec, VecAdd(laserStartVec, VecScale(direction, pDist)), 0.0, 0.83, 0.77, 0.25)
+			--ClientCall(0, "client.updateLaser", laserStartVec, direction, pDist)
 		end
 	end
 	-- END DETONATION CHECKS
@@ -189,7 +216,7 @@ function server.tick(dt)
 	-- think (check explode, apply air resist, friction etc etc)
 	server.thinkTime = server.thinkTime - dt
 	if server.thinkTime <= 0 then
-		server.think(dt)
+		server.think()
 	end
 
 	-- remove gravity

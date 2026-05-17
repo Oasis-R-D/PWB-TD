@@ -8,7 +8,9 @@
 	</group>
 	<group name="tool_space">
 		<body dynamic="false">
-			<vox texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/shotgun.vox" scale="0.4"/>
+			<vox pos="0.0 -0.1625 -0.05" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/shotgun.vox" object="shape_0" scale="0.4">
+				<vox pos="0.0145 0.3055 0.127" file="MOD/vox/shotgun.vox" object="sight" scale="0.1"/>
+			</vox>
 		</body>
 		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.05 -0.05 0.4" rot="0.0 90.0 -35.0"/>
 		<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.05 -0.05 0.4" rot="0.0 90.0 -35.0"/>

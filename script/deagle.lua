@@ -250,14 +250,17 @@ function client.tickPlayerDE357(p, dt)
 			data.altCoolDown = ALTFIRERATE
 			data.coolDown = ALTFIRERATE
 			data.laseron = not data.laseron
+			data.laserrefresh = 0
 		end
 	end
 
-	if data.laseron == false then
+	-- turn off when reloading (accurate to HL:OP4)
+	if data.laseron == false or data.inreload then
 		data.toolAnimator.forceActionPose = false
 	else
-		if IsPlayerLocal(p) and data.laserrefresh <= 0 then
+		if data.laserrefresh <= 0 then
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
+			QueryInclude("player")
 			local hit, dist = QueryRaycast(VecSub(pos, Vec(0.0, 0.15, 0.0)), dir, 100)
 			local toolBody = GetToolBody(p)
 			if toolBody ~= 0 then
@@ -265,8 +268,9 @@ function client.tickPlayerDE357(p, dt)
 				local transform = GetBodyTransform(toolBody)
 				local laser_origin = TransformToParentPoint(transform, Vec(0.05, 0.05, -0.2))
 				dist = dist - 0.1
-				DrawLine(VecAdd(laser_origin, VecScale(playervel, dt)), VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
-				--DrawSprite(laserSprite, t, dist, 0.1, 0.3, 1.0, 1.0, 0.1, true, true) -- figure out how to do this
+				if IsPlayerLocal(p) then
+					DrawLine(VecAdd(laser_origin, VecScale(playervel, dt)), VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
+				end
 				if hit then
 					local breakPoint = VecAdd(pos, VecScale(dir, dist))
 					for i=0, 1 do
@@ -284,23 +288,32 @@ function client.tickPlayerDE357(p, dt)
 						SpawnParticle(breakPoint, playervel, 0.05)
 					end
 				end
-				for i=0, 1 do
-					local playervel = GetPlayerVelocity(p)
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(0.1)
-					ParticleAlpha(0.75, 0)
-					ParticleColor(1.0, 0.0, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5)
-					ParticleCollide(0)
-					SpawnParticle(laser_origin, playervel, 0.05)
+				
+				-- laser start point
+				if IsPlayerLocal(p) then
+					for i=0, 1 do
+						local playervel = GetPlayerVelocity(p)
+						ParticleReset()
+						ParticleGravity(0)
+						ParticleRadius(0.1)
+						ParticleAlpha(0.75, 0)
+						ParticleColor(1.0, 0.0, 0)
+						ParticleTile(5)
+						ParticleDrag(0)
+						ParticleRotation(rnd(10, -10), 0)
+						ParticleSticky(0)
+						ParticleEmissive(5)
+						ParticleCollide(0)
+						SpawnParticle(laser_origin, playervel, 0.05)
+					end
 				end
 			end
-			data.laserrefresh = 0.02
+
+			if isMP() then
+				data.laserrefresh = 0.02
+			else
+				data.laserrefresh = 0.0
+			end
 		end
 	end
 	

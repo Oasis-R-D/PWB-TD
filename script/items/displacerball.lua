@@ -57,7 +57,7 @@ end
 function server.Killthink()
 	ClientCall(0, "client.explFX")
 
-	-- kill hit enemy
+	-- "teleport" hit enemy BUGBUG: only removes them on host's client!
 	if server.hitPlayer ~= nil then
 		local bodyDisposal = Transform(Vec(9999))
 

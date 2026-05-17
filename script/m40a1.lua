@@ -180,12 +180,12 @@ function client.tickPlayerM40(p, dt)
 					ParticleColor(1,0.35,0, 1,0,0)
 					SpawnParticle(mt.pos, playervel, 0.125)
 				end
-					
+				data.timetobolt = 0.842
 				data.clipamntM40 = data.clipamntM40 - 1
 				if data.clipamntM40 > 0 then
 					data.coolDown = FIRERATE
 					data.altCoolDown = SCOPEFIREDELAY
-					data.timetobolt = 0.842
+					
 				elseif ammo > 1 then
 					data.recoil = 0.05
 					PlaySound(LoadSound(EMPTRELOAD_SOUND), pt.pos)
@@ -246,7 +246,9 @@ function client.tickPlayerM40(p, dt)
 	else
 		data.timetobolt = data.timetobolt - dt
 		if data.timetobolt <= 0 and data.playbolt == true then
-			PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
+			if data.clipamntM40 > 0 then -- already plays bolt sfx in reload
+				PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
+			end
 			data.playbolt = false
 			data.recoil = 0.05
 		end

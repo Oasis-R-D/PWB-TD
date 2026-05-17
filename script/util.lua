@@ -13,7 +13,7 @@ function rnd(mi, ma)
 end
 
 -- Returns true if the server is MP
--- use this for balancing or recreating features in weapons that are only in MP
+-- use this for balancing or recreating features in weapons that are only in MP (or optimizations)
 function isMP()
 	return GetMaxPlayers() > 1
 end
