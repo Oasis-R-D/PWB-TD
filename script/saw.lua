@@ -32,8 +32,13 @@ function createPlayerCLIENTdataM249()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		alteject = false, -- M249 ejects both the belt bits and bullets (alternating between them in opfor tho)
-		firesound = nil,	
 		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataM249()
+    return {
+		firesound = nil,
 	}
 end
 
@@ -44,7 +49,7 @@ end
 
 function server.tickM249(dt)
 	for p in PlayersAdded() do
-		M249players[p] = createPlayerCLIENTdataM249()
+		M249players[p] = createPlayerSERVERdataM249()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -53,23 +58,13 @@ function server.tickM249(dt)
 		M249players[p] = nil
 	end
 
-	for p in Players() do
-		server.tickPlayerM249(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerM249(p, dt)
+	--end
 end
 
 function server.tickPlayerM249(p, dt)
-	if not IsToolEnabled(WPNID, p) then return end
-	
-	if GetPlayerHealth(p) <= 0 then
-		if M249players[p].dataReset == false then
-			M249players[p] = createPlayerCLIENTdataM249()
-		end
-		return
-	end
-
-	-- make data reset when reset conditions are met
-	M249players[p].dataReset = false
 end
 
 function server.primaryFireM249(p)

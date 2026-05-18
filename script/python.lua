@@ -38,8 +38,13 @@ function createPlayerCLIENTdataPYTH()
 		toolAnimator = ToolAnimator(),
 		scoped = false,
 		adsFov = nil,
-		firesound = nil,
 		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataPYTH()
+    return {
+		firesound = nil,
 	}
 end
 
@@ -50,7 +55,7 @@ end
 
 function server.tickPYTH(dt)
 	for p in PlayersAdded() do
-		PYTHplayers[p] = createPlayerCLIENTdataPYTH()
+		PYTHplayers[p] = createPlayerSERVERdataPYTH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -59,23 +64,12 @@ function server.tickPYTH(dt)
 		PYTHplayers[p] = nil
 	end
 
-	for p in Players() do
-		server.tickPlayerPYTH(p, dt)
-	end
+	--for p in Players() do
+		--server.tickPlayerPYTH(p, dt)
+	--end
 end
 
 function server.tickPlayerPYTH(p, dt)
-	if not IsToolEnabled(WPNID, p) then return end
-	
-	if GetPlayerHealth(p) <= 0 then
-		if PYTHplayers[p].dataReset == false then
-			PYTHplayers[p] = createPlayerCLIENTdataPYTH()
-		end
-		return
-	end
-
-	-- make data reset when reset conditions are met
-	PYTHplayers[p].dataReset = false
 end
 
 function server.primaryFirePYTH(p)
