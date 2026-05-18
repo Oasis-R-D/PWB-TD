@@ -38,6 +38,7 @@ function createPlayerDataDISP()
 		barrel = nil,
 		barrelTransform = nil,
 		camAltMove = false,
+		dataReset = true,
 	}
 end
 
@@ -48,13 +49,8 @@ end
 
 function server.tickDISP(dt)
 	for p in PlayersAdded() do
-		DISPplayers[p] = createPlayerDataDISP()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
-	end
-
-	for p in PlayersRemoved() do
-		DISPplayers[p] = nil
 	end
 
 	for p in Players() do
@@ -63,9 +59,9 @@ function server.tickDISP(dt)
 end
 
 function server.tickPlayerDISP(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		DISPplayers[p] = createPlayerDataDISP()
-	end
+	if not IsToolEnabled(WPNID, p) then return end
+	
+	if GetPlayerHealth(p) <= 0 then return end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	if ammo < 9999 and ammo > 6 then
@@ -74,17 +70,13 @@ function server.tickPlayerDISP(p, dt)
 end
 
 function getFullChargeTime()
-	if isMP() then
-		return 1.5
-	end
-	return 4
+	if isMP() then return 1.5 else return 4 end
 end
 
 function server.primaryFireDISP(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = DISPplayers[p]
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	
@@ -159,7 +151,6 @@ function server.secondaryFireDISP(p) -- separated for easy modability
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = DISPplayers[p]
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
@@ -235,8 +226,12 @@ end
 local camSineTime = nil
 
 function client.tickPlayerDISP(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		DISPplayers[p] = createPlayerDataDISP()
+		if DISPplayers[p].dataReset == false then
+			DISPplayers[p] = createPlayerDataDISP()
+		end
 		return
 	end
 	
@@ -257,6 +252,9 @@ function client.tickPlayerDISP(p, dt)
 	end
 	
 	local data = DISPplayers[p]
+	
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
 		if data.coolDown < 0 then	

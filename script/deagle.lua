@@ -40,6 +40,7 @@ function createPlayerDataDE357()
 		laseron = false,
 		firesound = nil,
 		laserrefresh = 0.0,
+		dataReset = true,
 	}
 end
 
@@ -65,10 +66,16 @@ function server.tickDE357(dt)
 end
 
 function server.tickPlayerDE357(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		DE357players[p] = createPlayerDataDE357()
+		if DE357players[p].dataReset == false then
+			DE357players[p] = createPlayerDataDE357()
+		end
 		return
 	end
+
+	DE357players[p].dataReset = false
 end
 
 function server.primaryFireDE357(p)
@@ -123,11 +130,15 @@ clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerDE357(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		DE357players[p] = createPlayerDataDE357()
+		if DE357players[p].dataReset == false then
+			DE357players[p] = createPlayerDataDE357()
+		end
 		return
 	end
-	
+
 	if GetPlayerTool(p) ~= WPNID then
 		if IsPlayerLocal(p) then
 			camSineTime = nil
@@ -145,6 +156,9 @@ function client.tickPlayerDE357(p, dt)
 	end
 	
 	local data = DE357players[p]
+
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)

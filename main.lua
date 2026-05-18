@@ -60,6 +60,7 @@ GLOBAL_20DEGREES = 0.17365
 -- - Gluon gun circular beam
 -- - Finish gluon gun and displacer model
 -- - Displacer prongs
+-- - displacer ball doesn't angle correctly when in vehicle camera
 
 function server.init()
    -- MELEE (SLOT 1)
@@ -169,9 +170,7 @@ function client.tick(dt)
 end
 
 function client.draw()
-	if GetPlayerHealth() <= 0 or GetPlayerVehicle() ~= 0 then
-		return
-	end
+	if GetPlayerHealth() <= 0 or GetPlayerVehicle() ~= 0 then return end
    
 	client.drawM40()
 	client.drawPIST9MM()

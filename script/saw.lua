@@ -33,6 +33,7 @@ function createPlayerDataM249()
 		toolAnimator = ToolAnimator(),
 		alteject = false, -- M249 ejects both the belt bits and bullets (alternating between them in opfor tho)
 		firesound = nil,	
+		dataReset = true,
 	}
 end
 
@@ -58,10 +59,17 @@ function server.tickM249(dt)
 end
 
 function server.tickPlayerM249(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		M249players[p] = createPlayerDataM249()
+		if M249players[p].dataReset == false then
+			M249players[p] = createPlayerDataM249()
+		end
 		return
 	end
+
+	-- make data reset when reset conditions are met
+	M249players[p].dataReset = false
 end
 
 function server.primaryFireM249(p)
@@ -125,8 +133,12 @@ clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM249(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		M249players[p] = createPlayerDataM249()
+		if M249players[p].dataReset == false then
+			M249players[p] = createPlayerDataM249()
+		end
 		return
 	end
 	
@@ -148,6 +160,9 @@ function client.tickPlayerM249(p, dt)
 	
 	local data = M249players[p]
 
+	-- make data reset when reset conditions are met
+	data.dataReset = false
+	
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		data.coolDown = RELOAD_TIME

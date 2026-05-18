@@ -39,6 +39,7 @@ function createPlayerDataPIST9MM()
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
 		suppressed = false,
+		dataReset = true,
 	}
 end
 
@@ -49,24 +50,16 @@ end
 
 function server.tickPIST9MM(dt)
 	for p in PlayersAdded() do
-		PIST9MMplayers[p] = createPlayerDataPIST9MM()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
-	for p in PlayersRemoved() do
-		PIST9MMplayers[p] = nil
-	end
-
-	for p in Players() do
-		server.tickPlayerPIST9MM(p, dt)
-	end
+	--for p in Players() do
+		--server.tickPlayerPIST9MM(p, dt)
+	--end
 end
 
 function server.tickPlayerPIST9MM(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		PIST9MMplayers[p] = createPlayerDataPIST9MM()
-	end
 end
 
 function server.primaryFirePIST9MM(p, silenced)
@@ -75,7 +68,6 @@ function server.primaryFirePIST9MM(p, silenced)
 	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = PIST9MMplayers[p]
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.01, p)
 
@@ -92,7 +84,6 @@ function server.secondaryFirePIST9MM(p, silenced) -- separated for easy modabili
 	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = PIST9MMplayers[p]
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
@@ -127,8 +118,12 @@ clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerPIST9MM(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		PIST9MMplayers[p] = createPlayerDataPIST9MM()
+		if PIST9MMplayers[p].dataReset == false then
+			PIST9MMplayers[p] = createPlayerDataPIST9MM()
+		end
 		return
 	end
 	
@@ -149,6 +144,9 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 	
 	local data = PIST9MMplayers[p]
+
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)

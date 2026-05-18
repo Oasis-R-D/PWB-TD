@@ -38,6 +38,7 @@ function createPlayerDataM727()
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
 		camAltMove = false,
+		dataReset = true,
 	}
 end
 
@@ -63,10 +64,17 @@ function server.tickM727(dt)
 end
 
 function server.tickPlayerM727(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		M727players[p] = createPlayerDataM727()
+		if M727players[p].dataReset == false then
+			M727players[p] = createPlayerDataM727()
+		end
 		return
 	end
+
+	-- make data reset when reset conditions are met
+	M727players[p].dataReset = false
 end
 
 function server.primaryFireM727(p)
@@ -131,11 +139,15 @@ altclipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM727(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		M727players[p] = createPlayerDataM727()
+		if M727players[p].dataReset == false then
+			M727players[p] = createPlayerDataM727()
+		end
 		return
 	end
-	
+
 	if GetPlayerTool(p) ~= WPNID then
 		if IsPlayerLocal(p) then
 			camSineTime = nil
@@ -153,6 +165,9 @@ function client.tickPlayerM727(p, dt)
 	end
 	
 	local data = M727players[p]
+	
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)

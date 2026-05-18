@@ -23,6 +23,7 @@ function createPlayerDataFRAG()
 		coolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		dataReset = true,
 	}
 end
 
@@ -33,13 +34,8 @@ end
 
 function server.tickFRAG(dt)
 	for p in PlayersAdded() do
-		FRAGplayers[p] = createPlayerDataFRAG()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 10, p)
-	end
-
-	for p in PlayersRemoved() do
-		FRAGplayers[p] = nil
 	end
 
 	for p in Players() do
@@ -48,10 +44,9 @@ function server.tickFRAG(dt)
 end
 
 function server.tickPlayerFRAG(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		FRAGplayers[p] = createPlayerDataFRAG()
-		return
-	end
+	if not IsToolEnabled(WPNID, p) then return end
+	
+	if GetPlayerHealth(p) <= 0 then return end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	if ammo < 9999 and ammo > 15 then
@@ -64,7 +59,6 @@ function server.primaryFireFRAG(p, cookedTime)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = FRAGplayers[p]
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	
@@ -120,13 +114,19 @@ function client.tickFRAG(dt)
 end
 
 function client.tickPlayerFRAG(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		FRAGplayers[p] = createPlayerDataFRAG()
+		if FRAGplayers[p].dataReset == false then
+			FRAGplayers[p] = createPlayerDataFRAG()
+		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		FRAGplayers[p] = createPlayerDataFRAG()
+		if FRAGplayers[p].dataReset == false then
+			FRAGplayers[p] = createPlayerDataFRAG()
+		end
 		return
 	end
 
@@ -134,6 +134,9 @@ function client.tickPlayerFRAG(p, dt)
 	
 	local data = FRAGplayers[p]
 
+	-- make data reset when reset conditions are met
+	data.dataReset = false
+	
 	data.toolAnimator.maxActionPoseTime = 0.075
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then

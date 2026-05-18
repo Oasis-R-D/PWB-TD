@@ -38,6 +38,7 @@ function createPlayerDataMP5()
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
 		camAltMove = false,
+		dataReset = true,
 	}
 end
 
@@ -63,10 +64,17 @@ function server.tickMp5(dt)
 end
 
 function server.tickPlayerMp5(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		MP5players[p] = createPlayerDataMP5()
+		if MP5players[p].dataReset == false then
+			MP5players[p] = createPlayerDataMP5()
+		end
 		return
 	end
+
+	-- make data reset when reset conditions are met
+	MP5players[p].dataReset = false
 end
 
 function server.primaryFireMp5(p)
@@ -131,11 +139,15 @@ altclipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerMp5(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		MP5players[p] = createPlayerDataMP5()
+		if MP5players[p].dataReset == false then
+			MP5players[p] = createPlayerDataMP5()
+		end
 		return
 	end
-	
+
 	if GetPlayerTool(p) ~= WPNID then
 		if IsPlayerLocal(p) then
 			camSineTime = nil
@@ -153,6 +165,9 @@ function client.tickPlayerMp5(p, dt)
 	end
 
 	local data = MP5players[p]
+
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < CLIP_SIZE and ammo > 0.5 and data.clipamntMP5 ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)

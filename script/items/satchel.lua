@@ -23,6 +23,7 @@ function createPlayerDataSATCH()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		satchelBodies = {},
+		dataReset = true,
 	}
 end
 
@@ -48,10 +49,17 @@ function server.tickSATCH(dt)
 end
 
 function server.tickPlayerSATCH(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		SATCHplayers[p] = createPlayerDataSATCH()
+		if SATCHplayers[p].dataReset == false then
+			SATCHplayers[p] = createPlayerDataSATCH()
+		end
 		return
 	end
+
+	-- make data reset when reset conditions are met
+	SATCHplayers[p].dataReset = false
 
 	local ammo = GetToolAmmo(WPNID, p)
 	if ammo < 9999 and ammo > 10 then
@@ -121,19 +129,28 @@ function client.tickSATCH(dt)
 end
 
 function client.tickPlayerSATCH(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+
 	if GetPlayerHealth(p) <= 0 then
-		SATCHplayers[p] = createPlayerDataSATCH()
+		if SATCHplayers[p].dataReset == false then
+			SATCHplayers[p] = createPlayerDataSATCH()
+		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		SATCHplayers[p] = createPlayerDataSATCH()
+		if SATCHplayers[p].dataReset == false then
+			SATCHplayers[p] = createPlayerDataSATCH()
+		end
 		return
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	
 	local data = SATCHplayers[p]
+
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	data.toolAnimator.maxActionPoseTime = 0.075
 

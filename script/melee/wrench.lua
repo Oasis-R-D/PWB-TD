@@ -28,6 +28,7 @@ function createPlayerDataWRNCH()
 		recoildelay = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
+		dataReset = true,
 	}
 end
 
@@ -192,17 +193,25 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 end
 
 function server.tickPlayerWRNCH(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		WRNCHplayers[p] = createPlayerDataWRNCH()
+		if WRNCHplayers[p].dataReset == false then
+			WRNCHplayers[p] = createPlayerDataWRNCH()
+		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
-		WRNCHplayers[p] = createPlayerDataWRNCH()
+		if WRNCHplayers[p].dataReset == false then
+			WRNCHplayers[p] = createPlayerDataWRNCH()
+		end
 		return
 	end
 	
 	local data = WRNCHplayers[p]
+
+	data.dataReset = false
 
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and data.inAltAttack == false then
@@ -265,19 +274,27 @@ function client.tickWRNCH(dt)
 end
 
 function client.tickPlayerWRNCH(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		WRNCHplayers[p] = createPlayerDataWRNCH()
+	if not IsToolEnabled(WPNID, p) then return end
+	
+	if GetPlayerHealth(p) <= 0 and WRNCHplayers[p].dataReset == false then
+		if WRNCHplayers[p].dataReset == false then
+			WRNCHplayers[p] = createPlayerDataWRNCH()
+		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
-		WRNCHplayers[p] = createPlayerDataWRNCH()
+		if WRNCHplayers[p].dataReset == false then
+			WRNCHplayers[p] = createPlayerDataWRNCH()
+		end
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 
 	local data = WRNCHplayers[p]
+
+	data.dataReset = false
 
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and data.inAltAttack == false then

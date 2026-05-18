@@ -41,6 +41,7 @@ function createPlayerDataSG()
 		shellstoload = 0,
 		shellstopump = 0.0,
 		camAltMove = false,
+		dataReset = true,
 	}
 end
 
@@ -51,32 +52,23 @@ end
 
 function server.tickSG(dt)
 	for p in PlayersAdded() do
-		SGplayers[p] = createPlayerDataSG()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 125, p)
 	end
 
-	for p in PlayersRemoved() do
-		SGplayers[p] = nil
-	end
-
-	for p in Players() do
-		server.tickPlayerSG(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerSG(p, dt)
+	--end
 end
 
 function server.tickPlayerSG(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		SGplayers[p] = createPlayerDataSG()
-		return
-	end
 end
 
 function server.primaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = SGplayers[p]
 
 	for i=0, 5 do
 		local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_10DEGREES, p)
@@ -94,7 +86,6 @@ function server.secondaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = SGplayers[p]
 
 	for i=0, 11 do
 		local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_10DEGREES, p)
@@ -132,8 +123,12 @@ clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerSG(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		SGplayers[p] = createPlayerDataSG()
+		if SGplayers[p].dataReset == false then
+			SGplayers[p] = createPlayerDataSG()
+		end
 		return
 	end
 	
@@ -155,6 +150,9 @@ function client.tickPlayerSG(p, dt)
 	
 	local data = SGplayers[p]
 
+	-- make data reset when reset conditions are met
+	data.dataReset = false
+	
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		local reloadtime = nil

@@ -39,6 +39,7 @@ function createPlayerDataTAU()
 		barrel = nil,
 		barrelTransform = nil,
 		camAltMove = false,
+		dataReset = true,
 	}
 end
 
@@ -50,31 +51,21 @@ end
 
 function server.tickTAU(dt)
 	for p in PlayersAdded() do
-		TAUplayers[p] = createPlayerDataTAU()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
-	for p in PlayersRemoved() do
-		TAUplayers[p] = nil
-	end
-
-	for p in Players() do
-		server.tickPlayerTAU(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerTAU(p, dt)
+	--end
 end
 
 function server.tickPlayerTAU(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		TAUplayers[p] = createPlayerDataTAU()
-	end
 end
 
 function getFullChargeTime()
-	if isMP() then
-		return 1.5
-	end
-	return 4
+	if isMP() then return 1.5 else return 4 end
 end
 
 function client.drawlaser(vecSrc, vecDir, raycastDist, clLaserSprite, p, primary)
@@ -93,8 +84,6 @@ function client.drawlaser(vecSrc, vecDir, raycastDist, clLaserSprite, p, primary
 end
 
 function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
-	local data = MP5players[p]
-	
 	local vecSrc = vecOrigSrc;
 
 	local pentIgnore = p
@@ -274,8 +263,12 @@ end
 local camSineTime = nil
 
 function client.tickPlayerTAU(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		TAUplayers[p] = createPlayerDataTAU()
+		if TAUplayers[p].dataReset == false then
+			TAUplayers[p] = createPlayerDataTAU()
+		end
 		return
 	end
 	
@@ -296,6 +289,9 @@ function client.tickPlayerTAU(p, dt)
 	end
 	
 	local data = TAUplayers[p]
+	
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
 			if data.coolDown < 0 then	

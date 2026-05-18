@@ -20,6 +20,7 @@ function createPlayerDataTRIP()
 		coolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		dataReset = true,
 	}
 end
 
@@ -30,13 +31,8 @@ end
 
 function server.tickTRIP(dt)
 	for p in PlayersAdded() do
-		TRIPplayers[p] = createPlayerDataTRIP()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 5, p)
-	end
-
-	for p in PlayersRemoved() do
-		TRIPplayers[p] = nil
 	end
 
 	for p in Players() do
@@ -45,11 +41,10 @@ function server.tickTRIP(dt)
 end
 
 function server.tickPlayerTRIP(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		TRIPplayers[p] = createPlayerDataTRIP()
-		return
-	end
-
+	if not IsToolEnabled(WPNID, p) then return end
+	
+	if GetPlayerHealth(p) <= 0 then return end
+	
 	local ammo = GetToolAmmo(WPNID, p)
 	if ammo < 9999 and ammo > 9 then
 		SetToolAmmo(WPNID, 9, p)
@@ -58,7 +53,6 @@ end
 
 function server.primaryFireTRIP(p)
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = TRIPplayers[p]
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
 
@@ -103,13 +97,19 @@ function client.tickTRIP(dt)
 end
 
 function client.tickPlayerTRIP(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		TRIPplayers[p] = createPlayerDataTRIP()
+		if TRIPplayers[p].dataReset == false then
+			TRIPplayers[p] = createPlayerDataTRIP()
+		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		TRIPplayers[p] = createPlayerDataTRIP()
+		if TRIPplayers[p].dataReset == false then
+			TRIPplayers[p] = createPlayerDataTRIP()
+		end
 		return
 	end
 
@@ -117,30 +117,35 @@ function client.tickPlayerTRIP(p, dt)
 	
 	local data = TRIPplayers[p]
 
+	-- make data reset when reset conditions are met
+	data.dataReset = false
+	
 	data.toolAnimator.maxActionPoseTime = 0.075
-
+	
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then
-				local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
+		if data.coolDown < 0 then
+			local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
 
-				local dir = TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -1))
-				local hit, dist, normal = QueryRaycast(pos, dir, 2.5, 0)
+			local dir = TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -1))
+			local hit, dist, normal = QueryRaycast(pos, dir, 2.5, 0)
 
-				if hit then
-					local pt = GetPlayerTransform(p)
-					if IsPlayerLocal(p) then
-						ServerCall("server.primaryFireTRIP", p)
-					end
-
-					PlaySound(TMW_ON, VecAdd(pos, VecScale(dir, dist)), 1)
-					PlaySound(TMW_ON2, VecAdd(pos, VecScale(dir, dist)), 10)
-
-					data.toolAnimator.timeSinceFire = 0.0
-
-					data.coolDown = FIRERATE
-					data.recoil = RECOIL_AMNT
+			if hit then
+				local pt = GetPlayerTransform(p)
+				if IsPlayerLocal(p) then
+					ServerCall("server.primaryFireTRIP", p)
 				end
+
+				PlaySound(TMW_ON, VecAdd(pos, VecScale(dir, dist)), 1)
+				PlaySound(TMW_ON2, VecAdd(pos, VecScale(dir, dist)), 10)
+
+				data.toolAnimator.timeSinceFire = 0.0
+
+				data.coolDown = FIRERATE
+				data.recoil = RECOIL_AMNT
+			else
+				data.coolDown = 0.05 -- prevent spamming raycasts
 			end
+		end
 		if IsPlayerLocal(p) then
 			PlayHaptic(shootHaptic, 1)
 		end

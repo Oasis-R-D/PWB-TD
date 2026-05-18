@@ -41,6 +41,7 @@ function createPlayerDataM40()
 		scoped = false,
 		timetobolt = nil,
 		playbolt = true,
+		dataReset = true,
 	}
 end
 
@@ -51,32 +52,23 @@ end
 
 function server.tickM40(dt)
 	for p in PlayersAdded() do
-		M40players[p] = createPlayerDataM40()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
-	for p in PlayersRemoved() do
-		M40players[p] = nil
-	end
-
-	for p in Players() do
-		server.tickPlayerM40(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerM40(p, dt)
+	--end
 end
 
 function server.tickPlayerM40(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		M40players[p] = createPlayerDataM40()
-		return
-	end
 end
 
 function server.primaryFireM40(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = M40players[p]
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0, p)
 
@@ -114,11 +106,15 @@ clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM40(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		M40players[p] = createPlayerDataM40()
+		if M40players[p].dataReset == false then
+			M40players[p] = createPlayerDataM40()
+		end
 		return
 	end
-	
+
 	if GetPlayerTool(p) ~= WPNID then
 		if IsPlayerLocal(p) then
 			camSineTime = nil
@@ -136,6 +132,9 @@ function client.tickPlayerM40(p, dt)
 	end
 
 	local data = M40players[p]
+
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
 		if data.clipamntM40 > 0 then

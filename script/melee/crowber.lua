@@ -23,6 +23,7 @@ function createPlayerDataCRBR()
 		recoildelay = 0.0,
 		toolAnimator = ToolAnimator(),
 		firesound = nil,
+		dataReset = true,
 	}
 end
 
@@ -107,17 +108,25 @@ function client.swingCRBR(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 end
 
 function server.tickPlayerCRBR(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		CRBRplayers[p] = createPlayerDataCRBR()
+	if not IsToolEnabled(WPNID, p) then return end
+	
+	if GetPlayerHealth(p) <= 0 and CRBRplayers[p].dataReset == false then
+		if CRBRplayers[p].dataReset == false then
+			CRBRplayers[p] = createPlayerDataCRBR()
+		end
 		return
 	end
 
-	if GetPlayerTool(p) ~= WPNID then
-		CRBRplayers[p] = createPlayerDataCRBR()
+	if GetPlayerTool(p) ~= WPNID and CRBRplayers[p].dataReset == false then
+		if CRBRplayers[p].dataReset == false then
+			CRBRplayers[p] = createPlayerDataCRBR()
+		end
 		return
 	end
 	
 	local data = CRBRplayers[p]
+
+	data.dataReset = false
 
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
@@ -150,19 +159,27 @@ function client.tickCRBR(dt)
 end
 
 function client.tickPlayerCRBR(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		CRBRplayers[p] = createPlayerDataCRBR()
+		if CRBRplayers[p].dataReset == false then
+			CRBRplayers[p] = createPlayerDataCRBR()
+		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
-		CRBRplayers[p] = createPlayerDataCRBR()
+		if CRBRplayers[p].dataReset == false then
+			CRBRplayers[p] = createPlayerDataCRBR()
+		end
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 
 	local data = CRBRplayers[p]
+
+	data.dataReset = false
 
 	--Check if firing
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then

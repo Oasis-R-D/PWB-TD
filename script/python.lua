@@ -39,6 +39,7 @@ function createPlayerDataPYTH()
 		scoped = false,
 		adsFov = nil,
 		firesound = nil,
+		dataReset = true,
 	}
 end
 
@@ -64,10 +65,17 @@ function server.tickPYTH(dt)
 end
 
 function server.tickPlayerPYTH(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		PYTHplayers[p] = createPlayerDataPYTH()
+		if PYTHplayers[p].dataReset == false then
+			PYTHplayers[p] = createPlayerDataPYTH()
+		end
 		return
 	end
+
+	-- make data reset when reset conditions are met
+	PYTHplayers[p].dataReset = false
 end
 
 function server.primaryFirePYTH(p)
@@ -112,8 +120,12 @@ clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerPYTH(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		PYTHplayers[p] = createPlayerDataPYTH()
+		if PYTHplayers[p].dataReset == false then
+			PYTHplayers[p] = createPlayerDataPYTH()
+		end
 		return
 	end
 	
@@ -135,6 +147,9 @@ function client.tickPlayerPYTH(p, dt)
 
 	local data = PYTHplayers[p]
 
+	-- make data reset when reset conditions are met
+	data.dataReset = false
+	
 	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < CLIP_SIZE and ammo > 0.5 and data.clipamntPYTH ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntPYTH > 0 then

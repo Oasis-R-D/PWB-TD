@@ -21,22 +21,6 @@ local EGON_FIRECHARGE = 1.0
 -- Per weapon data storer
 GLUplayers = {}
 
--- BEGIN BUILT IN LASER VFX
---[[
-local hitPos = VecAdd(startPoint, VecScale(dir, dist))
-
---Draw laser line in ten segments with random offset -- NOTE: gluon gun actually does have something like this where the further you fire, the more the beam wanders
-local last = mt -- muzzle
-for i=1, 20 do
-	local tt = i/20 -- tf is a tt?
-	local p = VecLerp(mt, hitPos, tt)
-	p = VecAdd(p, rndVec(0.2*tt))
-	DrawLine(last, p, 1, 0.5, 0.7)
-	last = p
-end 
--- END BUILT IN LASER VFX
-]]
-
 function createPlayerDataGLU()
     return {
 		coolDown = 0.0,
@@ -51,6 +35,7 @@ function createPlayerDataGLU()
 		damageTime = 0.0,
 		checkOff = 0.0,
 		currentSnd = nil,
+		dataReset = true,
 	}
 end
 
@@ -61,25 +46,17 @@ end
 
 function server.tickGLU(dt)
 	for p in PlayersAdded() do
-		GLUplayers[p] = createPlayerDataGLU()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
-	for p in PlayersRemoved() do
-		GLUplayers[p] = nil
-	end
-
-	for p in Players() do
-		server.tickPlayerGLU(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerGLU(p, dt)
+	--end
 end
 
 function server.tickPlayerGLU(p, dt)
-	if GetPlayerHealth(p) <= 0 then
-		GLUplayers[p] = createPlayerDataGLU()
-		return
-	end
 end
 
 function client.drawlaserGLU(vecSrc, vecDir, raycastDist, p)
@@ -123,51 +100,29 @@ function client.UpdateEffectGlu(source, endpos, vecDir, dist, timedist, player)
 	end
 end
 
-function server.fireGLU(p, dmgTime, dt)
-	local eyeTrans = GetPlayerEyeTransform(p)
-	local front = TransformToParentVec(eyeTrans, Vec(0, 0, -1))
-	local vecDir = VecNormalize(front)
-	local vecOrigSrc = GetPlayerEyeTransform(p).pos
-	local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
+function server.fireGLU(p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
+	if pPlayerHit ~= 0 then
+		-- don't trust clients with player hit detection
+		local _, iDist2, _, pPlayerHit2 = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
 
-	local data = GLUplayers[p]
-
-	local bHit, iDist, pShape, pPlayerHit = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
-
-	local timedist = (data.damageTime / EGON_DISCHARGE_INTERVAL)
-
-	if timedist < 0 then
-		timedist = 0
-	elseif timedist > 1 then
-		timedist = 1
-	end
-	timedist = 1 - timedist
-
-	local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
-	ClientCall(0, "client.UpdateEffectGlu", beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
-
-	if not bHit then
-		return
-	end
-
-	if dmgTime <= 0 then
-		if pPlayerHit ~= 0 then
-			ApplyPlayerDamage(pPlayerHit, PLAYERDAMAGE, WPNNAME, p)
-			BloodVFX(VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, PLAYERDAMAGE, pPlayerHit)
-		end
-
-		if pShape ~= 0 then
-			ApplyBodyImpulse(GetShapeBody(pShape), VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), VecScale(vecDir, 10000.0))
-			local origin = VecAdd(vecOrigSrc, VecScale(vecDir, iDist))
-			MakeHole(origin, 1.0, 0.75, 0.5)	
-			server.SpawnFireHook(origin, 80)
-			Paint(origin, 1.125, "explosion", 0.6)
-		end
-
-		if isMP() == true then
-			local placeholder = 0 -- radius damage here
+		if pPlayerHit2 ~= 0 then
+			ApplyPlayerDamage(pPlayerHit2, PLAYERDAMAGE, WPNNAME, p)
+			BloodVFX(VecAdd(vecOrigSrc, VecScale(vecDir, iDist2)), vecDir, PLAYERDAMAGE, pPlayerHit2)
 		end
 	end
+
+	if pShape ~= 0 then
+		-- client can do whatever with world hits though
+		ApplyBodyImpulse(GetShapeBody(pShape), VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), VecScale(vecDir, 10000.0))
+		local origin = VecAdd(vecOrigSrc, VecScale(vecDir, iDist))
+		MakeHole(origin, 1.0, 0.75, 0.5)	
+		server.SpawnFireHook(origin, 80)
+		Paint(origin, 1.125, "explosion", 0.6)
+	end
+
+	--if isMP() == true then
+	--	local placeholder = 0 -- radius damage here
+	--end
 end
 
 function client.initGLU()
@@ -194,8 +149,12 @@ function client.tickGLU(dt)
 end
 
 function client.tickPlayerGLU(p, dt)
+	if not IsToolEnabled(WPNID, p) then return end
+	
 	if GetPlayerHealth(p) <= 0 then
-		GLUplayers[p] = createPlayerDataGLU()
+		if GLUplayers[p].dataReset == false then
+			GLUplayers[p] = createPlayerDataGLU()
+		end
 		return
 	end
 	
@@ -210,6 +169,9 @@ function client.tickPlayerGLU(p, dt)
 
 	local ammo = GetToolAmmo(WPNID, p)
 	local data = GLUplayers[p]
+	
+	-- make data reset when reset conditions are met
+	data.dataReset = false
 
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and ammo > 0 then
 		if data.coolDown < 0 then
@@ -227,12 +189,35 @@ function client.tickPlayerGLU(p, dt)
 				data.damageTime = EGON_PULSE_INTERVAL
 				data.fireState = EGON_FIRECHARGE
 			elseif data.fireState == EGON_FIRECHARGE then
-				if IsPlayerLocal(p) then -- would it be better to do the host here so it doesn't need networked?
-					ServerCall("server.fireGLU", p, data.damageTime, dt)
+				local eyeTrans = GetPlayerEyeTransform(p)
+				local front = TransformToParentVec(eyeTrans, Vec(0, 0, -1))
+				local vecDir = VecNormalize(front)
+				local vecOrigSrc = GetPlayerEyeTransform(p).pos
+				local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
+
+				local data = GLUplayers[p]
+
+				local bHit, iDist, pShape, pPlayerHit = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
+
+				local timedist = (data.damageTime / EGON_DISCHARGE_INTERVAL)
+
+				if timedist < 0 then
+					timedist = 0
+				elseif timedist > 1 then
+					timedist = 1
 				end
+				timedist = 1 - timedist
+
+				local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
+				client.UpdateEffectGlu(beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
 
 				if data.damageTime <= 0 then
 					data.damageTime = EGON_DISCHARGE_INTERVAL
+					if bHit then
+						-- tell the server to do damage
+						-- TO-DO: if hit world, directly do damage, don't confirm. if hit player, confirm hit
+						ServerCall("server.fireGLU", p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
+					end
 				end
 
 				if (data.soundState == 1 and data.soundTime <= 0.0) or data.soundState == 2 then
