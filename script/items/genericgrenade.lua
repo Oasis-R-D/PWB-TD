@@ -6,7 +6,6 @@
 local COOKTIME = 3
 local BODYTAG = "hlgrenade"
 local EXPLSIZE = 1.0
-local WPNNAME = "M1 Frag"
 local THINKTIME = 0.1 -- replicates Half-Life's thinking behavior
 local AIRRESISTMULT = 0.99
 
@@ -56,14 +55,14 @@ function server.init()
 	TM_ON = LoadSound("MOD/snd/mine_activate.ogg")
 end
 
-function server.explode(pos, grenType)
-	if grenType == "frag" then
+function server.explode(pos)
+	if server.grenType == "frag" then
 		Explosion(pos, 1.5)
-	elseif grenType == "m203" then
+	elseif server.grenType == "m203" then
 		Explosion(pos, 1.0)
-	elseif grenType == "satchel" then
+	elseif server.grenType == "satchel" then
 		Explosion(pos, 2.0)
-	elseif grenType == "mine" then
+	elseif server.grenType == "mine" then
 		Explosion(pos, 1.75)
 	end
 end
@@ -105,7 +104,7 @@ function server.think()
 		if server.grenStyle == "lasermine" then
 			ClientCall(0, "client.updateLaser", nil, nil, nil)
 		end
-		server.explode(grenPos, server.grenType)
+		server.explode(grenPos)
 		server.exploded = true
 		return
 	end
@@ -127,18 +126,18 @@ function server.tick(dt)
 	if server.tagsRecieved == false then
 		if HasTag(grenBody, "grenStyle") then
 			server.initTags()
-			return
-		else
-			return -- haven't received tags yet
 		end
+
+		return
 	end
+	
 	local grenPos = getBodyCenter(grenBody)
 	
 	if IsBodyBroken(grenBody) then
 		if server.grenStyle == "lasermine" then
 			ClientCall(0, "client.updateLaser", nil, nil, nil)
 		end
-		server.explode(grenPos, server.grenType)
+		server.explode(grenPos)
 		server.exploded = true
 		Delete(grenBody)
 		return
@@ -166,9 +165,7 @@ function server.tick(dt)
 	elseif server.grenStyle == "remote" then -- check if owner has given it the explode tag
 		if HasTag(grenBody, "detonate") then
 			server.shouldExplode = true
-		end
-
-		if (GetPlayerHealth(server.playerThrew) == nil or GetPlayerHealth(server.playerThrew) <= 0.0) and not HasTag(grenBody, "detonate") then
+		elseif (GetPlayerHealth(server.playerThrew) == nil or GetPlayerHealth(server.playerThrew) <= 0.0) and not HasTag(grenBody, "detonate") then
 			 -- owner died or left, that doesn't matter if it is already exploding though (does weird things if it has the detonate tag here)
 			Delete(grenBody)
 			return
@@ -189,9 +186,8 @@ function server.tick(dt)
 
 			-- draw
 			ClientCall(0, "client.updateLaser", laserStartVec, direction, pDist)
-		end -- activate after 2 seconds
 
-		if server.laserMineOn == true then
+		elseif server.laserMineOn == true then
 			local laserStartTrans = TransformToParentTransform(GetBodyTransform(grenBody), Transform(Vec(0.02, -0.02, -0.18), GetBodyTransform(grenBody).rot))
 			local laserStartVec = laserStartTrans.pos
 			local direction = TransformToParentVec(GetBodyTransform(grenBody), Vec(0, 0, -1))
@@ -202,13 +198,11 @@ function server.tick(dt)
 			
 			if server.laserDist == nil then
 				server.laserDist = pDist
-			else
-				if math.abs(server.laserDist - pDist) >= 0.0625 then 
-					server.shouldExplode = true
-					server.laserDist = pDist
-					server.think() -- think now so you don't notice that the laser doesn't upd
-					return
-				end
+			elseif math.abs(server.laserDist - pDist) >= 0.0625 then 
+				server.shouldExplode = true
+				server.laserDist = pDist
+				server.think() -- think now so you don't notice that the laser doesn't upd
+				return
 			end
 		end
 	end
@@ -220,7 +214,7 @@ function server.tick(dt)
 		server.think()
 	end
 
-	-- remove gravity
+	-- remove engine's gravity
 	local pvel = GetBodyVelocity(grenBody)
 	local gravity = GetGravity()
 	local newVel = VecAdd(pvel, VecScale(gravity, -dt))

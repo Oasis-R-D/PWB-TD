@@ -114,15 +114,14 @@ function server.fireGLU(p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
 	if pShape ~= 0 then
 		-- client can do whatever with world hits though
 		ApplyBodyImpulse(GetShapeBody(pShape), VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), VecScale(vecDir, 10000.0))
+
 		local origin = VecAdd(vecOrigSrc, VecScale(vecDir, iDist))
-		MakeHole(origin, 1.0, 0.75, 0.5)	
+		
+		MakeHole(origin, 1.0, 0.75, 0.5)
 		server.SpawnFireHook(origin, 80)
 		Paint(origin, 1.125, "explosion", 0.6)
 	end
-
-	--if isMP() == true then
-	--	local placeholder = 0 -- radius damage here
-	--end
+	-- TO-DO: gluon does radial damage in Half-Life!
 end
 
 function client.initGLU()
@@ -176,9 +175,12 @@ function client.tickPlayerGLU(p, dt)
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and ammo > 0 then
 		if data.coolDown < 0 then
 			if data.fireState == EGON_FIREOFF then
-				data.ammoDepleteTime = 0
+				if IsPlayerLocal(p) then
+					data.ammoDepleteTime = 0
+					data.shakeTime = 0
+				end
 
-				data.currentSnd = PlayLoop(startSND, mt.pos, 100)
+				data.currentSnd = PlayLoop(startSND, mt.pos, 80)
 				data.soundState = 1
 				data.soundTime = 3
 
@@ -211,68 +213,59 @@ function client.tickPlayerGLU(p, dt)
 				local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
 				client.UpdateEffectGlu(beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
 
-				if data.damageTime <= 0 then
-					data.damageTime = EGON_DISCHARGE_INTERVAL
-					if bHit then
+				if IsPlayerLocal(p) then
+					ShakeCamera(rnd(0.2, 0.3))
+
+					data.shakeTime = data.shakeTime - dt
+					if data.shakeTime < 0 then
+						ShakeCamera(rnd(0.45, 0.55))
+	
+						data.recoil = data.recoil + 0.0625
+
+						data.shakeDur = data.shakeDur + dt
+						if data.shakeDur >= 0.75 then
+							data.shakeTime = 1.5
+							data.shakeDur = 0
+						end
+					end
+
+					if data.damageTime <= 0 and bHit then
 						-- tell the server to do damage
-						-- TO-DO: if hit world, directly do damage, don't confirm. if hit player, confirm hit
 						ServerCall("server.fireGLU", p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
 					end
-				end
 
-				if (data.soundState == 1 and data.soundTime <= 0.0) or data.soundState == 2 then
-					data.soundState = 2
-					data.currentSnd = PlayLoop(loopSND, mt.pos, 100)
-				elseif data.soundState == 1 and data.soundTime > 0.0 then
-					data.currentSnd = PlayLoop(startSND, mt.pos, 100)
-				end
+					if data.ammoDepleteTime ~= nil then
+						data.ammoDepleteTime = data.ammoDepleteTime - dt
+						if data.ammoDepleteTime <= 0 then
+							ServerCall("server.depleteAmmo", p, WPNID)
 
-				if IsPlayerLocal(p) then
-					PointLight(mt.pos, 0.1, 0.1, 0.5, math.abs((math.sin(GetTime() + rnd(1, 6)) * 3)) + 3) -- add sin wave to the B channel to make it flicker (make it local for less lag?)
-				else
+							if isMP() == true then
+								data.ammoDepleteTime = 0.2
+							else
+								data.ammoDepleteTime = 0.1
+							end
+						end
+					end
+
+					PlayHaptic(shootHaptic, 1)
+
+					PointLight(mt.pos, 0.1, 0.1, 0.5, math.abs((math.sin(GetTime() + rnd(1, 6)) * 3)) + 3) -- add sin wave to the B channel to make it flicker
+				else -- OPTIMIZATION: only pulsate light for firer
 					PointLight(mt.pos, 0.1, 0.1, 0.5, 3)
 				end
 
-				if ammo <= 0 then
-					data.coolDown = 1
-				end
-			end
+				if data.damageTime <= 0 then data.damageTime = EGON_DISCHARGE_INTERVAL end
 
-			if data.ammoDepleteTime ~= nil then
-				data.ammoDepleteTime = data.ammoDepleteTime - dt
-				if data.ammoDepleteTime <= 0 then
-					if IsPlayerLocal(p) then
-						ServerCall("server.depleteAmmo", p, WPNID)
-					end
-
-					if isMP() == true then
-						data.ammoDepleteTime = 0.2
-					else
-						data.ammoDepleteTime = 0.1
-					end
-				end
-			end
-
-			data.shakeTime = data.shakeTime - dt
-
-			if IsPlayerLocal(p) then
-				ShakeCamera(rnd(0.2, 0.3))
-			end
-
-			data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
-
-			if data.shakeTime < 0 then
-				if IsPlayerLocal(p) then
-					ShakeCamera(rnd(0.35, 0.45))
+				if (data.soundState == 1 and data.soundTime <= 0.0) or data.soundState == 2 then
+					data.soundState = 2
+					data.currentSnd = PlayLoop(loopSND, mt.pos, 80)
+				elseif data.soundState == 1 and data.soundTime > 0.0 then
+					data.currentSnd = PlayLoop(startSND, mt.pos, 80)
 				end
 
-				data.recoil = data.recoil + 0.0625
+				if ammo <= 0 then data.coolDown = 1 end
 
-				data.shakeDur = data.shakeDur + dt
-				if data.shakeDur >= 0.75 then
-					data.shakeTime = 1.5
-					data.shakeDur = 0
-				end
+				data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
 			end
 
 			local toolBody = GetToolBody(p)
@@ -293,10 +286,6 @@ function client.tickPlayerGLU(p, dt)
 				ParticleColor(0,0,1, 0.5,0,0.5)
 				SpawnParticle(mt.pos, playervel, 0.125)
 			end
-		end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
 		end
 	elseif data.fireState ~= EGON_FIREOFF then
 		data.checkOff = data.checkOff - dt

@@ -36,16 +36,14 @@ end
 function server.init()
 	grenBody = FindBody(BODYTAG)
 
+	server.think = "nil"
 	server.thinkTime = THINKTIME
 
 	server.tagsRecieved = false
 
 	server.runTime = 0.0
-
-	server.think = "nil"
-
+	
 	server.hitPlayer = nil
-
 	shared.deleted = false
 end
 
@@ -69,6 +67,7 @@ function server.Killthink()
 
 			SetBodyTransform(body, bodyDisposal)
 		end
+
 		server.hitPlayer = nil
 	end
 
@@ -95,9 +94,7 @@ function server.Explodethink(dt)
 				local damage = 250
 				local falloff = damage / 300 -- 7.62 meters in approx HU
 				local flAdjustedDamage = damage - (dist * falloff)
-				if flAdjustedDamage > 0 then
-					ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, server.playerThrew)
-				end
+				if flAdjustedDamage > 0 then ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, server.playerThrew) end
 			end
 		end
     end
@@ -124,14 +121,12 @@ function server.Explodethink(dt)
 		local mass = GetBodyMass(b)
 
 		if dist <= 2 and mass < 128 then
-			Delete(b)
-		else
-				
+			Delete(b) -- "teleport" small objects when close
+		else -- suck in nearby remaining objects
 			dir = VecScale(dir, 1.0/dist)
 			
-			--Check if body is should be affected
+			--Check if body should be affected
 			if dist < maxDist and mass < maxMass then
-				--Make sure direction is always pointing slightly upwards
 				dir = VecNormalize(dir)
 		
 				--Compute how much velocity to add
@@ -216,7 +211,7 @@ function client.explFX()
 	ParticleRadius(0.25)
 	ParticleAlpha(1, 0, "easeout")
 	ParticleTile(1)
-	for a=0, math.pi*2, 0.049 do
+	for a=0, math.pi*2, 0.049 do -- 64 times
 		local x = math.cos(a)*1
 		local y = 0.25
 		local z = math.sin(a)*1
@@ -231,7 +226,7 @@ function client.explFX()
 	ParticleRadius(0.33)
 	ParticleAlpha(1, 0, "easeout")
 	ParticleTile(1)
-	for a=0, math.pi*2, 0.049 do
+	for a=0, math.pi*2, 0.049 do -- 64 times
 		local x = math.cos(a)*1
 		local y = 0.0
 		local z = math.sin(a)*1
@@ -246,7 +241,7 @@ function client.explFX()
 	ParticleRadius(0.25)
 	ParticleAlpha(1, 0, "easeout")
 	ParticleTile(1)
-	for a=0, math.pi*2, 0.049 do
+	for a=0, math.pi*2, 0.049 do -- 64 times
 		local x = math.cos(a)*1
 		local y = -0.25
 		local z = math.sin(a)*1
@@ -301,18 +296,16 @@ function client.tick(dt)
 	local pos = getBodyCenter(grenBody)
 	PointLight(pos, 0.36, 0.5, 0.063, 5)
 
-	if IsPlayerLocal(GetLocalPlayer()) then
-		local t = Transform(pos)
-		t.rot = GetPlayerCameraTransform().rot
+	local t = Transform(pos)
+	t.rot = GetPlayerCameraTransform().rot
 
-		DrawSprite(portalSPR, t, 1.25, 1.25, 1.0, 1.0, 1.0, 1.0, true, true)
+	DrawSprite(portalSPR, t, 1.25, 1.25, 1.0, 1.0, 1.0, 1.0, true, true)
 
-		local vecDir = GetRandomDirection()
-		QueryRejectBody(grenBody)
-		local hit, dist = QueryRaycast(pos, vecDir, BEAMDIST)
-		if hit then
-			local endpos = VecAdd(pos, VecScale(vecDir, dist))
-			client.UpdateEffect(pos, endpos, vecDir, dist)
-		end
+	local vecDir = GetRandomDirection()
+	QueryRejectBody(grenBody)
+	local hit, dist = QueryRaycast(pos, vecDir, BEAMDIST)
+	if hit then
+		local endpos = VecAdd(pos, VecScale(vecDir, dist))
+		client.UpdateEffect(pos, endpos, vecDir, dist)
 	end
 end
