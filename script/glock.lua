@@ -152,6 +152,8 @@ function client.tickPlayerPIST9MM(p, dt)
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
+	if PIST9MMplayers[p].suppressed == true then mt = GetToolLocationWorldTransform("supend", p) end
+
 	local ammo = GetToolAmmo(WPNID, p)
 
 	if mt == nil then
@@ -189,14 +191,11 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then	
-				if data.suppressed == false then
-					PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				end
-
+			if data.coolDown < 0 then
 				StopSound(data.firesound)
 				
 				if data.suppressed == false then
+					PointLight(mt.pos, 1, 0.7, 0.5, 3)
 					if IsPlayerLocal(p) then
 						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 						ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
@@ -287,12 +286,10 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
+				StopSound(data.firesound)
+
 				if data.suppressed == false then
 					PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				end
-				
-				StopSound(data.firesound)
-				if data.suppressed == false then
 					if IsPlayerLocal(p) then
 						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 						ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
