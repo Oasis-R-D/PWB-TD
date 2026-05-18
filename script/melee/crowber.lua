@@ -27,6 +27,13 @@ function createPlayerCLIENTdataCRBR()
 	}
 end
 
+function createPlayerSERVERdataCRBR()
+    return {
+		coolDown = 0.0,
+		dataReset = true,
+	}
+end
+
 function server.initCRBR()
 	RegisterTool(WPNID, WPNNAME, "MOD/prefab/crowbar.xml", 1)
 	SetToolAmmoPickupAmount(WPNID, 99999)
@@ -34,7 +41,7 @@ end
 
 function server.tickCRBR(dt)
 	for p in PlayersAdded() do
-		CRBRplayers[p] = createPlayerCLIENTdataCRBR()
+		CRBRplayers[p] = createPlayerSERVERdataCRBR()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
@@ -112,14 +119,14 @@ function server.tickPlayerCRBR(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 and CRBRplayers[p].dataReset == false then
 		if CRBRplayers[p].dataReset == false then
-			CRBRplayers[p] = createPlayerCLIENTdataCRBR()
+			CRBRplayers[p] = createPlayerSERVERdataCRBR()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID and CRBRplayers[p].dataReset == false then
 		if CRBRplayers[p].dataReset == false then
-			CRBRplayers[p] = createPlayerCLIENTdataCRBR()
+			CRBRplayers[p] = createPlayerSERVERdataCRBR()
 		end
 		return
 	end

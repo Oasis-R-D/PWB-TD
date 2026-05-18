@@ -32,7 +32,6 @@ function createPlayerCLIENTdataTAU()
 		aftershocksfx = nil,
 		chargedTime = nil,
 		ammoDepletionTimer = nil,
-		firesound = nil,
 		angle = 0.0,
 		angVel = 0.0,
 		body = nil,
@@ -40,6 +39,13 @@ function createPlayerCLIENTdataTAU()
 		barrelTransform = nil,
 		camAltMove = false,
 		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataTAU()
+    return {
+		firesound = nil,
+		-- fire sound doesn't need reset
 	}
 end
 
@@ -51,8 +57,13 @@ end
 
 function server.tickTAU(dt)
 	for p in PlayersAdded() do
+		TAUplayers[p] = createPlayerSERVERdataTAU();
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
+	end
+
+	for p in PlayersRemoved() do
+		TAUplayers[p] = nil
 	end
 
 	-- doesn't need server ticking
@@ -87,7 +98,6 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local vecSrc = vecOrigSrc;
 
 	local pentIgnore = p
-	--TraceResult tr, beam_tr
 	local flMaxFrac = 1.0
 	local iPunches = 0
 	local fFirstBeam = true
@@ -200,7 +210,7 @@ end
 
 function server.startShootbeam(primary, p, chargetime)
 	chargetime = chargetime or 0
-	local data = MP5players[p]
+	local data = TAUplayers[p]
 	local ammo = GetToolAmmo(WPNID, p)
 	
 	local flDamage = 0.0

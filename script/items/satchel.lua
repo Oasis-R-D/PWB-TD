@@ -22,6 +22,12 @@ function createPlayerCLIENTdataSATCH()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
+		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataSATCH()
+	return {
 		satchelBodies = {},
 		dataReset = true,
 	}
@@ -34,7 +40,7 @@ end
 
 function server.tickSATCH(dt)
 	for p in PlayersAdded() do
-		SATCHplayers[p] = createPlayerCLIENTdataSATCH()
+		SATCHplayers[p] = createPlayerSERVERdataSATCH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 5, p)
 	end
@@ -53,7 +59,7 @@ function server.tickPlayerSATCH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerCLIENTdataSATCH()
+			SATCHplayers[p] = createPlayerSERVERdataSATCH()
 		end
 		return
 	end

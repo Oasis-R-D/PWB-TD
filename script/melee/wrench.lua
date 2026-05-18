@@ -32,6 +32,18 @@ function createPlayerCLIENTdataWRNCH()
 	}
 end
 
+function createPlayerSERVERdataWRNCH()
+    return {
+		coolDown = 0.0,
+		altCoolDown = 0.0,
+		inAltAttack = false,
+		altTime = nil,
+		altSwingTime = nil,
+		waitingforswing = false,
+		dataReset = true,
+	}
+end
+
 function server.initWRNCH()
 	RegisterTool(WPNID, WPNNAME, "MOD/prefab/wrench.xml", 1)
 	SetToolAmmoPickupAmount(WPNID, 99999)
@@ -39,7 +51,7 @@ end
 
 function server.tickWRNCH(dt)
 	for p in PlayersAdded() do
-		WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
+		WRNCHplayers[p] = createPlayerSERVERdataWRNCH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
@@ -83,7 +95,6 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		end
 		
 		-- PLAYER DAMAGE END
-		data.recoil = 0.1 -- more hit feedback and randomness
 		data.coolDown = 0.5
 		data.altCoolDown = 0.5
 		
@@ -110,7 +121,7 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.25)
 		end
 		
-		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
+		data.recoildelay = 0.1 -- more hit feedback and randomness
 		data.coolDown = 0.5
 		data.altCoolDown = 0.5
 		
@@ -155,7 +166,6 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		end
 		
 		-- PLAYER DAMAGE END
-		data.recoil = 0.1 -- more hit feedback and randomness
 		data.coolDown = 1
 		data.altCoolDown = 1
 	
@@ -197,14 +207,14 @@ function server.tickPlayerWRNCH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
+			WRNCHplayers[p] = createPlayerSERVERdataWRNCH()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
+			WRNCHplayers[p] = createPlayerSERVERdataWRNCH()
 		end
 		return
 	end
