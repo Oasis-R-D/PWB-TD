@@ -55,6 +55,7 @@ function server.tickPIST9MM(dt)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
+	-- doesn't need server ticking
 	--for p in Players() do
 		--server.tickPlayerPIST9MM(p, dt)
 	--end

@@ -38,8 +38,15 @@ function createPlayerCLIENTdataDE357()
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		laseron = false,
-		firesound = nil,
 		laserrefresh = 0.0,
+		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataDE357()
+    return {
+		laseron = false,
+		firesound = nil,
 		dataReset = true,
 	}
 end
@@ -51,7 +58,7 @@ end
 
 function server.tickDE357(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerCLIENTdataDE357()
+		DE357players[p] = createPlayerSERVERdataDE357()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -70,7 +77,7 @@ function server.tickPlayerDE357(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if DE357players[p].dataReset == false then
-			DE357players[p] = createPlayerCLIENTdataDE357()
+			DE357players[p] = createPlayerSERVERdataDE357()
 		end
 		return
 	end

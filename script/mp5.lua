@@ -36,9 +36,14 @@ function createPlayerCLIENTdataMP5()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
-		firesound = nil,
 		camAltMove = false,
 		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataMP5()
+    return {
+		firesound = nil,
 	}
 end
 
@@ -58,23 +63,13 @@ function server.tickMp5(dt)
 		MP5players[p] = nil
 	end
 
-	for p in Players() do
-		server.tickPlayerMp5(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerMp5(p, dt)
+	--end
 end
 
 function server.tickPlayerMp5(p, dt)
-	if not IsToolEnabled(WPNID, p) then return end
-	
-	if GetPlayerHealth(p) <= 0 then
-		if MP5players[p].dataReset == false then
-			MP5players[p] = createPlayerCLIENTdataMP5()
-		end
-		return
-	end
-
-	-- make data reset when reset conditions are met
-	MP5players[p].dataReset = false
 end
 
 function server.primaryFireMp5(p)

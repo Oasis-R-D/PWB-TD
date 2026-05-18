@@ -36,9 +36,14 @@ function createPlayerCLIENTdataM727()
 		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
-		firesound = nil,
 		camAltMove = false,
 		dataReset = true,
+	}
+end
+
+function createPlayerSERVERdataM727()
+    return {
+		firesound = nil,
 	}
 end
 
@@ -49,7 +54,7 @@ end
 
 function server.tickM727(dt)
 	for p in PlayersAdded() do
-		M727players[p] = createPlayerCLIENTdataM727()
+		M727players[p] = createPlayerSERVERdataM727()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -58,23 +63,13 @@ function server.tickM727(dt)
 		M727players[p] = nil
 	end
 
-	for p in Players() do
-		server.tickPlayerM727(p, dt)
-	end
+	-- doesn't need server ticking
+	--for p in Players() do
+		--server.tickPlayerM727(p, dt)
+	--end
 end
 
 function server.tickPlayerM727(p, dt)
-	if not IsToolEnabled(WPNID, p) then return end
-	
-	if GetPlayerHealth(p) <= 0 then
-		if M727players[p].dataReset == false then
-			M727players[p] = createPlayerCLIENTdataM727()
-		end
-		return
-	end
-
-	-- make data reset when reset conditions are met
-	M727players[p].dataReset = false
 end
 
 function server.primaryFireM727(p)
