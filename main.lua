@@ -1,13 +1,11 @@
 #version 2
 
--- Feel free to make mods using this base.
--- Most I ask is just including the base name (and maybe the logo) so it's easy to find weapons based on it (but mostly to fuel my ever expanding ego)
--- PM09
-
 -- EXTERNAL CREDITS:
--- - VALVe
--- - GearBox Software
--- - Novena (gaussian spread code)
+-- - VALVe (Half-Life: 1)
+-- - GearBox Software (Half-Life: Opposing Force)
+-- - Novena (radial spread code)
+
+----------------------------------------------------------------------------------------------
 
 GLOBAL_HEADSHOTMULT = 2.0 -- 3.0 in the OG Half-Life
 
@@ -23,6 +21,8 @@ GLOBAL_9DEGREES = 0.07846
 GLOBAL_10DEGREES = 0.08716
 GLOBAL_15DEGREES = 0.13053
 GLOBAL_20DEGREES = 0.17365
+
+----------------------------------------------------------------------------------------------
 
 #include "script/mp5.lua"
 #include "script/m727.lua"
@@ -48,13 +48,17 @@ GLOBAL_20DEGREES = 0.17365
 #include "script/items/satchel.lua"
 #include "script/items/tripmine.lua"
 
--- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it).
+----------------------------------------------------------------------------------------------
+
+-- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it's lua file).
 
 -- to make a mod using this base, choose a weapon below to copy, then copy it's xml, vox and lua file (or you can make new ones completely)
 -- in the .LUA file, replace all instances of the weapons name (suffix on the functions, some variables) and then add it's functions here
 -- To remove unused/unwanted weapons, remove it's lua file, xml file(s), vox, sounds and then it's function calls and #include from this file
 
 -- Weapon order in the HUD is set by the order they are called in the server.init()
+
+----------------------------------------------------------------------------------------------
 
 -- TO-DO: 
 -- - Gluon gun circular beam
@@ -63,6 +67,9 @@ GLOBAL_20DEGREES = 0.17365
 -- - displacer ball and other billboard sprites doesn't angle correctly when in vehicle camera
 -- - make separate player data for server to reduce memory usage
 
+----------------------------------------------------------------------------------------------
+
+-- declare weapons, pickup amounts
 function server.init()
    -- MELEE (SLOT 1)
    server.initCRBR()
@@ -92,7 +99,6 @@ function server.init()
    server.initTRIP()
 end
 
-
 function server.tick(dt)
    -- MELEE
    server.tickCRBR(dt)
@@ -119,6 +125,7 @@ function server.tick(dt)
    server.tickTRIP(dt)
 end
 
+-- load haptics 
 function client.init()
    -- MELEE
    client.initCRBR()
@@ -143,7 +150,6 @@ function client.init()
    client.initSATCH()
    client.initTRIP()
 end
-
 
 function client.tick(dt)
    -- MELEE
@@ -170,6 +176,7 @@ function client.tick(dt)
    client.tickTRIP(dt)
 end
 
+-- Draw the magazine amount hud
 function client.draw()
 	if GetPlayerHealth() <= 0 or GetPlayerVehicle() ~= 0 then return end
    
