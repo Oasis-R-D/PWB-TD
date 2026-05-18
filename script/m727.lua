@@ -27,7 +27,7 @@ local CASING_ORG = Vec(0.02, 0.0, 0.1)
 -- Per weapon data storer
 M727players = {}
 
-function createPlayerDataM727()
+function createPlayerCLIENTdataM727()
     return {
 		clipamntM727 = CLIP_SIZE,
 		m203amnt727 = 1,
@@ -49,7 +49,7 @@ end
 
 function server.tickM727(dt)
 	for p in PlayersAdded() do
-		M727players[p] = createPlayerDataM727()
+		M727players[p] = createPlayerCLIENTdataM727()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -68,7 +68,7 @@ function server.tickPlayerM727(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if M727players[p].dataReset == false then
-			M727players[p] = createPlayerDataM727()
+			M727players[p] = createPlayerCLIENTdataM727()
 		end
 		return
 	end
@@ -122,7 +122,7 @@ end
 
 function client.tickM727(dt)
 	for p in PlayersAdded() do
-		M727players[p] = createPlayerDataM727();
+		M727players[p] = createPlayerCLIENTdataM727();
 	end
 
 	for p in PlayersRemoved() do
@@ -143,7 +143,7 @@ function client.tickPlayerM727(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if M727players[p].dataReset == false then
-			M727players[p] = createPlayerDataM727()
+			M727players[p] = createPlayerCLIENTdataM727()
 		end
 		return
 	end

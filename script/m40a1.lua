@@ -30,7 +30,7 @@ local CASING_ORG = Vec(0.02, 0.25, -0.2) -- casing origin
 -- Per weapon data storer
 M40players = {}
 
-function createPlayerDataM40()
+function createPlayerCLIENTdataM40()
     return {
 		clipamntM40 = CLIP_SIZE,
 		inreload = false,
@@ -89,7 +89,7 @@ end
 
 function client.tickM40(dt)
 	for p in PlayersAdded() do
-		M40players[p] = createPlayerDataM40();
+		M40players[p] = createPlayerCLIENTdataM40();
 	end
 
 	for p in PlayersRemoved() do
@@ -110,7 +110,7 @@ function client.tickPlayerM40(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if M40players[p].dataReset == false then
-			M40players[p] = createPlayerDataM40()
+			M40players[p] = createPlayerCLIENTdataM40()
 		end
 		return
 	end
@@ -241,8 +241,7 @@ function client.tickPlayerM40(p, dt)
 	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	
-	if data.timetobolt == nil then
-	else
+	if data.timetobolt ~= nil then
 		data.timetobolt = data.timetobolt - dt
 		if data.timetobolt <= 0 and data.playbolt == true then
 			if data.clipamntM40 > 0 then -- already plays bolt sfx in reload

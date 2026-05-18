@@ -16,7 +16,7 @@ local WPNNAME = "Pipe Wrench"
 -- Per weapon data storer
 WRNCHplayers = {}
 
-function createPlayerDataWRNCH()
+function createPlayerCLIENTdataWRNCH()
     return {
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -39,7 +39,7 @@ end
 
 function server.tickWRNCH(dt)
 	for p in PlayersAdded() do
-		WRNCHplayers[p] = createPlayerDataWRNCH()
+		WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
@@ -197,14 +197,14 @@ function server.tickPlayerWRNCH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerDataWRNCH()
+			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerDataWRNCH()
+			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
 		end
 		return
 	end
@@ -261,7 +261,7 @@ end
 
 function client.tickWRNCH(dt)
 	for p in PlayersAdded() do
-		WRNCHplayers[p] = createPlayerDataWRNCH();
+		WRNCHplayers[p] = createPlayerCLIENTdataWRNCH();
 	end
 
 	for p in PlayersRemoved() do
@@ -278,14 +278,14 @@ function client.tickPlayerWRNCH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 and WRNCHplayers[p].dataReset == false then
 		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerDataWRNCH()
+			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerDataWRNCH()
+			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
 		end
 		return
 	end

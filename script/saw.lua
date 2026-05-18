@@ -24,7 +24,7 @@ local CASING_ORG = Vec(0.02, 0.05, -0.05)
 -- Per weapon data storer
 M249players = {}
 
-function createPlayerDataM249()
+function createPlayerCLIENTdataM249()
     return {
 		clipamntM249 = CLIP_SIZE,
 		inreload = false,
@@ -44,7 +44,7 @@ end
 
 function server.tickM249(dt)
 	for p in PlayersAdded() do
-		M249players[p] = createPlayerDataM249()
+		M249players[p] = createPlayerCLIENTdataM249()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -63,7 +63,7 @@ function server.tickPlayerM249(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if M249players[p].dataReset == false then
-			M249players[p] = createPlayerDataM249()
+			M249players[p] = createPlayerCLIENTdataM249()
 		end
 		return
 	end
@@ -117,7 +117,7 @@ end
 
 function client.tickM249(dt)
 	for p in PlayersAdded() do
-		M249players[p] = createPlayerDataM249();
+		M249players[p] = createPlayerCLIENTdataM249();
 	end
 
 	for p in PlayersRemoved() do
@@ -137,7 +137,7 @@ function client.tickPlayerM249(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if M249players[p].dataReset == false then
-			M249players[p] = createPlayerDataM249()
+			M249players[p] = createPlayerCLIENTdataM249()
 		end
 		return
 	end

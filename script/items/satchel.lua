@@ -16,7 +16,7 @@ local WPNNAME = "Satchel Charge"
 -- Per weapon data storer
 SATCHplayers = {}
 
-function createPlayerDataSATCH()
+function createPlayerCLIENTdataSATCH()
 	return {
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -34,7 +34,7 @@ end
 
 function server.tickSATCH(dt)
 	for p in PlayersAdded() do
-		SATCHplayers[p] = createPlayerDataSATCH()
+		SATCHplayers[p] = createPlayerCLIENTdataSATCH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 5, p)
 	end
@@ -53,7 +53,7 @@ function server.tickPlayerSATCH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerDataSATCH()
+			SATCHplayers[p] = createPlayerCLIENTdataSATCH()
 		end
 		return
 	end
@@ -116,7 +116,7 @@ end
 
 function client.tickSATCH(dt)
 	for p in PlayersAdded() do
-		SATCHplayers[p] = createPlayerDataSATCH();
+		SATCHplayers[p] = createPlayerCLIENTdataSATCH();
 	end
 
 	for p in PlayersRemoved() do
@@ -133,14 +133,14 @@ function client.tickPlayerSATCH(p, dt)
 
 	if GetPlayerHealth(p) <= 0 then
 		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerDataSATCH()
+			SATCHplayers[p] = createPlayerCLIENTdataSATCH()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
 		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerDataSATCH()
+			SATCHplayers[p] = createPlayerCLIENTdataSATCH()
 		end
 		return
 	end

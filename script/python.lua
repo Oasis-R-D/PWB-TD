@@ -27,7 +27,7 @@ local ADSFOV = 40
 -- Per weapon data storer
 PYTHplayers = {}
 
-function createPlayerDataPYTH()
+function createPlayerCLIENTdataPYTH()
     return {
 		clipamntPYTH = CLIP_SIZE,
 		inreload = false,
@@ -50,7 +50,7 @@ end
 
 function server.tickPYTH(dt)
 	for p in PlayersAdded() do
-		PYTHplayers[p] = createPlayerDataPYTH()
+		PYTHplayers[p] = createPlayerCLIENTdataPYTH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -69,7 +69,7 @@ function server.tickPlayerPYTH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if PYTHplayers[p].dataReset == false then
-			PYTHplayers[p] = createPlayerDataPYTH()
+			PYTHplayers[p] = createPlayerCLIENTdataPYTH()
 		end
 		return
 	end
@@ -104,7 +104,7 @@ end
 
 function client.tickPYTH(dt)
 	for p in PlayersAdded() do
-		PYTHplayers[p] = createPlayerDataPYTH();
+		PYTHplayers[p] = createPlayerCLIENTdataPYTH();
 	end
 
 	for p in PlayersRemoved() do
@@ -124,7 +124,7 @@ function client.tickPlayerPYTH(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if PYTHplayers[p].dataReset == false then
-			PYTHplayers[p] = createPlayerDataPYTH()
+			PYTHplayers[p] = createPlayerCLIENTdataPYTH()
 		end
 		return
 	end

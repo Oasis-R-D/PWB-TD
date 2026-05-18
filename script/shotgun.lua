@@ -28,7 +28,7 @@ local CASING_ORG = Vec(0.02, 0.1, 0.075)
 -- Per weapon data storer
 SGplayers = {}
 	
-function createPlayerDataSG()
+function createPlayerCLIENTdataSG()
     return {
 		clipamntSG = CLIP_SIZE,
 		inreload = false,
@@ -107,7 +107,7 @@ end
 
 function client.tickSG(dt)
 	for p in PlayersAdded() do
-		SGplayers[p] = createPlayerDataSG();
+		SGplayers[p] = createPlayerCLIENTdataSG();
 	end
 
 	for p in PlayersRemoved() do
@@ -127,7 +127,7 @@ function client.tickPlayerSG(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if SGplayers[p].dataReset == false then
-			SGplayers[p] = createPlayerDataSG()
+			SGplayers[p] = createPlayerCLIENTdataSG()
 		end
 		return
 	end

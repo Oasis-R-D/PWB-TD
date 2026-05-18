@@ -29,7 +29,7 @@ local CASING_ORG = Vec(0.02, 0.25, 0.1)
 -- Per weapon data storer
 DE357players = {}
 
-function createPlayerDataDE357()
+function createPlayerCLIENTdataDE357()
     return {
 		clipamntDE357 = CLIP_SIZE,
 		inreload = false,
@@ -51,7 +51,7 @@ end
 
 function server.tickDE357(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerDataDE357()
+		DE357players[p] = createPlayerCLIENTdataDE357()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -70,7 +70,7 @@ function server.tickPlayerDE357(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if DE357players[p].dataReset == false then
-			DE357players[p] = createPlayerDataDE357()
+			DE357players[p] = createPlayerCLIENTdataDE357()
 		end
 		return
 	end
@@ -114,7 +114,7 @@ end
 
 function client.tickDE357(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerDataDE357();
+		DE357players[p] = createPlayerCLIENTdataDE357();
 	end
 
 	for p in PlayersRemoved() do
@@ -134,7 +134,7 @@ function client.tickPlayerDE357(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if DE357players[p].dataReset == false then
-			DE357players[p] = createPlayerDataDE357()
+			DE357players[p] = createPlayerCLIENTdataDE357()
 		end
 		return
 	end

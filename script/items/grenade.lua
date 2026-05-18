@@ -16,7 +16,7 @@ local WPNNAME = "Mk2 Frag"
 -- Per weapon data storer
 FRAGplayers = {}
 
-function createPlayerDataFRAG()
+function createPlayerCLIENTdataFRAG()
 	return {
 		inAttack = false,
 		chargedTime = nil,
@@ -101,7 +101,7 @@ end
 
 function client.tickFRAG(dt)
 	for p in PlayersAdded() do
-		FRAGplayers[p] = createPlayerDataFRAG();
+		FRAGplayers[p] = createPlayerCLIENTdataFRAG();
 	end
 
 	for p in PlayersRemoved() do
@@ -118,14 +118,14 @@ function client.tickPlayerFRAG(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if FRAGplayers[p].dataReset == false then
-			FRAGplayers[p] = createPlayerDataFRAG()
+			FRAGplayers[p] = createPlayerCLIENTdataFRAG()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
 		if FRAGplayers[p].dataReset == false then
-			FRAGplayers[p] = createPlayerDataFRAG()
+			FRAGplayers[p] = createPlayerCLIENTdataFRAG()
 		end
 		return
 	end

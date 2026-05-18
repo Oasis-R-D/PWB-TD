@@ -210,10 +210,6 @@ function server.tick(dt)
 					return
 				end
 			end
-
-			-- draw
-			--DrawLine(laserStartVec, VecAdd(laserStartVec, VecScale(direction, pDist)), 0.0, 0.83, 0.77, 0.25)
-			--ClientCall(0, "client.updateLaser", laserStartVec, direction, pDist)
 		end
 	end
 	-- END DETONATION CHECKS

@@ -16,7 +16,7 @@ local WPNNAME = "Crowbar"
 -- Per weapon data storer
 CRBRplayers = {}
 
-function createPlayerDataCRBR()
+function createPlayerCLIENTdataCRBR()
     return {
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -34,7 +34,7 @@ end
 
 function server.tickCRBR(dt)
 	for p in PlayersAdded() do
-		CRBRplayers[p] = createPlayerDataCRBR()
+		CRBRplayers[p] = createPlayerCLIENTdataCRBR()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
@@ -112,14 +112,14 @@ function server.tickPlayerCRBR(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 and CRBRplayers[p].dataReset == false then
 		if CRBRplayers[p].dataReset == false then
-			CRBRplayers[p] = createPlayerDataCRBR()
+			CRBRplayers[p] = createPlayerCLIENTdataCRBR()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID and CRBRplayers[p].dataReset == false then
 		if CRBRplayers[p].dataReset == false then
-			CRBRplayers[p] = createPlayerDataCRBR()
+			CRBRplayers[p] = createPlayerCLIENTdataCRBR()
 		end
 		return
 	end
@@ -146,7 +146,7 @@ end
 
 function client.tickCRBR(dt)
 	for p in PlayersAdded() do
-		CRBRplayers[p] = createPlayerDataCRBR();
+		CRBRplayers[p] = createPlayerCLIENTdataCRBR();
 	end
 
 	for p in PlayersRemoved() do
@@ -163,14 +163,14 @@ function client.tickPlayerCRBR(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if CRBRplayers[p].dataReset == false then
-			CRBRplayers[p] = createPlayerDataCRBR()
+			CRBRplayers[p] = createPlayerCLIENTdataCRBR()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		if CRBRplayers[p].dataReset == false then
-			CRBRplayers[p] = createPlayerDataCRBR()
+			CRBRplayers[p] = createPlayerCLIENTdataCRBR()
 		end
 		return
 	end

@@ -23,7 +23,7 @@ local WPNNAME = "Displacer Cannon"
 -- Per weapon data storer
 DISPplayers = {}
 
-function createPlayerDataDISP()
+function createPlayerCLIENTdataDISP()
     return {
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -127,7 +127,7 @@ function client.UpdateEffectDISP(source, endpos, vecDir, dist)
 			DrawLine(last, p, 0.72, 1.0, 0.126)
 
 			local length = VecLength(VecSub(last, p))
-			client.drawlaserDISP(last, vecDir, length) -- to-do: figure out how to get direction from 2 vectors
+			client.drawlaserDISP(last, vecDir, length)
 
 			ParticleReset()
 			ParticleGravity(0)
@@ -211,7 +211,7 @@ end
 
 function client.tickDISP(dt)
 	for p in PlayersAdded() do
-		DISPplayers[p] = createPlayerDataDISP();
+		DISPplayers[p] = createPlayerCLIENTdataDISP();
 	end
 
 	for p in PlayersRemoved() do
@@ -230,7 +230,7 @@ function client.tickPlayerDISP(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if DISPplayers[p].dataReset == false then
-			DISPplayers[p] = createPlayerDataDISP()
+			DISPplayers[p] = createPlayerCLIENTdataDISP()
 		end
 		return
 	end

@@ -27,7 +27,7 @@ local CASING_ORG = Vec(0.02, 0.25, -0.25)	-- casing origin
 -- Per weapon data storer
 MP5players = {}
 
-function createPlayerDataMP5()
+function createPlayerCLIENTdataMP5()
     return {
 		clipamntMP5 = CLIP_SIZE,
 		m203amntMP5 = 1,
@@ -49,7 +49,7 @@ end
 
 function server.tickMp5(dt)
 	for p in PlayersAdded() do
-		MP5players[p] = createPlayerDataMP5()
+		MP5players[p] = createPlayerCLIENTdataMP5()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -68,7 +68,7 @@ function server.tickPlayerMp5(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if MP5players[p].dataReset == false then
-			MP5players[p] = createPlayerDataMP5()
+			MP5players[p] = createPlayerCLIENTdataMP5()
 		end
 		return
 	end
@@ -122,7 +122,7 @@ end
 
 function client.tickMp5(dt)
 	for p in PlayersAdded() do
-		MP5players[p] = createPlayerDataMP5();
+		MP5players[p] = createPlayerCLIENTdataMP5();
 	end
 
 	for p in PlayersRemoved() do
@@ -143,7 +143,7 @@ function client.tickPlayerMp5(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if MP5players[p].dataReset == false then
-			MP5players[p] = createPlayerDataMP5()
+			MP5players[p] = createPlayerCLIENTdataMP5()
 		end
 		return
 	end

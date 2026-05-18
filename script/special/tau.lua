@@ -22,7 +22,7 @@ local WPNNAME = "Tau Cannon"
 -- Per weapon data storer
 TAUplayers = {}
 
-function createPlayerDataTAU()
+function createPlayerCLIENTdataTAU()
     return {
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -248,7 +248,7 @@ end
 
 function client.tickTAU(dt)
 	for p in PlayersAdded() do
-		TAUplayers[p] = createPlayerDataTAU();
+		TAUplayers[p] = createPlayerCLIENTdataTAU();
 	end
 
 	for p in PlayersRemoved() do
@@ -267,7 +267,7 @@ function client.tickPlayerTAU(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if TAUplayers[p].dataReset == false then
-			TAUplayers[p] = createPlayerDataTAU()
+			TAUplayers[p] = createPlayerCLIENTdataTAU()
 		end
 		return
 	end

@@ -28,7 +28,7 @@ local CASING_ORG = Vec(0.02, 0.25, 0.0)
 -- Per weapon data storer
 PIST9MMplayers = {}
 
-function createPlayerDataPIST9MM()
+function createPlayerCLIENTdataPIST9MM()
     return {
 		clipamntPIST9MM = CLIP_SIZE,
 		inreload = false,
@@ -40,6 +40,7 @@ function createPlayerDataPIST9MM()
 		firesound = nil,
 		suppressed = false,
 		dataReset = true,
+		firstDraw = true,
 	}
 end
 
@@ -102,7 +103,7 @@ end
 
 function client.tickPIST9MM(dt)
 	for p in PlayersAdded() do
-		PIST9MMplayers[p] = createPlayerDataPIST9MM();
+		PIST9MMplayers[p] = createPlayerCLIENTdataPIST9MM();
 	end
 
 	for p in PlayersRemoved() do
@@ -117,17 +118,30 @@ end
 clipamnt = 0
 local camSineTime = nil
 
+function client.suppress(p, suppressed)
+	local toolBody = GetToolBody(p)
+	local shapes = GetBodyShapes(toolBody)
+	if suppressed == false then
+		SetTag(shapes[5], "invisible")
+	else
+		RemoveTag(shapes[5], "invisible")
+	end
+end
+
 function client.tickPlayerPIST9MM(p, dt)
-	if not IsToolEnabled(WPNID, p) then return end
+	if not IsToolEnabled(WPNID, p) then 
+		return 
+	end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if PIST9MMplayers[p].dataReset == false then
-			PIST9MMplayers[p] = createPlayerDataPIST9MM()
+			PIST9MMplayers[p] = createPlayerCLIENTdataPIST9MM()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		PIST9MMplayers[p].firstDraw = true
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end
@@ -144,6 +158,14 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 	
 	local data = PIST9MMplayers[p]
+
+	-- restore suppresor state visually
+	if data.firstDraw == true then
+		if HasTag(GetBodyShapes(GetToolBody(p))[5], "invisible") == true then
+			client.suppress(p, data.suppressed)
+			data.firstDraw = false
+		end
+	end
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
@@ -183,11 +205,11 @@ function client.tickPlayerPIST9MM(p, dt)
 					end
 				else
 					if IsPlayerLocal(p) then
-						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 69)
+						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
 						ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
 						camSineTime = 0
 					else
-						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 69)
+						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
 					end
 				end
 				
@@ -279,11 +301,11 @@ function client.tickPlayerPIST9MM(p, dt)
 					end
 				else
 					if IsPlayerLocal(p) then
-						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 69)
+						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
 						ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
 						camSineTime = 0
 					else
-						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 69)
+						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
 					end
 				end
 				
@@ -364,6 +386,8 @@ function client.tickPlayerPIST9MM(p, dt)
 		if data.tertiaryCoolDown < 0 then
 			data.tertiaryCoolDown = 0.5
 			data.suppressed = not data.suppressed
+			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
+			client.suppress(p, data.suppressed)
 		end
 	end
 
@@ -396,16 +420,6 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 
 		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
-	end 
-
-	local toolBody = GetToolBody(p)
-	if toolBody ~= 0 then -- hide silencer
-		local shapes = GetBodyShapes(toolBody)
-		if data.suppressed == false then
-			SetTag(shapes[5], "invisible")
-		elseif HasTag(shapes[5], "invisible") == true then
-			RemoveTag(shapes[5], "invisible")
-		end
 	end
 	-- END RECOIL
 	

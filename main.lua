@@ -60,7 +60,8 @@ GLOBAL_20DEGREES = 0.17365
 -- - Gluon gun circular beam
 -- - Finish gluon gun and displacer model
 -- - Displacer prongs
--- - displacer ball doesn't angle correctly when in vehicle camera
+-- - displacer ball and other billboard sprites doesn't angle correctly when in vehicle camera
+-- - make separate player data for server to reduce memory usage
 
 function server.init()
    -- MELEE (SLOT 1)
