@@ -326,11 +326,13 @@ function client.tickPlayerDISP(p, dt)
 					PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 20)
 					ServerCall("server.secondaryFireDISP", p)
 					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
 				end
 			else
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireDISP", p)
 					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
 				end
 			end
 

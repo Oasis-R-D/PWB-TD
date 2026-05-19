@@ -183,20 +183,20 @@ function client.tickPlayerM727(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then		
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+
+				local playervel = GetPlayerVelocity(p)
+
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireM727", p)
 					camSineTime = 0
 					data.camAltMove = false
-				end
+					PlayHaptic(shootHaptic, 1)
 
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
+					-- shell ejection
+					local toolBody = GetToolBody(p)
 					local transform = GetBodyTransform(toolBody)
 					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
 					ParticleRadius(0.02)
@@ -206,26 +206,37 @@ function client.tickPlayerM727(p, dt)
 					ParticleDrag(0.125)
 					ParticleSticky(0.5)
 					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
-					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.12, 0.17), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
-				
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
 				end
-					
+				
+				-- shell ejection
+				ParticleReset()
+				ParticleGravity(rnd(-2, -8))
+				ParticleRadius(0.02)
+				ParticleAlpha(1)
+				ParticleColor(0.8, 0.6, 0)
+				ParticleTile(6)
+				ParticleDrag(0.125)
+				ParticleSticky(0.5)
+				ParticleCollide(1)
+				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+				
+				-- muzzleflash
+				for i=0, 3 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.12, 0.17), 0.33)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
+				end
+				
 				data.clipamntM727 = data.clipamntM727 - 1
 				if data.clipamntM727 > 0 then
 					data.coolDown = FIRERATE
@@ -239,10 +250,6 @@ function client.tickPlayerM727(p, dt)
 				
 				data.recoil = RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 
 	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerCanUseTool(p) == true  then
@@ -252,29 +259,27 @@ function client.tickPlayerM727(p, dt)
 					ServerCall("server.secondaryFireM727", p)
 					camSineTime = 0
 					data.camAltMove = true
+					PlayHaptic(shootHaptic, 1)
 				end
 
 				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local playervel = GetPlayerVelocity(p)
-					local vectuh = VecAdd(mt.pos, Vec(0.15, -0.2, 0))
-					-- muzzleflash
-					for i=0, 4 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.1, 0.15), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(vectuh, playervel, 0.125)
-						
-					end
-				
+				local playervel = GetPlayerVelocity(p)
+				local vectuh = VecAdd(mt.pos, Vec(0.15, -0.2, 0))
+				-- muzzleflash
+				for i=0, 4 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.1, 0.15), 0.33)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(vectuh, playervel, 0.125)
+					
 				end
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
@@ -285,24 +290,6 @@ function client.tickPlayerM727(p, dt)
 				data.coolDown = ALTFIRERATE
 				data.m203amnt727 = data.m203amnt727 - 1
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
-	end
-
-	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntM727
-			altclipamnt = data.m203amnt727
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-			altclipamnt = -8
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-			altclipamnt = data.m203amnt727
-		end
 	end
 	
 	-- decrease firing cooldown and recoil
@@ -327,8 +314,9 @@ function client.tickPlayerM727(p, dt)
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 
-	-- CAMERA MOVEMENT
+	
 	if IsPlayerLocal(p) then
+		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then
 			local x = camSineTime
 			local e = math.exp(1)
@@ -349,6 +337,19 @@ function client.tickPlayerM727(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		-- UPD AMMO HUD
+		if data.inreload == false and ammo > 0.5 then
+			clipamnt = data.clipamntM727
+			altclipamnt = data.m203amnt727
+		elseif ammo > 0.5 then
+			clipamnt = -8 -- negative 8 means reloading
+			altclipamnt = -8
+		else
+			data.clipamntM727 = 0
+			clipamnt = -16
+			altclipamnt = data.m203amnt727
 		end
 	end
 end

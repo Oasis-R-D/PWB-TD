@@ -313,6 +313,7 @@ function client.tickPlayerTAU(p, dt)
 					ServerCall("server.startShootbeam", true, p)
 					camSineTime = 0
 					data.camAltMove = false
+					PlayHaptic(shootHaptic, 1)
 				end
 				
 				local playervel = GetPlayerVelocity(p)
@@ -338,10 +339,6 @@ function client.tickPlayerTAU(p, dt)
 
 				data.recoil = RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 
 	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
@@ -421,6 +418,7 @@ function client.tickPlayerTAU(p, dt)
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
 				camSineTime = 0
 				data.camAltMove = true
+				PlayHaptic(shootHaptic, 1)
 			end
 
 			data.altCoolDown = 0.2

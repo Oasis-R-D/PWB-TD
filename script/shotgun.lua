@@ -192,30 +192,29 @@ function client.tickPlayerSG(p, dt)
 					ServerCall("server.primaryFireSG", p)
 					camSineTime = 0
 					data.camAltMove = false
+					PlayHaptic(shootHaptic, 1)
+
+					-- shell ejection
+					data.shellstopump = 1.0
 				end
 
 				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
-					data.shellstopump = 1.0
-					
-					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.1, 0.15), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
+				local playervel = GetPlayerVelocity(p)
+				
+				-- muzzleflash
+				for i=0, 3 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.1, 0.15), 0.33)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 					
 				data.clipamntSG = data.clipamntSG - 1
@@ -243,10 +242,6 @@ function client.tickPlayerSG(p, dt)
 				
 				data.recoil = RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 
 	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerCanUseTool(p) == true then
@@ -256,33 +251,31 @@ function client.tickPlayerSG(p, dt)
 					ServerCall("server.secondaryFireSG", p)
 					camSineTime = 0
 					data.camAltMove = true
+					PlayHaptic(shootHaptic, 1)
+
+					-- shell ejection
+					data.shellstopump = 2
 				end
 
 				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
-					data.shellstopump = 2
-					
-					-- muzzleflash
-					for i=0, 4 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.15, 0.2), 0.44)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
+				local playervel = GetPlayerVelocity(p)
 				
+				-- muzzleflash
+				for i=0, 4 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.15, 0.2), 0.44)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
-				
+
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 				
 				data.clipamntSG = data.clipamntSG - 2
@@ -310,21 +303,6 @@ function client.tickPlayerSG(p, dt)
 				
 				data.recoil = 1.5 * RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
-	end
-
-	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntSG
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 	
 	-- decrease firing cooldown and recoil
@@ -342,9 +320,6 @@ function client.tickPlayerSG(p, dt)
 			data.shellinserttime = 0.8
 			data.shellstoload = data.shellstoload - 1
 			data.recoil = 0.1
-			--data.clipamntSG = data.clipamntSG + 1 -- TO-DO: reimplement
-			--if data.clipamntSG > CLIP_SIZE then 
-				--DebugPrint("SHELL LOADING IS FORKED")
 		end
 		
 		if data.shellstoload <= 0 then
@@ -363,8 +338,8 @@ function client.tickPlayerSG(p, dt)
 			PlaySound(LoadSound(PUMP_SOUND), pt.pos)
 			data.pumptime = nil
 			-- SHELL EJECT
-			local toolBody = GetToolBody(p)
-			if toolBody ~= 0 then 
+			if IsPlayerLocal(p) then
+				local toolBody = GetToolBody(p)
 				local transform = GetBodyTransform(toolBody)
 				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
@@ -380,7 +355,7 @@ function client.tickPlayerSG(p, dt)
 					ParticleDrag(0.125)
 					ParticleSticky(0.5)
 					ParticleCollide(1)
-					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
 				end
 			end
 			-- SHELL EJECT END
@@ -405,8 +380,9 @@ function client.tickPlayerSG(p, dt)
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 
-	-- CAMERA MOVEMENT
+	
 	if IsPlayerLocal(p) then
+		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then
 			local x = camSineTime
 			local e = math.exp(1)
@@ -427,6 +403,16 @@ function client.tickPlayerSG(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		-- UPD AMMO HUD
+		if data.inreload == false and ammo > 0.5 then
+			clipamnt = data.clipamntSG
+		elseif ammo > 0.5 then
+			clipamnt = -8 -- negative 8 means reloading
+		else
+			data.clipamntM727 = 0
+			clipamnt = -16
 		end
 	end
 end

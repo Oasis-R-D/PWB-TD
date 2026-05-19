@@ -160,6 +160,7 @@ function client.tickPlayerM40(p, dt)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireM40", p)
 					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
 				end
 				
 				local playervel = GetPlayerVelocity(p)
@@ -194,10 +195,6 @@ function client.tickPlayerM40(p, dt)
 				
 				data.recoil = RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
@@ -224,17 +221,6 @@ function client.tickPlayerM40(p, dt)
 			SetCameraFov(18)
 		end
 	end
-	
-	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntM40
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
-	end
 		
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
@@ -251,8 +237,8 @@ function client.tickPlayerM40(p, dt)
 			data.recoil = 0.05
 		end
 		if data.timetobolt <= -0.1 then
-			local toolBody = GetToolBody(p)
-			if toolBody ~= 0 then
+			if IsPlayerLocal(p) then
+				local toolBody = GetToolBody(p)
 				local transform = GetBodyTransform(toolBody)
 				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 				local playervel = GetPlayerVelocity(p)
@@ -269,10 +255,11 @@ function client.tickPlayerM40(p, dt)
 				ParticleSticky(0.5)
 				ParticleCollide(1)
 				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-				data.timetobolt = nil
-				data.playbolt = true
-				data.recoil = 0.025
 			end
+
+			data.timetobolt = nil
+			data.playbolt = true
+			data.recoil = 0.025
 		end
 	end
 	-- END SHELL EJECT
@@ -294,8 +281,9 @@ function client.tickPlayerM40(p, dt)
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 
-	-- CAMERA MOVEMENT
+	
 	if IsPlayerLocal(p) then
+		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then
 			local x = camSineTime
 			local e = math.exp(1)
@@ -309,6 +297,16 @@ function client.tickPlayerM40(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		-- UPD AMMO HUD
+		if data.inreload == false and ammo > 0.5 then
+			clipamnt = data.clipamntM40
+		elseif ammo > 0.5 then
+			clipamnt = -8 -- negative 8 means reloading
+		else
+			data.clipamntM727 = 0
+			clipamnt = -16
 		end
 	end
 end

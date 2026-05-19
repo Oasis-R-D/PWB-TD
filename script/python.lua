@@ -37,7 +37,6 @@ function createPlayerCLIENTdataPYTH()
 		timeuntileject = nil,
 		toolAnimator = ToolAnimator(),
 		scoped = false,
-		adsFov = nil,
 		dataReset = true,
 	}
 end
@@ -167,6 +166,7 @@ function client.tickPlayerPYTH(p, dt)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFirePYTH", p)
 					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
 				end
 				
 				local playervel = GetPlayerVelocity(p)
@@ -199,10 +199,6 @@ function client.tickPlayerPYTH(p, dt)
 				
 				data.recoil = RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 	
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
@@ -217,23 +213,57 @@ function client.tickPlayerPYTH(p, dt)
 
 	if data.scoped == false or data.clipamntPYTH < 0 or ammo <= 0 then
 		data.toolAnimator.forceSecondaryActionPose = false
-		data.adsFov = nil
 	elseif data.scoped == true then
 		data.toolAnimator.timeSinceFire = 1.5 -- make unscoping take ~0.5
 		data.toolAnimator.forceSecondaryActionPose = true
 
-		if data.adsFov == nil then
-			data.adsFov = 0.0
-		end
-
 		if IsPlayerLocal(p) then
-			local fov = 40 --math.min(ADSFOV, data.adsFov)
+			local fov = 40
 			SetCameraFov(fov)
 		end
-		--data.adsFov = data.adsFov + (2*dt)
 	end
 
-	if IsPlayerLocal(p) then -- UPD AMMO HUD
+	-- decrease firing cooldown and recoil
+	data.coolDown = data.coolDown - dt
+	data.altCoolDown = data.altCoolDown - dt
+	data.recoil = data.recoil - dt
+	
+	-- RECOIL
+	if data.recoil > -0.5 then
+		local recoil = math.max(0, data.recoil)
+		local siderecoil = recoil * 0.25
+		local recoilvert = math.max(0, data.recoil * 1.2)
+		
+		local inversesiderecoil = rnd(0, 1)
+		if inversesiderecoil > 0.5 then
+			siderecoil = siderecoil * -1
+		end
+
+		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
+	end 
+	-- END RECOIL
+	
+	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	
+	if IsPlayerLocal(p) then
+		-- CAMERA MOVEMENT
+		if camSineTime ~= nil then
+			local x = camSineTime
+			local e = math.exp(1)
+			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local amp = 200 -- how intense (y at the peak will not equal this though)
+
+			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+
+			if equation >= 0 then
+				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, 0.0, 0), equation))
+				SetPlayerCameraOffsetTransform(t)
+				camSineTime = camSineTime + dt
+			else camSineTime = nil end
+		end
+
+		-- UPD AMMO HUD
 		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntPYTH
 		elseif ammo > 0.5 then
@@ -242,21 +272,13 @@ function client.tickPlayerPYTH(p, dt)
 			data.clipamntM727 = 0
 			clipamnt = -16
 		end
-	end
-	
-	-- decrease firing cooldown and recoil
-	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
-	data.recoil = data.recoil - dt
-	
-	-- SHELL EJECT
-	if data.timeuntileject == nil then
-	else
-		data.timeuntileject = data.timeuntileject - dt
-		
-		if data.timeuntileject <= 0 then
-			local toolBody = GetToolBody(p)
-			if toolBody ~= 0 then
+
+		-- SHELL EJECT
+		if data.timeuntileject ~= nil then
+			data.timeuntileject = data.timeuntileject - dt
+			
+			if data.timeuntileject <= 0 then
+				local toolBody = GetToolBody(p)
 				local transform = GetBodyTransform(toolBody)
 				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 				local playervel = GetPlayerVelocity(p)
@@ -275,45 +297,9 @@ function client.tickPlayerPYTH(p, dt)
 					ParticleCollide(1)
 					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
 				end
+				data.recoil = 0.1
+				data.timeuntileject = nil
 			end
-			data.recoil = 0.1
-			data.timeuntileject = nil
-		end
-	end
-	-- END SHELL EJECT
-
-	-- RECOIL
-	if data.recoil > -0.5 then
-		local recoil = math.max(0, data.recoil)
-		local siderecoil = recoil * 0.25
-		local recoilvert = math.max(0, data.recoil * 1.2)
-		
-		local inversesiderecoil = rnd(0, 1)
-		if inversesiderecoil > 0.5 then
-			siderecoil = siderecoil * -1
-		end
-
-		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
-	end 
-	-- END RECOIL
-	
-	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
-	-- CAMERA MOVEMENT
-	if IsPlayerLocal(p) then
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local e = math.exp(1)
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
-			local amp = 200 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, 0.0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
 		end
 	end
 end

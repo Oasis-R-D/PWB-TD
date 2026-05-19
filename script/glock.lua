@@ -191,36 +191,24 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then
-				StopSound(data.firesound)
-				
-				if data.suppressed == false then
-					PointLight(mt.pos, 1, 0.7, 0.5, 3)
-					if IsPlayerLocal(p) then
-						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-						ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
-						camSineTime = 0
-					else
-						data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
-					end
-				else
-					if IsPlayerLocal(p) then
-						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
-						ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
-						camSineTime = 0
-					else
-						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
-					end
-				end
-				
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
+		if data.coolDown < 0 then
+			StopSound(data.firesound)
+			
+			local toolBody = GetToolBody(p)
+			local playervel = GetPlayerVelocity(p)
+
+			if data.suppressed == false then
+				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+				if IsPlayerLocal(p) then
+					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
+					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
+
+					-- shell ejection
 					local transform = GetBodyTransform(toolBody)
 					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
 					ParticleRadius(0.02)
@@ -230,91 +218,102 @@ function client.tickPlayerPIST9MM(p, dt)
 					ParticleDrag(0.125)
 					ParticleSticky(0.5)
 					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
-					-- muzzleflash
-					if data.suppressed == false then
-						for i=0, 2 do
-							ParticleReset()
-							ParticleGravity(0)
-							ParticleRadius(rnd(0.08, 0.13), 0.3)
-							ParticleAlpha(1, 0)
-							ParticleTile(5)
-							ParticleDrag(0)
-							ParticleRotation(rnd(10, -10), 0)
-							ParticleSticky(0)
-							ParticleEmissive(5, 1)
-							ParticleCollide(0)
-							ParticleColor(1,0.35,0, 1,0,0)
-							SpawnParticle(mt.pos, playervel, 0.125)
-						end
-					else
-						for i=0, 2 do
-							ParticleReset()
-							ParticleGravity(0)
-							ParticleRadius(rnd(0.08, 0.12), 0.2)
-							ParticleAlpha(0.75, 0)
-							ParticleTile(5)
-							ParticleDrag(0)
-							ParticleRotation(rnd(10, -10), 0)
-							ParticleSticky(0)
-							ParticleCollide(0)
-							ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
-							SpawnParticle(mt.pos, playervel, 0.125)
-						end
-					end
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
+				else
+					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
-					
-				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
-				if data.clipamntPIST9MM > 0 then
-					data.coolDown = FIRERATE
-					data.altCoolDown = FIRERATE
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-					data.coolDown = RELOAD_TIME
-					data.altCoolDown = RELOAD_TIME
-					data.inreload = true
-				end
-				
-				data.recoil = RECOIL_AMNT
-			end
+			else
+				if IsPlayerLocal(p) then
+					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
+					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
+					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
 
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
+					-- shell ejection
+					local transform = GetBodyTransform(toolBody)
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
+					ParticleReset()
+					ParticleGravity(rnd(-2, -8))
+					ParticleRadius(0.02)
+					ParticleAlpha(1)
+					ParticleColor(0.8, 0.6, 0)
+					ParticleTile(6)
+					ParticleDrag(0.125)
+					ParticleSticky(0.5)
+					ParticleCollide(1)
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
+				else
+					data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
+				end
+			end
+			
+			-- muzzleflash
+			if data.suppressed == false then
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.13), 0.3)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
+				end
+			else
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.12), 0.2)
+					ParticleAlpha(0.75, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleCollide(0)
+					ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
+					SpawnParticle(mt.pos, playervel, 0.125)
+				end
+			end
+				
+			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
+			if data.clipamntPIST9MM > 0 then
+				data.coolDown = FIRERATE
+				data.altCoolDown = FIRERATE
+			elseif ammo > 1 then
+				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				data.coolDown = RELOAD_TIME
+				data.altCoolDown = RELOAD_TIME
+				data.inreload = true
+			end
+			
+			data.recoil = RECOIL_AMNT
 		end
 	end
 
 	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
-				StopSound(data.firesound)
+			StopSound(data.firesound)
 
-				if data.suppressed == false then
-					PointLight(mt.pos, 1, 0.7, 0.5, 3)
-					if IsPlayerLocal(p) then
-						data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-						ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
-						camSineTime = 0
-					else
-						data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
-					end
-				else
-					if IsPlayerLocal(p) then
-						data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
-						ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
-						camSineTime = 0
-					else
-						data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
-					end
-				end
-				
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
+			local playervel = GetPlayerVelocity(p)
+
+			if data.suppressed == false then
+				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+				if IsPlayerLocal(p) then
+					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
+					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
+
+					-- shell ejection
+					local toolBody = GetToolBody(p)
 					local transform = GetBodyTransform(toolBody)
 					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
 					ParticleRadius(0.02)
@@ -324,59 +323,84 @@ function client.tickPlayerPIST9MM(p, dt)
 					ParticleDrag(0.125)
 					ParticleSticky(0.5)
 					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
-					-- muzzleflash
-					if data.suppressed == false then
-						for i=0, 2 do
-							ParticleReset()
-							ParticleGravity(0)
-							ParticleRadius(rnd(0.08, 0.13), 0.3)
-							ParticleAlpha(1, 0)
-							ParticleTile(5)
-							ParticleDrag(0)
-							ParticleRotation(rnd(10, -10), 0)
-							ParticleSticky(0)
-							ParticleEmissive(5, 1)
-							ParticleCollide(0)
-							ParticleColor(1,0.35,0, 1,0,0)
-							SpawnParticle(mt.pos, playervel, 0.125)
-						end
-					else
-						for i=0, 2 do
-							ParticleReset()
-							ParticleGravity(0)
-							ParticleRadius(rnd(0.08, 0.12), 0.2)
-							ParticleAlpha(0.75, 0)
-							ParticleTile(5)
-							ParticleDrag(0)
-							ParticleRotation(rnd(10, -10), 0)
-							ParticleSticky(0)
-							ParticleCollide(0)
-							ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
-							SpawnParticle(mt.pos, playervel, 0.125)
-						end
-					end
-				end
-				
-				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
-				
-				data.clipamntPIST9MM = data.clipamntPIST9MM - 1
-				if data.clipamntPIST9MM > 0 then
-					data.coolDown = ALTFIRERATE
-					data.altCoolDown = ALTFIRERATE
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-					data.coolDown = RELOAD_TIME
-					data.altCoolDown = RELOAD_TIME
-					data.inreload = true
-				end
-				
-				data.recoil = RECOIL_AMNT
-			end
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
 
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
+				else
+					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+				end
+			else
+				if IsPlayerLocal(p) then
+					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
+					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
+					camSineTime = 0
+					PlayHaptic(shootHaptic, 1)
+
+					-- shell ejection
+					local toolBody = GetToolBody(p)
+					local transform = GetBodyTransform(toolBody)
+					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
+					ParticleReset()
+					ParticleGravity(rnd(-2, -8))
+					ParticleRadius(0.02)
+					ParticleAlpha(1)
+					ParticleColor(0.8, 0.6, 0)
+					ParticleTile(6)
+					ParticleDrag(0.125)
+					ParticleSticky(0.5)
+					ParticleCollide(1)
+					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
+				else
+					data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
+				end
+			end
+			
+			-- muzzleflash
+			if data.suppressed == false then
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.13), 0.3)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
+				end
+			else
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.12), 0.2)
+					ParticleAlpha(0.75, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleCollide(0)
+					ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
+					SpawnParticle(mt.pos, playervel, 0.125)
+				end
+			end
+			
+			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
+			
+			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
+			if data.clipamntPIST9MM > 0 then
+				data.coolDown = ALTFIRERATE
+				data.altCoolDown = ALTFIRERATE
+			elseif ammo > 1 then
+				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				data.coolDown = RELOAD_TIME
+				data.altCoolDown = RELOAD_TIME
+				data.inreload = true
+			end
+			
+			data.recoil = RECOIL_AMNT
 		end
 	end
 	
@@ -384,19 +408,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		if data.tertiaryCoolDown < 0 then
 			data.tertiaryCoolDown = 0.5
 			data.suppressed = not data.suppressed
-			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 			client.suppress(p, data.suppressed)
-		end
-	end
-
-	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntPIST9MM
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
 		end
 	end
 	
@@ -423,8 +435,9 @@ function client.tickPlayerPIST9MM(p, dt)
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 
-	-- CAMERA MOVEMENT
+	
 	if IsPlayerLocal(p) then
+		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then
 			local x = camSineTime
 			local e = math.exp(1)
@@ -438,6 +451,16 @@ function client.tickPlayerPIST9MM(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		-- UPD AMMO HUD
+		if data.inreload == false and ammo > 0.5 then
+			clipamnt = data.clipamntPIST9MM
+		elseif ammo > 0.5 then
+			clipamnt = -8 -- negative 8 means reloading
+		else
+			data.clipamntM727 = 0
+			clipamnt = -16
 		end
 	end
 end

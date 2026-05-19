@@ -175,19 +175,19 @@ function client.tickPlayerM249(p, dt)
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+
+				local toolBody = GetToolBody(p)
+				local playervel = GetPlayerVelocity(p)
+
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireM249", p)
 					camSineTime = 0
-				end
+					PlayHaptic(shootHaptic, 1)
 
-				local toolBody = GetToolBody(p)
-				if toolBody ~= 0 then
+					-- shell ejection
 					local transform = GetBodyTransform(toolBody)
 					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
 					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-					local playervel = GetPlayerVelocity(p)
-					
-					-- shell ejection
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
 					ParticleRadius(0.02)
@@ -204,23 +204,22 @@ function client.tickPlayerM249(p, dt)
                     SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
 					
 					data.alteject = not data.alteject
+				end
 
-					-- muzzleflash
-					for i=0, 3 do
-						ParticleReset()
-						ParticleGravity(0)
-						ParticleRadius(rnd(0.12, 0.17), 0.33)
-						ParticleAlpha(1, 0)
-						ParticleTile(5)
-						ParticleDrag(0)
-						ParticleRotation(rnd(10, -10), 0)
-						ParticleSticky(0)
-						ParticleEmissive(5, 1)
-						ParticleCollide(0)
-						ParticleColor(1,0.35,0, 1,0,0)
-						SpawnParticle(mt.pos, playervel, 0.125)
-					end
-				
+				-- muzzleflash
+				for i=0, 3 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.12, 0.17), 0.33)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 					
 				data.clipamntM249 = data.clipamntM249 - 1
@@ -234,21 +233,6 @@ function client.tickPlayerM249(p, dt)
 				
 				data.recoil = RECOIL_AMNT
 			end
-
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
-	end
-	
-	if IsPlayerLocal(p) then -- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntM249
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 
 	-- decrease firing cooldown and recoil
@@ -270,36 +254,36 @@ function client.tickPlayerM249(p, dt)
 	end 
 	-- END RECOIL
 	
+	-- hide shells if low ammo
 	local toolBody = GetToolBody(p)
-	if toolBody ~= 0 then -- hide shells if low ammo
-		local shapes = GetBodyShapes(toolBody)
-		
-		if data.clipamntM249 < 4.5 then -- four shots left
-			-- hide third shell
-			SetTag(shapes[3], "invisible")
-		elseif HasTag(shapes[3], "invisible") == true then
-			RemoveTag(shapes[3], "invisible")
-		end
-		
-		if data.clipamntM249 < 2.5 then -- two shots left
-			-- hide second shell
-			SetTag(shapes[2], "invisible")
-		elseif HasTag(shapes[2], "invisible") == true then
-			RemoveTag(shapes[2], "invisible")
-		end
-		
-		if data.clipamntM249 < 0.5 then -- empty mag
-			-- hide first shell
-			SetTag(shapes[1], "invisible")
-		elseif HasTag(shapes[1], "invisible") == true then
-			RemoveTag(shapes[1], "invisible")
-		end
+	local shapes = GetBodyShapes(toolBody)
+	
+	if data.clipamntM249 < 4.5 then -- four shots left
+		-- hide third shell
+		SetTag(shapes[3], "invisible")
+	elseif HasTag(shapes[3], "invisible") == true then
+		RemoveTag(shapes[3], "invisible")
+	end
+	
+	if data.clipamntM249 < 2.5 then -- two shots left
+		-- hide second shell
+		SetTag(shapes[2], "invisible")
+	elseif HasTag(shapes[2], "invisible") == true then
+		RemoveTag(shapes[2], "invisible")
+	end
+	
+	if data.clipamntM249 < 0.5 then -- empty mag
+		-- hide first shell
+		SetTag(shapes[1], "invisible")
+	elseif HasTag(shapes[1], "invisible") == true then
+		RemoveTag(shapes[1], "invisible")
 	end
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 
-	-- CAMERA MOVEMENT
+	
 	if IsPlayerLocal(p) then
+		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then
 			local x = camSineTime
 			local e = math.exp(1)
@@ -313,6 +297,16 @@ function client.tickPlayerM249(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		-- UPD AMMO HUD
+		if data.inreload == false and ammo > 0.5 then
+			clipamnt = data.clipamntM249
+		elseif ammo > 0.5 then
+			clipamnt = -8 -- negative 8 means reloading
+		else
+			data.clipamntM727 = 0
+			clipamnt = -16
 		end
 	end
 end

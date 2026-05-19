@@ -172,9 +172,6 @@ function client.tickPlayerSATCH(p, dt)
 				data.altCoolDown = FIRERATE
 				data.recoil = RECOIL_AMNT
 			end
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 	
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true  then
@@ -216,15 +213,14 @@ function client.tickPlayerSATCH(p, dt)
 	-- END RECOIL
 	
 	local toolBody = GetToolBody(p)
-	if toolBody ~= 0 then -- hide shells if low ammo
-		local shapes = GetBodyShapes(toolBody)
+	local shapes = GetBodyShapes(toolBody)
 
-		if ammo < 0.5 then -- no grenades
-			-- hide grenade
-			SetTag(shapes[0], "invisible")
-		elseif HasTag(shapes[0], "invisible") == true then
-			RemoveTag(shapes[0], "invisible")
-		end
+	if ammo < 0.5 then -- no grenades
+		-- hide grenade
+		SetTag(shapes[0], "invisible")
+	elseif HasTag(shapes[0], "invisible") == true then
+		RemoveTag(shapes[0], "invisible")
 	end
+	
 	tickToolAnimator(data.toolAnimator, dt, nil, p, 3, true)
 end

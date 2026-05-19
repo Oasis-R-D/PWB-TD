@@ -146,9 +146,6 @@ function client.tickPlayerTRIP(p, dt)
 				data.coolDown = 0.05 -- prevent spamming raycasts
 			end
 		end
-		if IsPlayerLocal(p) then
-			PlayHaptic(shootHaptic, 1)
-		end
 	end
 
 	-- decrease firing cooldown and recoil
@@ -169,16 +166,16 @@ function client.tickPlayerTRIP(p, dt)
 		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
 	end 
 	-- END RECOIL
+	
 	local toolBody = GetToolBody(p)
-	if toolBody ~= 0 then -- hide shells if low ammo
-		local shapes = GetBodyShapes(toolBody)
+	local shapes = GetBodyShapes(toolBody)
 
-		if ammo < 0.5 then -- no grenades
-			-- hide grenade
-			SetTag(shapes[0], "invisible")
-		elseif HasTag(shapes[0], "invisible") == true then
-			RemoveTag(shapes[0], "invisible")
-		end
+	if ammo < 0.5 then -- no grenades
+		-- hide grenade
+		SetTag(shapes[0], "invisible")
+	elseif HasTag(shapes[0], "invisible") == true then
+		RemoveTag(shapes[0], "invisible")
 	end
+
 	tickToolAnimator(data.toolAnimator, dt, nil, p, 3, true)
 end

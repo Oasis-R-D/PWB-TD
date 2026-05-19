@@ -219,7 +219,7 @@ function client.tickPlayerGLU(p, dt)
 					data.shakeTime = data.shakeTime - dt
 					if data.shakeTime < 0 then
 						ShakeCamera(rnd(0.45, 0.55))
-	
+
 						data.recoil = data.recoil + 0.0625
 
 						data.shakeDur = data.shakeDur + dt
@@ -268,24 +268,21 @@ function client.tickPlayerGLU(p, dt)
 				data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
 			end
 
-			local toolBody = GetToolBody(p)
-			if toolBody ~= 0 then
 				local playervel = GetPlayerVelocity(p)
 
-				-- muzzleflash
-				ParticleReset()
-				ParticleGravity(0)
-				ParticleRadius(rnd(0.15, 0.2), 0.35)
-				ParticleAlpha(1, 0)
-				ParticleTile(5)
-				ParticleDrag(0)
-				ParticleRotation(rnd(10, -10), 0)
-				ParticleSticky(0)
-				ParticleEmissive(5, 1)
-				ParticleCollide(0)
-				ParticleColor(0,0,1, 0.5,0,0.5)
-				SpawnParticle(mt.pos, playervel, 0.125)
-			end
+			-- muzzleflash
+			ParticleReset()
+			ParticleGravity(0)
+			ParticleRadius(rnd(0.15, 0.2), 0.35)
+			ParticleAlpha(1, 0)
+			ParticleTile(5)
+			ParticleDrag(0)
+			ParticleRotation(rnd(10, -10), 0)
+			ParticleSticky(0)
+			ParticleEmissive(5, 1)
+			ParticleCollide(0)
+			ParticleColor(0,0,1, 0.5,0,0.5)
+			SpawnParticle(mt.pos, playervel, 0.125)
 		end
 	elseif data.fireState ~= EGON_FIREOFF then
 		data.checkOff = data.checkOff - dt
