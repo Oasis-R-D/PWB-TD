@@ -25,7 +25,6 @@ TAUplayers = {}
 function createPlayerCLIENTdataTAU()
     return {
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		inAltAttack = false,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
@@ -335,14 +334,13 @@ function client.tickPlayerTAU(p, dt)
 				end
 				
 				data.coolDown = FIRERATE
-				data.altCoolDown = FIRERATE
 
 				data.recoil = RECOIL_AMNT
 			end
 	end
 
 	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
-		if data.altCoolDown < 0 then
+		if data.coolDown < 0 then
 			data.inAltAttack = true
 		end
 	end
@@ -421,11 +419,9 @@ function client.tickPlayerTAU(p, dt)
 				PlayHaptic(shootHaptic, 1)
 			end
 
-			data.altCoolDown = 0.2
 			data.coolDown = 0.2
 			if data.chargedTime > 10 then
 				data.coolDown = 1
-				data.altCoolDown = 1
 			end
 
 			data.recoil = 2.5 * RECOIL_AMNT
@@ -439,7 +435,6 @@ function client.tickPlayerTAU(p, dt)
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	data.angle = data.angle + data.angVel*dt
 	data.angVel = math.max(0, data.angVel - dt*1000)

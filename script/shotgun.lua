@@ -33,7 +33,6 @@ function createPlayerCLIENTdataSG()
 		clipamntSG = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		pumptime = nil, -- time until pump sound is played (and animations if those are ever added)
@@ -156,7 +155,7 @@ function client.tickPlayerSG(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		local reloadtime = nil
-		local shellsneedingloading = 8 - data.clipamntSG
+		local shellsneedingloading = CLIP_SIZE - data.clipamntSG
 
 		if shellsneedingloading > ammo then
 			shellsneedingloading = ammo
@@ -172,7 +171,6 @@ function client.tickPlayerSG(p, dt)
 		end
 
 		data.coolDown = reloadtime
-		data.altCoolDown = reloadtime
 		data.shellinserttime = 0.8
 		data.inreload = true
 	end
@@ -219,13 +217,12 @@ function client.tickPlayerSG(p, dt)
 					
 				data.clipamntSG = data.clipamntSG - 1
 				if data.clipamntSG > 0 then
-					data.altCoolDown = FIRERATE
 					data.coolDown = FIRERATE
 					data.pumptime = FIRERATE - 0.25 -- 0.5
 				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = nil
-					local shellsneedingloading = 8 - data.clipamntSG
+					local shellsneedingloading = CLIP_SIZE - data.clipamntSG
 
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
@@ -235,7 +232,6 @@ function client.tickPlayerSG(p, dt)
 					data.pumptime = reloadtime - 0.25
 					data.shellstoload = shellsneedingloading
 					data.coolDown = reloadtime
-					data.altCoolDown = reloadtime
 					data.shellinserttime = 0.8
 					data.inreload = true
 				end
@@ -245,7 +241,7 @@ function client.tickPlayerSG(p, dt)
 	end
 
 	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerCanUseTool(p) == true then
-			if data.altCoolDown < 0 then
+			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.secondaryFireSG", p)
@@ -280,14 +276,13 @@ function client.tickPlayerSG(p, dt)
 				
 				data.clipamntSG = data.clipamntSG - 2
 				if data.clipamntSG > 0 then
-					data.altCoolDown = ALTFIRERATE
 					data.coolDown = ALTFIRERATE
 					data.pumptime = ALTFIRERATE - 0.25
 				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					
-					local shellsneedingloading = 8 - data.clipamntSG
+					local shellsneedingloading = CLIP_SIZE - data.clipamntSG
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
 					end
@@ -296,7 +291,6 @@ function client.tickPlayerSG(p, dt)
 					data.pumptime = reloadtime - 0.25
 					data.shellstoload = shellsneedingloading
 					data.coolDown = reloadtime
-					data.altCoolDown = reloadtime
 					data.shellinserttime = 0.8
 					data.inreload = true
 				end
@@ -307,7 +301,6 @@ function client.tickPlayerSG(p, dt)
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	
 	-- SHELL LOADING

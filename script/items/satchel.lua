@@ -19,7 +19,6 @@ SATCHplayers = {}
 function createPlayerCLIENTdataSATCH()
 	return {
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		dataReset = true,
@@ -169,13 +168,12 @@ function client.tickPlayerSATCH(p, dt)
 				data.toolAnimator.timeSinceFire = 0.0
 
 				data.coolDown = FIRERATE
-				data.altCoolDown = FIRERATE
 				data.recoil = RECOIL_AMNT
 			end
 	end
 	
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true  then
-			if data.altCoolDown < 0 then
+			if data.coolDown < 0 then
 				if IsPlayerLocal(p) then
 					ServerCall("server.secondaryFireSATCH", p)
 				end
@@ -183,7 +181,6 @@ function client.tickPlayerSATCH(p, dt)
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 
 				data.coolDown = FIRERATE
-				data.altCoolDown = FIRERATE
 				data.recoil = RECOIL_AMNT
 			end
 
@@ -194,7 +191,6 @@ function client.tickPlayerSATCH(p, dt)
 
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	
 	-- RECOIL

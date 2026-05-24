@@ -19,7 +19,6 @@ WRNCHplayers = {}
 function createPlayerCLIENTdataWRNCH()
     return {
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		inAltAttack = false,
 		altTime = nil,
 		altSwingTime = nil,
@@ -35,7 +34,6 @@ end
 function createPlayerSERVERdataWRNCH()
     return {
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		inAltAttack = false,
 		altTime = nil,
 		altSwingTime = nil,
@@ -79,7 +77,6 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		-- Miss
 		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
 		data.coolDown = 0.75
-		data.altCoolDown = 0.75
 	else
 		-- Hit
 		fDidHit = true
@@ -96,7 +93,6 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		
 		-- PLAYER DAMAGE END
 		data.coolDown = 0.5
-		data.altCoolDown = 0.5
 		
 		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
 	end
@@ -113,7 +109,6 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 		PlaySound(LoadSound("MOD/snd/WRNCH_miss0.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.75
-		data.altCoolDown = 0.75
 	else
 		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_hitplayer0.ogg"), pos, 0.5)
@@ -123,7 +118,6 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness
 		data.coolDown = 0.5
-		data.altCoolDown = 0.5
 		
 		data.toolAnimator.maxActionPoseTime = 0.05 -- stop midswing
 	end
@@ -146,7 +140,6 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		-- Miss
 		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
 		data.coolDown = 1.25
-		data.altCoolDown = 1.25
 	else
 		-- Hit
 		fDidHit = true
@@ -167,7 +160,6 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		
 		-- PLAYER DAMAGE END
 		data.coolDown = 1
-		data.altCoolDown = 1
 	
 		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
 	end
@@ -186,7 +178,6 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 		PlaySound(LoadSound("MOD/snd/WRNCH_bigmiss.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.15 -- stop midswing but further in
 		data.coolDown = 1.25
-		data.altCoolDown = 1.25
 	else
 		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_bighitplayer0.ogg"), pos, 0.5)
@@ -196,7 +187,6 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 		
 		data.recoildelay = 0.1 -- more hit feedback and randomness -- TO-DO: delay this
 		data.coolDown = 1
-		data.altCoolDown = 1
 
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing
 	end

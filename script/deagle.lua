@@ -34,7 +34,6 @@ function createPlayerCLIENTdataDE357()
 		clipamntDE357 = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		laseron = false,
@@ -171,10 +170,8 @@ function client.tickPlayerDE357(p, dt)
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntDE357 > 0.5 then
 			data.coolDown = RELOAD_TIME
-			data.altCoolDown = RELOAD_TIME
 		else
 			data.coolDown = RELOAD_TIME
-			data.altCoolDown = RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -247,15 +244,12 @@ function client.tickPlayerDE357(p, dt)
 				if data.clipamntDE357 > 0.5 then
 					if data.laseron == true then
 						data.coolDown = LASERFIRERATE
-						data.altCoolDown = LASERFIRERATE
 					else
 						data.coolDown = FIRERATE
-						data.altCoolDown = FIRERATE
 					end
 				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					data.coolDown = RELOAD_TIME
-					data.altCoolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
@@ -264,7 +258,7 @@ function client.tickPlayerDE357(p, dt)
 	end
 
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
-		if data.altCoolDown < 0 then
+		if data.coolDown < 0 then
 			if IsPlayerLocal(p) then
 				ServerCall("server.secondaryFireDE357", p)
 			end
@@ -275,7 +269,6 @@ function client.tickPlayerDE357(p, dt)
 			else
 				PlaySound(LoadSound(LASEROFFSFX), pt.pos)
 			end
-			data.altCoolDown = ALTFIRERATE
 			data.coolDown = ALTFIRERATE
 			data.laseron = not data.laseron
 			data.laserrefresh = 0
@@ -350,7 +343,6 @@ function client.tickPlayerDE357(p, dt)
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	data.laserrefresh = data.laserrefresh - dt
 	

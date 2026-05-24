@@ -26,7 +26,6 @@ DISPplayers = {}
 function createPlayerCLIENTdataDISP()
     return {
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		inAltAttack = false,
 		inAttack = false,
 		recoil = 0.0,
@@ -259,14 +258,12 @@ function client.tickPlayerDISP(p, dt)
 	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
 		if data.coolDown < 0 then	
 			data.inAttack = true
-			data.altCoolDown = FIRERATE
 			data.coolDown = FIRERATE
 		end
 	end
 
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
-		if data.altCoolDown < 0 then
-			data.altCoolDown = FIRERATE
+		if data.coolDown < 0 then
 			data.coolDown = FIRERATE
 			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 			local spawns = FindLocations("playerspawn", true)
@@ -348,7 +345,6 @@ function client.tickPlayerDISP(p, dt)
 
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	data.angle = data.angle + data.angVel*dt
 	data.angVel = math.max(0, data.angVel - dt*1000)

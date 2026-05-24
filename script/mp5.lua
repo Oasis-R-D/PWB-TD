@@ -33,7 +33,6 @@ function createPlayerCLIENTdataMP5()
 		m203amntMP5 = 1,
 		inreload = false,
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		camAltMove = false,
@@ -167,7 +166,6 @@ function client.tickPlayerMp5(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntMP5 < CLIP_SIZE and ammo > 0.5 and data.clipamntMP5 ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		data.coolDown = RELOAD_TIME
-		data.altCoolDown = RELOAD_TIME
 		data.inreload = true
 	end
 	
@@ -228,11 +226,9 @@ function client.tickPlayerMp5(p, dt)
 				data.clipamntMP5 = data.clipamntMP5 - 1
 				if data.clipamntMP5 > 0 then
 					data.coolDown = FIRERATE
-					data.altCoolDown = FIRERATE
 				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					data.coolDown = RELOAD_TIME
-					data.altCoolDown = RELOAD_TIME
 					data.inreload = true
 				end
 				
@@ -241,7 +237,7 @@ function client.tickPlayerMp5(p, dt)
 	end
 
 	if InputPressed("grab", p) and data.m203amntMP5 > 0.5 and GetPlayerCanUseTool(p) == true  then
-			if data.altCoolDown < 0 then
+			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
 					ServerCall("server.secondaryFireMp5", p)
@@ -274,7 +270,6 @@ function client.tickPlayerMp5(p, dt)
 				
 				data.recoil = 1.5 * RECOIL_AMNT
 				
-				data.altCoolDown = ALTFIRERATE
 				data.coolDown = ALTFIRERATE
 				data.m203amntMP5 = data.m203amntMP5 - 1
 			end
@@ -282,7 +277,6 @@ function client.tickPlayerMp5(p, dt)
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.recoil = data.recoil - dt
 	
 	-- RECOIL

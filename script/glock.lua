@@ -33,7 +33,6 @@ function createPlayerCLIENTdataPIST9MM()
 		clipamntPIST9MM = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
-		altCoolDown = 0.0,
 		tertiaryCoolDown = 0.0,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
@@ -177,7 +176,6 @@ function client.tickPlayerPIST9MM(p, dt)
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntPIST9MM > 0 then
 			data.coolDown = RELOAD_TIME
-			data.altCoolDown = RELOAD_TIME
 		end
 		data.inreload = true
 	end
@@ -283,11 +281,10 @@ function client.tickPlayerPIST9MM(p, dt)
 			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
 			if data.clipamntPIST9MM > 0 then
 				data.coolDown = FIRERATE
-				data.altCoolDown = FIRERATE
 			elseif ammo > 1 then
 				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 				data.coolDown = RELOAD_TIME
-				data.altCoolDown = RELOAD_TIME
+
 				data.inreload = true
 			end
 			
@@ -296,7 +293,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 
 	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-		if data.altCoolDown < 0 then
+		if data.coolDown < 0 then
 			StopSound(data.firesound)
 
 			local playervel = GetPlayerVelocity(p)
@@ -392,11 +389,9 @@ function client.tickPlayerPIST9MM(p, dt)
 			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
 			if data.clipamntPIST9MM > 0 then
 				data.coolDown = ALTFIRERATE
-				data.altCoolDown = ALTFIRERATE
 			elseif ammo > 1 then
 				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 				data.coolDown = RELOAD_TIME
-				data.altCoolDown = RELOAD_TIME
 				data.inreload = true
 			end
 			
@@ -414,7 +409,6 @@ function client.tickPlayerPIST9MM(p, dt)
 	
 	-- decrease firing cooldown and recoil
 	data.coolDown = data.coolDown - dt
-	data.altCoolDown = data.altCoolDown - dt
 	data.tertiaryCoolDown = data.tertiaryCoolDown - dt
 	data.recoil = data.recoil - dt
 	
