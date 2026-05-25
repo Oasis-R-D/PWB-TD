@@ -200,9 +200,6 @@ function client.tickPlayerPYTH(p, dt)
 	
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
-			if IsPlayerLocal(p) then
-				--PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
-			end
 			data.altCoolDown = ALTFIRERATE
 			data.scoped = not data.scoped
 		end
@@ -215,8 +212,7 @@ function client.tickPlayerPYTH(p, dt)
 		data.toolAnimator.forceSecondaryActionPose = true
 
 		if IsPlayerLocal(p) then
-			local fov = 40
-			SetCameraFov(fov)
+			SetCameraFov(40)
 		end
 	end
 
@@ -236,7 +232,8 @@ function client.tickPlayerPYTH(p, dt)
 			siderecoil = siderecoil * -1
 		end
 
-		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
+		-- QUATEULER: (x, y, z) X is tilting barrel upwards, Y tilts it left/right, Z rotates it
+		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert), QuatEuler(recoil * 75, 0, 0))
 	end 
 	-- END RECOIL
 	

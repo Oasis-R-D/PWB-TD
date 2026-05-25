@@ -354,7 +354,8 @@ function client.tickPlayerDE357(p, dt)
 			siderecoil = siderecoil * -1
 		end
 
-		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert))
+		-- QUATEULER: (x, y, z) X is tilting barrel upwards, Y tilts it left/right, Z rotates it
+		data.toolAnimator.offsetTransform = Transform(Vec(siderecoil,recoil,recoilvert), QuatEuler(recoil * 75, recoil * -5, recoil * -5))
 	end 
 	-- END RECOIL
 	

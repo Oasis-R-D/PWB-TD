@@ -128,6 +128,7 @@ end
 clipamnt = 0
 altclipamnt = 0
 local camSineTime = nil
+local camRandY = 0
 
 function client.tickPlayerMp5(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
@@ -184,6 +185,7 @@ function client.tickPlayerMp5(p, dt)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireMp5", p)
 					camSineTime = 0
+					camRandY = rnd(-7, 7)
 					data.camAltMove = false
 					PlayHaptic(shootHaptic, 1)
 
@@ -245,7 +247,7 @@ function client.tickPlayerMp5(p, dt)
 				
 				local toolBody = GetToolBody(p)
 				local playervel = GetPlayerVelocity(p)
-				local vectuh = VecAdd(mt.pos, Vec(0, -0.25, 0))
+				local m203FlashPos = VecAdd(mt.pos, Vec(0, -0.25, 0))
 				
 				-- muzzleflash
 				for i=0, 4 do
@@ -260,7 +262,7 @@ function client.tickPlayerMp5(p, dt)
 					ParticleEmissive(5, 1)
 					ParticleCollide(0)
 					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(vectuh, playervel, 0.125)
+					SpawnParticle(m203FlashPos, playervel, 0.125)
 				end
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
@@ -304,18 +306,24 @@ function client.tickPlayerMp5(p, dt)
 
 			local equation = nil
 			if data.camAltMove == true then
-				balance = -20
+				balance = -10
 				amp = 800
 				equation = amp * ((math.sin(CAMALTMOVETIME * x) * e^(balance * x)) * x)
+
+				if equation >= 0 then
+					local t = Transform(Vec(), QuatAxisAngle(Vec(1, 0, 0), equation))
+					SetPlayerCameraOffsetTransform(t)
+					camSineTime = camSineTime + dt
+				else camSineTime = nil end
 			else
 				equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
-			end
 
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
+				if equation >= 0 then
+					local t = Transform(Vec(), QuatAxisAngle(Vec(camRandY, -1.0, 0), equation))
+					SetPlayerCameraOffsetTransform(t)
+					camSineTime = camSineTime + dt
+				else camSineTime = nil end
+			end
 		end
 
 		-- UPD AMMO HUD

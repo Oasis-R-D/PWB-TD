@@ -1,4 +1,4 @@
--- just copy the Mp5 instead (also this has modified recoil to make the arm dislocation less noticeable)
+-- just copy the MP5 instead (also this has modified recoil to make the arm dislocation less noticeable)
 #version 2
 
 #include "script/include/player.lua"
@@ -30,7 +30,7 @@ M727players = {}
 function createPlayerCLIENTdataM727()
     return {
 		clipamntM727 = CLIP_SIZE,
-		m203amnt727 = 1,
+		m203amntM727 = 1,
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -130,7 +130,7 @@ altclipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM727(p, dt)
-	if not IsToolEnabled(WPNID, p) then return end
+if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if M727players[p].dataReset == false then
@@ -154,9 +154,9 @@ function client.tickPlayerM727(p, dt)
 	if mt == nil then
 		return
 	end
-	
+
 	local data = M727players[p]
-	
+
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
@@ -168,7 +168,7 @@ function client.tickPlayerM727(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.m203amnt727 = 1
+		data.m203amntM727 = 1
 		data.clipamntM727 = CLIP_SIZE
 		if data.clipamntM727 > ammo then -- make sure the clip cannot be higher than ammo
 			data.clipamntM727 = ammo
@@ -176,7 +176,7 @@ function client.tickPlayerM727(p, dt)
 	end
 
 	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then		
+			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
 				local playervel = GetPlayerVelocity(p)
@@ -184,6 +184,7 @@ function client.tickPlayerM727(p, dt)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireM727", p)
 					camSineTime = 0
+					camRandY = rnd(-7, 7)
 					data.camAltMove = false
 					PlayHaptic(shootHaptic, 1)
 
@@ -204,23 +205,11 @@ function client.tickPlayerM727(p, dt)
 					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
 				end
 				
-				-- shell ejection
-				ParticleReset()
-				ParticleGravity(rnd(-2, -8))
-				ParticleRadius(0.02)
-				ParticleAlpha(1)
-				ParticleColor(0.8, 0.6, 0)
-				ParticleTile(6)
-				ParticleDrag(0.125)
-				ParticleSticky(0.5)
-				ParticleCollide(1)
-				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-				
 				-- muzzleflash
 				for i=0, 3 do
 					ParticleReset()
 					ParticleGravity(0)
-					ParticleRadius(rnd(0.12, 0.17), 0.33)
+					ParticleRadius(rnd(0.1, 0.15), 0.33)
 					ParticleAlpha(1, 0)
 					ParticleTile(5)
 					ParticleDrag(0)
@@ -231,7 +220,7 @@ function client.tickPlayerM727(p, dt)
 					ParticleColor(1,0.35,0, 1,0,0)
 					SpawnParticle(mt.pos, playervel, 0.125)
 				end
-				
+					
 				data.clipamntM727 = data.clipamntM727 - 1
 				if data.clipamntM727 > 0 then
 					data.coolDown = FIRERATE
@@ -245,7 +234,7 @@ function client.tickPlayerM727(p, dt)
 			end
 	end
 
-	if InputPressed("grab", p) and data.m203amnt727 > 0.5 and GetPlayerCanUseTool(p) == true  then
+	if InputPressed("grab", p) and data.m203amntM727 > 0.5 and GetPlayerCanUseTool(p) == true  then
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
@@ -254,10 +243,10 @@ function client.tickPlayerM727(p, dt)
 					data.camAltMove = true
 					PlayHaptic(shootHaptic, 1)
 				end
-
+				
 				local toolBody = GetToolBody(p)
 				local playervel = GetPlayerVelocity(p)
-				local vectuh = VecAdd(mt.pos, Vec(0.15, -0.2, 0))
+				local m203FlashPos = VecAdd(mt.pos, Vec(0.15, -0.2, 0))
 				-- muzzleflash
 				for i=0, 4 do
 					ParticleReset()
@@ -271,8 +260,7 @@ function client.tickPlayerM727(p, dt)
 					ParticleEmissive(5, 1)
 					ParticleCollide(0)
 					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(vectuh, playervel, 0.125)
-					
+					SpawnParticle(m203FlashPos, playervel, 0.125)
 				end
 				
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
@@ -280,7 +268,7 @@ function client.tickPlayerM727(p, dt)
 				data.recoil = 1.5 * RECOIL_AMNT
 				
 				data.coolDown = ALTFIRERATE
-				data.m203amnt727 = data.m203amnt727 - 1
+				data.m203amntM727 = data.m203amntM727 - 1
 			end
 	end
 	
@@ -313,34 +301,40 @@ function client.tickPlayerM727(p, dt)
 			local e = math.exp(1)
 			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
 			local amp = 10 -- how intense (y at the peak will not equal this though)
-			
+
 			local equation = nil
 			if data.camAltMove == true then
-				balance = -20
+				balance = -10
 				amp = 800
 				equation = amp * ((math.sin(CAMALTMOVETIME * x) * e^(balance * x)) * x)
+
+				if equation >= 0 then
+					local t = Transform(Vec(), QuatAxisAngle(Vec(1, 0, 0), equation))
+					SetPlayerCameraOffsetTransform(t)
+					camSineTime = camSineTime + dt
+				else camSineTime = nil end
 			else
 				equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
-			end
 
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
+				if equation >= 0 then
+					local t = Transform(Vec(), QuatAxisAngle(Vec(camRandY, -1.0, 0), equation))
+					SetPlayerCameraOffsetTransform(t)
+					camSineTime = camSineTime + dt
+				else camSineTime = nil end
+			end
 		end
 
 		-- UPD AMMO HUD
 		if data.inreload == false and ammo > 0.5 then
 			clipamnt = data.clipamntM727
-			altclipamnt = data.m203amnt727
+			altclipamnt = data.m203amntM727
 		elseif ammo > 0.5 then
 			clipamnt = -8 -- negative 8 means reloading
 			altclipamnt = -8
 		else
 			data.clipamntM727 = 0
 			clipamnt = -16
-			altclipamnt = data.m203amnt727
+			altclipamnt = data.m203amntM727
 		end
 	end
 end
