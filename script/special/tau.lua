@@ -210,7 +210,6 @@ end
 function server.startShootbeam(primary, p, chargetime)
 	chargetime = chargetime or 0
 	local data = TAUplayers[p]
-	local ammo = GetToolAmmo(WPNID, p)
 	
 	local flDamage = 0.0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
@@ -238,9 +237,7 @@ function server.startShootbeam(primary, p, chargetime)
 			BloodVFX(hitpos.pos, VecNormalize(back), 0.5, p)
 		end
 	else 
-		if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-		end
+		server.depleteAmmo(p, WPNID)
 
 		flDamage = PLAYERDAMAGE -- fixed damage in primary
 		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)

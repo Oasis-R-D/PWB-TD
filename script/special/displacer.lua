@@ -75,8 +75,6 @@ end
 function server.primaryFireDISP(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(WPNID, p)
-
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	
 	pos = VecAdd(pos, VecScale(angThrow, 0.5))
@@ -93,9 +91,7 @@ function server.primaryFireDISP(p)
 	
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 200)
 
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
 function client.drawlaserDISP(vecSrc, vecDir, raycastDist)

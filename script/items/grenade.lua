@@ -58,8 +58,6 @@ function server.primaryFireFRAG(p, cookedTime)
 	cookedTime = cookedTime or 0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(WPNID, p)
-
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	
 	pos = VecAdd(pos, VecScale(angThrow, 0.25))
@@ -88,9 +86,7 @@ function server.primaryFireFRAG(p, cookedTime)
 
 	SetBodyVelocity(grenade_ent[2], velocity)
 
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
 function client.initFRAG()

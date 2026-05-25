@@ -87,7 +87,6 @@ end
 function server.primaryFireDE357(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local ammo = GetToolAmmo(WPNID, p)
 	local data = DE357players[p]
 	
 	local spread = 0.1
@@ -102,9 +101,7 @@ function server.primaryFireDE357(p)
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
 function server.secondaryFireDE357(p)

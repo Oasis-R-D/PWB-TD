@@ -77,7 +77,6 @@ function server.primaryFireM249(p)
 		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
 	end
 	
-	local ammo = GetToolAmmo(WPNID, p)
 	local data = M249players[p]
 
 	local crouch = GetPlayerCrouch(p)
@@ -99,9 +98,7 @@ function server.primaryFireM249(p)
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
 function client.initM249()

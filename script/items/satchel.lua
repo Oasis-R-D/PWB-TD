@@ -73,7 +73,6 @@ function server.tickPlayerSATCH(p, dt)
 end
 
 function server.primaryFireSATCH(p)
-	local ammo = GetToolAmmo(WPNID, p)
 	local data = SATCHplayers[p]
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
@@ -97,9 +96,7 @@ function server.primaryFireSATCH(p)
 
 	--PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
 function server.secondaryFireSATCH(p)

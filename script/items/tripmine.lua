@@ -52,7 +52,6 @@ function server.tickPlayerTRIP(p, dt)
 end
 
 function server.primaryFireTRIP(p)
-	local ammo = GetToolAmmo(WPNID, p)
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
 
@@ -67,9 +66,7 @@ function server.primaryFireTRIP(p)
 		SetTag(satch_ent[2], "grenStyle", "lasermine")
 		SetTag(satch_ent[2], "playerThrew", p)
 
-		if ammo < 9999 then
-			SetToolAmmo(WPNID, ammo-1, p)
-		end
+		server.depleteAmmo(p, WPNID)
 	end
 end
 

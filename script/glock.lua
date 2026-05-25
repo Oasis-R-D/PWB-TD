@@ -68,31 +68,23 @@ function server.primaryFirePIST9MM(p, silenced)
 
 	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
 
-	local ammo = GetToolAmmo(WPNID, p)
-
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.01, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
-function server.secondaryFirePIST9MM(p, silenced) -- separated for easy modability
+function server.secondaryFirePIST9MM(p, silenced) -- separated for easy modification
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
 	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
-
-	local ammo = GetToolAmmo(WPNID, p)
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-1, p)
-	end
+	server.depleteAmmo(p, WPNID)
 end
 
 function client.initPIST9MM()
