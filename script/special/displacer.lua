@@ -144,8 +144,6 @@ end
 
 function server.secondaryFireDISP(p) -- separated for easy modability
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-	
-	local ammo = GetToolAmmo(WPNID, p)
 
 	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
 
@@ -191,9 +189,7 @@ function server.secondaryFireDISP(p) -- separated for easy modability
 		end
 	end
 	
-	if ammo < 9999 then
-		SetToolAmmo(WPNID, ammo-3, p)
-	end
+	server.depleteAmmo(p, WPNID, 3)
 end
 
 function client.initDISP()
