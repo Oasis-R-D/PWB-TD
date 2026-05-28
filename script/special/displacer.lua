@@ -362,11 +362,10 @@ function client.tickPlayerDISP(p, dt)
 	if IsPlayerLocal(p) then
 		if camSineTime ~= nil then
 			local x = camSineTime
-			local e = math.exp(1)
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be neagtive)
+			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
 			local amp = 300 -- how intense (y at the peak will not equal this though)
 
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * e^(balance * x)) * x)
+			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
 
 			if equation >= 0 then
 				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.33, 0.0), equation))
