@@ -366,7 +366,7 @@ function client.tickPlayerDE357(p, dt)
 		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then
 			local x = camSineTime
-			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be negative)
+			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
 			local amp = 25 -- how intense (y at the peak will not equal this though)
 
 			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
