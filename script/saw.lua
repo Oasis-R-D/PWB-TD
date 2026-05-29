@@ -163,73 +163,70 @@ function client.tickPlayerM249(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntM249 = CLIP_SIZE
-		if data.clipamntM249 > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntM249 = ammo
-		end
+		data.clipamntM249 = math.min(CLIP_SIZE, ammo)
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntM249) then
+		if data.coolDown < 0 then
+			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
-				local toolBody = GetToolBody(p)
-				local playervel = GetPlayerVelocity(p)
+			local toolBody = GetToolBody(p)
+			local playervel = GetPlayerVelocity(p)
 
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireM249", p)
-					camSineTime = 0
-					PlayHaptic(shootHaptic, 1)
+			if IsPlayerLocal(p) then
+				ServerCall("server.primaryFireM249", p)
+				camSineTime = 0
+				PlayHaptic(shootHaptic, 1)
 
-					-- shell ejection
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					if data.alteject == true then -- this is unrealistic, it should eject BOTH at the same time but HLOPFOR works like this
-						ParticleColor(0.8, 0.6, 0)
-					else
-						ParticleColor(0.5, 0.5, 0.5)
-					end
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-					
-					data.alteject = not data.alteject
+				-- shell ejection
+				local transform = GetBodyTransform(toolBody)
+				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
+				ParticleReset()
+				ParticleGravity(rnd(-2, -8))
+				ParticleRadius(0.02)
+				ParticleAlpha(1)
+				if data.alteject == true then -- this is unrealistic, it should eject BOTH at the same time but HLOPFOR works like this
+					ParticleColor(0.8, 0.6, 0)
+				else
+					ParticleColor(0.5, 0.5, 0.5)
 				end
-
-				-- muzzleflash
-				for i=0, 3 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.12, 0.17), 0.33)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-					
-				data.clipamntM249 = data.clipamntM249 - 1
-				if data.clipamntM249 > 0 then
-					data.coolDown = FIRERATE
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-					data.coolDown = RELOAD_TIME
-					data.inreload = true
-				end
+				ParticleTile(6)
+				ParticleDrag(0.125)
+				ParticleSticky(0.5)
+				ParticleCollide(1)
+				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
 				
-				data.recoil = RECOIL_AMNT
+				data.alteject = not data.alteject
 			end
+
+			-- muzzleflash
+			for i=0, 3 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.12, 0.17), 0.33)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(1,0.35,0, 1,0,0)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
+				
+			data.clipamntM249 = data.clipamntM249 - 1
+			if data.clipamntM249 > 0 then
+				data.coolDown = FIRERATE
+			elseif ammo > 1 then
+				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				data.coolDown = RELOAD_TIME
+				data.inreload = true
+			end
+			
+			data.recoil = RECOIL_AMNT
+		end
 	end
 
 	-- decrease firing cooldown and recoil
@@ -278,7 +275,6 @@ function client.tickPlayerM249(p, dt)
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
 
-	
 	if IsPlayerLocal(p) then
 		-- CAMERA MOVEMENT
 		if camSineTime ~= nil then

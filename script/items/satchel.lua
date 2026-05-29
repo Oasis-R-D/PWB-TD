@@ -155,7 +155,7 @@ function client.tickPlayerSATCH(p, dt)
 
 	data.toolAnimator.maxActionPoseTime = 0.075
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
 			if data.coolDown < 0 then
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireSATCH", p)

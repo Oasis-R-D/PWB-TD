@@ -174,13 +174,10 @@ function client.tickPlayerPIST9MM(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntPIST9MM = CLIP_SIZE
-		if data.clipamntPIST9MM > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntPIST9MM = ammo
-		end
+		data.clipamntPIST9MM = math.min(CLIP_SIZE, ammo)
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntPIST9MM) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
 			
@@ -284,7 +281,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	end
 
-	if InputDown("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("grab", p) and canFire(p, ammo, data.clipamntPIST9MM) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
 

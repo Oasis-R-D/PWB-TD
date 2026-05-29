@@ -172,7 +172,7 @@ function client.tickPlayerGLU(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
-	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true and ammo > 0 then
+	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
 		if data.coolDown < 0 then
 			if data.fireState == EGON_FIREOFF then
 				if IsPlayerLocal(p) then

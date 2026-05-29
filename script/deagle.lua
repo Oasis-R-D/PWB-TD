@@ -175,41 +175,25 @@ function client.tickPlayerDE357(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntDE357 = CLIP_SIZE
-		if data.clipamntDE357 > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntDE357 = ammo
-		end
+		data.clipamntDE357 = math.min(CLIP_SIZE, ammo)
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then	
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
+	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntDE357) then
+		if data.coolDown < 0 then	
+			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
-				local playervel = GetPlayerVelocity(p)
+			local playervel = GetPlayerVelocity(p)
 
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireDE357", p)
-					PlayHaptic(shootHaptic, 1)
-					camSineTime = 0
-
-					-- shell ejection
-					local toolBody = GetToolBody(p)
-					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
-					local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.6, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-                    SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-				end
+			if IsPlayerLocal(p) then
+				ServerCall("server.primaryFireDE357", p)
+				PlayHaptic(shootHaptic, 1)
+				camSineTime = 0
 
 				-- shell ejection
+				local toolBody = GetToolBody(p)
+				local transform = GetBodyTransform(toolBody)
+				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 				ParticleReset()
 				ParticleGravity(rnd(-2, -8))
 				ParticleRadius(0.02)
@@ -220,38 +204,51 @@ function client.tickPlayerDE357(p, dt)
 				ParticleSticky(0.5)
 				ParticleCollide(1)
 				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-				
-				-- muzzleflash
-				for i=0, 3 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.1, 0.15), 0.33)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-					
-				data.clipamntDE357 = data.clipamntDE357 - 1
-				if data.clipamntDE357 > 0.5 then
-					if data.laseron == true then
-						data.coolDown = LASERFIRERATE
-					else
-						data.coolDown = FIRERATE
-					end
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-					data.coolDown = RELOAD_TIME
-					data.inreload = true
-				end
-				
-				data.recoil = RECOIL_AMNT
 			end
+
+			-- shell ejection
+			ParticleReset()
+			ParticleGravity(rnd(-2, -8))
+			ParticleRadius(0.02)
+			ParticleAlpha(1)
+			ParticleColor(0.8, 0.6, 0)
+			ParticleTile(6)
+			ParticleDrag(0.125)
+			ParticleSticky(0.5)
+			ParticleCollide(1)
+			SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+			
+			-- muzzleflash
+			for i=0, 3 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.1, 0.15), 0.33)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(1,0.35,0, 1,0,0)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
+				
+			data.clipamntDE357 = data.clipamntDE357 - 1
+			if data.clipamntDE357 > 0.5 then
+				if data.laseron == true then
+					data.coolDown = LASERFIRERATE
+				else
+					data.coolDown = FIRERATE
+				end
+			elseif ammo > 1 then
+				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				data.coolDown = RELOAD_TIME
+				data.inreload = true
+			end
+			
+			data.recoil = RECOIL_AMNT
+		end
 	end
 
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
@@ -333,7 +330,6 @@ function client.tickPlayerDE357(p, dt)
 		end
 	end
 	
-	-- TO-DO: add laser vfx
 	if data.laseron == true then
 		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
 	end

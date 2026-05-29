@@ -144,53 +144,50 @@ function client.tickPlayerM40(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntM40 = CLIP_SIZE
-		if data.clipamntM40 > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntM40 = ammo
-		end
+		data.clipamntM40 = math.min(CLIP_SIZE, ammo)
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
-			if data.coolDown < 0 then
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireM40", p)
-					camSineTime = 0
-					PlayHaptic(shootHaptic, 1)
-				end
-				
-				local playervel = GetPlayerVelocity(p)
-
-				-- muzzleflash
-				for i=0, 3 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.1, 0.15), 0.33)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-				data.timetobolt = 0.842
-				data.clipamntM40 = data.clipamntM40 - 1
-				if data.clipamntM40 > 0 then
-					data.coolDown = FIRERATE
-					data.altCoolDown = SCOPEFIREDELAY
-					
-				elseif ammo > 1 then
-					data.recoil = 0.05
-					PlaySound(LoadSound(EMPTRELOAD_SOUND), pt.pos)
-					data.coolDown = EMPTYRELOAD_TIME
-					data.inreload = true
-				end
-				
-				data.recoil = RECOIL_AMNT
+	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntM40) then
+		if data.coolDown < 0 then
+			PointLight(mt.pos, 1, 0.7, 0.5, 3)
+			if IsPlayerLocal(p) then
+				ServerCall("server.primaryFireM40", p)
+				camSineTime = 0
+				PlayHaptic(shootHaptic, 1)
 			end
+			
+			local playervel = GetPlayerVelocity(p)
+
+			-- muzzleflash
+			for i=0, 3 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.1, 0.15), 0.33)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(1,0.35,0, 1,0,0)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
+			data.timetobolt = 0.842
+			data.clipamntM40 = data.clipamntM40 - 1
+			if data.clipamntM40 > 0 then
+				data.coolDown = FIRERATE
+				data.altCoolDown = SCOPEFIREDELAY
+				
+			elseif ammo > 1 then
+				data.recoil = 0.05
+				PlaySound(LoadSound(EMPTRELOAD_SOUND), pt.pos)
+				data.coolDown = EMPTYRELOAD_TIME
+				data.inreload = true
+			end
+			
+			data.recoil = RECOIL_AMNT
+		end
 	end
 
 	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then

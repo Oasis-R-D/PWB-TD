@@ -247,7 +247,7 @@ function client.tickPlayerDISP(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
-	if InputPressed("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
+	if InputPressed("usetool", p) and canFire(p, ammo, ammo) and data.inAttack ~= true then
 		if data.coolDown < 0 then	
 			data.inAttack = true
 			data.coolDown = FIRERATE

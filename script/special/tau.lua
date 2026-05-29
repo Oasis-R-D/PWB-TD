@@ -299,44 +299,44 @@ function client.tickPlayerTAU(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
-			if data.coolDown < 0 then	
-				PointLight(mt.pos, 1, 0.5, 0.0, 3)
-				data.angVel = 1000
-				
-				data.aftershocksfx = rnd(0.3, 0.8)
-				if IsPlayerLocal(p) then
-					ServerCall("server.startShootbeam", true, p)
-					camSineTime = 0
-					data.camAltMove = false
-					PlayHaptic(shootHaptic, 1)
-				end
-				
-				local playervel = GetPlayerVelocity(p)
-				
-				-- muzzleflash
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.13), 0.3)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.33,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-				
-				data.coolDown = FIRERATE
-
-				data.recoil = RECOIL_AMNT
+	if InputDown("usetool", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
+		if data.coolDown < 0 then	
+			PointLight(mt.pos, 1, 0.5, 0.0, 3)
+			data.angVel = 1000
+			
+			data.aftershocksfx = rnd(0.3, 0.8)
+			if IsPlayerLocal(p) then
+				ServerCall("server.startShootbeam", true, p)
+				camSineTime = 0
+				data.camAltMove = false
+				PlayHaptic(shootHaptic, 1)
 			end
+			
+			local playervel = GetPlayerVelocity(p)
+			
+			-- muzzleflash
+			for i=0, 2 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.08, 0.13), 0.3)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(1,0.33,0)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
+			
+			data.coolDown = FIRERATE
+
+			data.recoil = RECOIL_AMNT
+		end
 	end
 
-	if InputPressed("grab", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true and data.inAltAttack ~= true then
+	if InputPressed("grab", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
 		if data.coolDown < 0 then
 			data.inAltAttack = true
 		end

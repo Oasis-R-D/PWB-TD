@@ -147,11 +147,7 @@ function client.tickPlayerSG(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		local reloadtime = nil
-		local shellsneedingloading = CLIP_SIZE - data.clipamntSG
-
-		if shellsneedingloading > ammo then
-			shellsneedingloading = ammo
-		end
+		local shellsneedingloading = math.min(CLIP_SIZE - data.clipamntSG, ammo)
 
 		if data.clipamntSG > 0 then
 			reloadtime = RELOAD_TIME * shellsneedingloading
@@ -169,13 +165,10 @@ function client.tickPlayerSG(p, dt)
 	
 	if data.inreload == true and data.coolDown < 0 then -- reload the clip
 		data.inreload = false
-		data.clipamntSG = CLIP_SIZE
-		if data.clipamntSG > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntSG = ammo
-		end
+		data.clipamntSG = math.min(CLIP_SIZE, ammo)
 	end
 				
-	if InputDown("usetool", p) and ammo > 0.5 and data.clipamntSG > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntSG) then
 			if data.coolDown < 0 then				
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
@@ -232,7 +225,7 @@ function client.tickPlayerSG(p, dt)
 			end
 	end
 
-	if InputDown("grab", p) and ammo >= 1 and data.clipamntSG > 1.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("grab", p) and canFire(p, ammo-1, data.clipamntSG-1) then 
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
@@ -274,10 +267,7 @@ function client.tickPlayerSG(p, dt)
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					
-					local shellsneedingloading = CLIP_SIZE - data.clipamntSG
-					if shellsneedingloading > ammo then
-						shellsneedingloading = ammo
-					end
+					local shellsneedingloading = math.min(CLIP_SIZE - data.clipamntSG, ammo)
 
 					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
 					data.pumptime = reloadtime - 0.25
@@ -296,8 +286,7 @@ function client.tickPlayerSG(p, dt)
 	data.recoil = data.recoil - dt
 	
 	-- SHELL LOADING
-	if data.shellinserttime == nil then
-	else
+	if data.shellinserttime ~= nil then
 		data.shellinserttime = data.shellinserttime - dt
 		
 		if data.shellinserttime < 0 and data.shellstoload >= 0.5 then
@@ -314,8 +303,7 @@ function client.tickPlayerSG(p, dt)
 	-- END SHELL LOADING
 	
 	-- PUMPING
-	if data.pumptime == nil then
-	else
+	if data.pumptime ~= nil then
 		data.pumptime = data.pumptime - dt
 	
 		-- pump the gun

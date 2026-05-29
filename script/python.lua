@@ -151,13 +151,10 @@ function client.tickPlayerPYTH(p, dt)
 	
 	if data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntPYTH = CLIP_SIZE
-		if data.clipamntPYTH > ammo then -- make sure the clip cannot be higher than ammo
-			data.clipamntPYTH = ammo
-		end
+		data.clipamntPYTH = math.min(CLIP_SIZE, ammo)
 	end
 
-	if InputDown("usetool", p) and ammo > 0.5 and GetPlayerCanUseTool(p) == true then
+	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntPYTH) then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
