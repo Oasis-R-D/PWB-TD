@@ -39,7 +39,7 @@ function createPlayerCLIENTdataPIST9MM()
 		firesound = nil,
 		suppressed = false,
 		dataReset = true,
-		firstDraw = true,
+		shapesNeedsUpd = true,
 	}
 end
 
@@ -133,7 +133,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		PIST9MMplayers[p].firstDraw = true
+		PIST9MMplayers[p].shapesNeedsUpd = true
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end
@@ -154,10 +154,10 @@ function client.tickPlayerPIST9MM(p, dt)
 	local data = PIST9MMplayers[p]
 
 	-- restore suppresor state visually
-	if data.firstDraw == true then
+	if data.shapesNeedsUpd == true then
 		if HasTag(GetBodyShapes(GetToolBody(p))[5], "invisible") == true then
 			client.suppress(p, data.suppressed)
-			data.firstDraw = false
+			data.shapesNeedsUpd = false
 		end
 	end
 
@@ -209,6 +209,22 @@ function client.tickPlayerPIST9MM(p, dt)
 				else
 					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 				end
+
+				-- muzzleflash
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.13), 0.3)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
+				end
 			else
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
@@ -233,25 +249,8 @@ function client.tickPlayerPIST9MM(p, dt)
 				else
 					data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
 				end
-			end
-			
-			-- muzzleflash
-			if data.suppressed == false then
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.13), 0.3)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-			else
+
+				-- muzzleflash
 				for i=0, 2 do
 					ParticleReset()
 					ParticleGravity(0)
@@ -310,9 +309,24 @@ function client.tickPlayerPIST9MM(p, dt)
 					ParticleSticky(0.5)
 					ParticleCollide(1)
 					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
-
 				else
 					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
+				end
+
+				-- muzzleflash
+				for i=0, 2 do
+					ParticleReset()
+					ParticleGravity(0)
+					ParticleRadius(rnd(0.08, 0.13), 0.3)
+					ParticleAlpha(1, 0)
+					ParticleTile(5)
+					ParticleDrag(0)
+					ParticleRotation(rnd(10, -10), 0)
+					ParticleSticky(0)
+					ParticleEmissive(5, 1)
+					ParticleCollide(0)
+					ParticleColor(1,0.35,0, 1,0,0)
+					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 			else
 				if IsPlayerLocal(p) then
@@ -339,25 +353,8 @@ function client.tickPlayerPIST9MM(p, dt)
 				else
 					data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
 				end
-			end
-			
-			-- muzzleflash
-			if data.suppressed == false then
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.13), 0.3)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-			else
+
+				-- muzzleflash
 				for i=0, 2 do
 					ParticleReset()
 					ParticleGravity(0)
