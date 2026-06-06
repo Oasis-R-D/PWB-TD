@@ -91,7 +91,7 @@ function server.primaryFireM249(p)
 		spread = GLOBAL_10DEGREES
 	end
 
-	local pos, dir = getAimVector(mt.pos, MAX_RANGE, spread, p)
+	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, spread, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	

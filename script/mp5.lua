@@ -76,7 +76,7 @@ function server.primaryFireMp5(p)
 
 	local data = MP5players[p]
 	
-	local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_3DEGREES, p)
+	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, GLOBAL_3DEGREES, p)
 	
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	

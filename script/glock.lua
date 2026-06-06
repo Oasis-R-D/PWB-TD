@@ -68,7 +68,7 @@ function server.primaryFirePIST9MM(p, silenced)
 
 	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
 
-	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.01, p)
+	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0.01, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
@@ -80,7 +80,7 @@ function server.secondaryFirePIST9MM(p, silenced) -- separated for easy modifica
 	
 	if silenced == true then mt = GetToolLocationWorldTransform("supend", p) end
 
-	local pos, dir = getAimVector(mt.pos, MAX_RANGE, 0.1, p)
+	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0.1, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	

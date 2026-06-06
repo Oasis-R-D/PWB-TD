@@ -68,7 +68,7 @@ function server.primaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	for i=0, 5 do
-		local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_10DEGREES, p)
+		local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, GLOBAL_10DEGREES, p)
 		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
 	
@@ -81,7 +81,7 @@ function server.secondaryFireSG(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
 	for i=0, 11 do
-		local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_10DEGREES, p)
+		local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, GLOBAL_10DEGREES, p)
 		ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME)
 	end
 	

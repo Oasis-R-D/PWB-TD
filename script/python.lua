@@ -76,7 +76,7 @@ function server.primaryFirePYTH(p)
 
 	local data = PYTHplayers[p]
 
-	local pos, dir = getAimVector(mt.pos, MAX_RANGE, GLOBAL_1DEGREE, p)
+	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, GLOBAL_1DEGREE, p)
 
 	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 1.5)
 

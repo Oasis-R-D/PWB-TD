@@ -95,6 +95,7 @@ end
 
 function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local vecSrc = vecOrigSrc;
+	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local pentIgnore = p
 	local flMaxFrac = 1.0
@@ -108,14 +109,15 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, MAX_RANGE, 0.0, pentIgnore)
 		
 		--DrawLine(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.0, 0.1, 0.1, 1)
-		ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary)
-
+		if fFirstBeam == true then
+			ClientCall(0, "client.drawlaser", mt.pos, vecDir, raycastDist, laserSprite, p, primary)
+			fFirstBeam = false
+		else
+			ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary)
+		end
+		
 		if not raycastHit then
 			break
-		end
-
-		if fFirstBeam == true then
-			fFirstBeam = false
 		end
 
 		if raycastPlayer ~= 0.0 then
@@ -216,7 +218,7 @@ function server.startShootbeam(primary, p, chargetime)
 
 	StopSound(data.firesound)
 
-	local _,vecSrc,_,vecAiming = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
+	local _,vecSrc,_,vecAiming = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	if primary == false then
 		if chargetime > getFullChargeTime() then
 			flDamage = 200
