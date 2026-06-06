@@ -250,8 +250,10 @@ function client.tickPlayerGLU(p, dt)
 					PlayHaptic(shootHaptic, 1)
 
 					PointLight(mt.pos, 0.1, 0.1, 0.5, math.abs((math.sin(GetTime() + rnd(1, 6)) * 3)) + 3) -- add sin wave to the B channel to make it flicker
-				else -- OPTIMIZATION: only pulsate light for firer
+					data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
+				else -- OPTIMIZATION: use less math for other clients
 					PointLight(mt.pos, 0.1, 0.1, 0.5, 3)
+					data.recoil = math.abs((math.sin(GetTime()) * 0.0625)) + 0.0625
 				end
 
 				if data.damageTime <= 0 then data.damageTime = EGON_DISCHARGE_INTERVAL end

@@ -5,6 +5,8 @@
 -- - GearBox Software (Half-Life: Opposing Force)
 -- - Novena (radial spread code)
 
+-- - Verbatim Man (crossbow bolt uses code loosely based on his pellet launcher's code) NOTE: Crossbow is not added yet
+
 ----------------------------------------------------------------------------------------------
 
 GLOBAL_HEADSHOTMULT = 2.0 -- 3.0 in the OG Half-Life
@@ -21,6 +23,31 @@ GLOBAL_9DEGREES = 0.07846
 GLOBAL_10DEGREES = 0.08716
 GLOBAL_15DEGREES = 0.13053
 GLOBAL_20DEGREES = 0.17365
+
+GLOBAL_WEAPONS = {
+   "CRBR",
+   "WRNCH",
+
+   "Mp5",
+   "M727",
+   "DE357",
+   "PYTH",
+   "PIST9MM",
+   "SG",
+
+   "M40",
+   "M249",
+
+   "TAU",
+   "GLU",
+   "DISP",
+
+   "FRAG",
+   "SATCH",
+   "TRIP",
+}
+
+GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 
 ----------------------------------------------------------------------------------------------
 
@@ -48,15 +75,18 @@ GLOBAL_20DEGREES = 0.17365
 #include "script/items/satchel.lua"
 #include "script/items/tripmine.lua"
 
+server.weaponTicks = {}
+client.weaponTicks = {}
+
 ----------------------------------------------------------------------------------------------
 
--- this file calls all weapon functions. To add your weapon just add it's functions here (make sure to #include it's lua file).
+-- this file calls all weapon functions.
 
--- to make a mod using this base, choose a weapon below to copy, then copy it's xml, vox and lua file (or you can make new ones completely)
--- in the .LUA file, replace all instances of the weapons name (suffix on the functions, some variables) and then add it's functions here
--- To remove unused/unwanted weapons, remove it's lua file, xml file(s), vox, sounds and then it's function calls and #include from this file
+-- to make a mod using this base, choose a weapon to base your weapon off of, then copy it's xml, vox and lua file (or you can make new ones completely)
+-- in the .LUA file, replace all instances of the weapons name (suffix on the functions, some variables) and then add it's suffix here in the weapons list above
+-- To remove unused/unwanted weapons, remove it's lua file, xml file(s), vox, sounds and then it's name in the weapons list and also its #include from this file
 
--- Weapon order in the HUD is set by the order they are called in the server.init()
+-- Weapon order in the HUD is set by the order they are written in the weapons list
 
 ----------------------------------------------------------------------------------------------
 
@@ -71,109 +101,33 @@ GLOBAL_20DEGREES = 0.17365
 
 -- declare weapons, pickup amounts
 function server.init()
-   -- MELEE (SLOT 1)
-   server.initCRBR()
-   server.initWRNCH()
+   for i = 1, GLOBAL_WEAPONS_AMNT do
+      _G.server["init" .. GLOBAL_WEAPONS[i]]()
+      table.insert(server.weaponTicks, _G.server["tick" .. GLOBAL_WEAPONS[i]]) 
+   end
 
-   -- SLOT 3
-   server.initMp5()
-   server.initM727()
-   server.initDE357()
-   server.initPYTH()
-   server.initPIST9MM()
-   server.initSG()
-
-   -- SLOT 6
-   server.initM40()
-   server.initM249()
-
-   -- SPECIALS (SLOT 6)
-   server.initTAU()
-   server.initGLU()
-   server.initDISP()
-
-   -- ITEMS (SLOT 5/NONE)
+   -- only on server!
    server.initMED()
-   server.initFRAG()
-   server.initSATCH()
-   server.initTRIP()
 end
 
 function server.tick(dt)
-   -- MELEE
-   server.tickCRBR(dt)
-   server.tickWRNCH(dt)
-
-   server.tickMp5(dt)
-   server.tickM727(dt)
-   server.tickM40(dt)
-   server.tickM249(dt)
-   server.tickDE357(dt)
-   server.tickPYTH(dt)
-   server.tickPIST9MM(dt)
-   server.tickSG(dt)
-
-   -- SPECIALS
-   server.tickTAU(dt)
-   server.tickGLU(dt)
-   server.tickDISP(dt)
-
-   -- ITEMS
-   server.tickMED(dt)
-   server.tickFRAG(dt)
-   server.tickSATCH(dt)
-   server.tickTRIP(dt)
+   for i = 1, GLOBAL_WEAPONS_AMNT do
+      server.weaponTicks[i](dt)
+   end
 end
 
--- load haptics 
+-- mostly to load haptics, amongst other things
 function client.init()
-   -- MELEE
-   client.initCRBR()
-   client.initWRNCH()
-
-   client.initMp5()
-   client.initM727()
-   client.initM40()
-   client.initM249()
-   client.initDE357()
-   client.initPYTH()
-   client.initPIST9MM()
-   client.initSG()
-
-   -- SPECIALS
-   client.initTAU()
-   client.initGLU()
-   client.initDISP()
-
-   -- ITEMS
-   client.initFRAG()
-   client.initSATCH()
-   client.initTRIP()
+   for i = 1, GLOBAL_WEAPONS_AMNT do
+      _G.client["init" .. GLOBAL_WEAPONS[i]]()
+      table.insert(client.weaponTicks, _G.client["tick" .. GLOBAL_WEAPONS[i]]) 
+   end
 end
 
 function client.tick(dt)
-   -- MELEE
-   client.tickCRBR(dt)
-   client.tickWRNCH(dt)
-
-   client.tickMp5(dt)
-   client.tickM727(dt)
-   client.tickM40(dt)
-   client.tickM249(dt)
-   client.tickDE357(dt)
-   client.tickPYTH(dt)
-   client.tickPIST9MM(dt)
-   client.tickSG(dt)
-
-   -- SPECIALS
-   client.tickTAU(dt)
-   client.tickGLU(dt)
-   client.tickDISP(dt)
-
-   -- ITEMS
-   client.tickFRAG(dt)
-   client.tickSATCH(dt)
-   client.tickTRIP(dt)
+   for i = 1, GLOBAL_WEAPONS_AMNT do
+      client.weaponTicks[i](dt)
+   end
 end
 
 -- Draw the magazine amount hud

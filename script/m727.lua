@@ -100,7 +100,7 @@ function server.secondaryFireM727(p)
 	SetTag(grenade_ent[2], "grenStyle", "impact")
 	SetTag(grenade_ent[2], "playerThrew", p)
 	SetBodyVelocity(grenade_ent[2], VecScale(dir, 20.32))
-	SetBodyAngularVelocity(grenade_ent[2], TransformToParentVec(GetPlayerEyeTransform(p), Vec(-rnd(2.54, 12.7), 0, 0)))
+	SetBodyAngularVelocity(grenade_ent[2], TransformToParentVec(mt, Vec(-rnd(2.54, 12.7), 0, 0)))
 
 	PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 300)
 end
