@@ -114,6 +114,9 @@ function server.tick(dt)
    for i = 1, GLOBAL_WEAPONS_AMNT do
       server.weaponTicks[i](dt)
    end
+   
+   -- only on server!
+   server.tickMED(dt)
 end
 
 -- mostly to load haptics, amongst other things
