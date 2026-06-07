@@ -135,6 +135,7 @@ function client.tickPlayerFRAG(p, dt)
 	
 	data.toolAnimator.maxActionPoseTime = 0.075
 
+	-- Check Fire
 	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
 		if data.coolDown < 0 then
 			data.inAttack = true
@@ -158,6 +159,7 @@ function client.tickPlayerFRAG(p, dt)
 
 			if IsPlayerLocal(p) then
 				ServerCall("server.primaryFireFRAG", p, data.chargedTime)
+				PlayHaptic(shootHaptic, 1)
 			end
 
 			data.coolDown = FIRERATE

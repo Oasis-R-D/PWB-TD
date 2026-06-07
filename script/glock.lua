@@ -153,31 +153,28 @@ function client.tickPlayerPIST9MM(p, dt)
 	
 	local data = PIST9MMplayers[p]
 
-	-- restore suppresor state visually
+	-- make data reset when reset conditions are met
+	data.dataReset = false
+
+	-- Restore Suppresor
 	if data.shapesNeedsUpd == true then
 		if HasTag(GetBodyShapes(GetToolBody(p))[5], "invisible") == true then
 			client.suppress(p, data.suppressed)
 			data.shapesNeedsUpd = false
 		end
-	end
-
-	-- make data reset when reset conditions are met
-	data.dataReset = false
-
-	if InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
+	-- Start Reload
+	elseif InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntPIST9MM > 0 then
 			data.coolDown = RELOAD_TIME
 		end
 		data.inreload = true
-	end
-	
-	if data.coolDown < 0 and data.inreload == true then	
+	-- Finish Reload
+	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
 		data.clipamntPIST9MM = math.min(CLIP_SIZE, ammo)
-	end
-
-	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntPIST9MM) then
+	-- Check Fire
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntPIST9MM) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
 			
@@ -194,7 +191,7 @@ function client.tickPlayerPIST9MM(p, dt)
 
 					-- shell ejection
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
@@ -234,7 +231,7 @@ function client.tickPlayerPIST9MM(p, dt)
 
 					-- shell ejection
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
@@ -278,9 +275,8 @@ function client.tickPlayerPIST9MM(p, dt)
 			
 			data.recoil = RECOIL_AMNT
 		end
-	end
-
-	if InputDown("grab", p) and canFire(p, ammo, data.clipamntPIST9MM) then
+	-- Check Altfire
+	elseif InputDown("grab", p) and canFire(p, ammo, data.clipamntPIST9MM) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
 
@@ -297,7 +293,7 @@ function client.tickPlayerPIST9MM(p, dt)
 					-- shell ejection
 					local toolBody = GetToolBody(p)
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
@@ -338,7 +334,7 @@ function client.tickPlayerPIST9MM(p, dt)
 					-- shell ejection
 					local toolBody = GetToolBody(p)
 					local transform = GetBodyTransform(toolBody)
-					local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+					local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 					local eject_direction=TransformToParentVec(transform, Vec(1, 0.2, 0))
 					ParticleReset()
 					ParticleGravity(rnd(-2, -8))
@@ -383,9 +379,8 @@ function client.tickPlayerPIST9MM(p, dt)
 			
 			data.recoil = RECOIL_AMNT
 		end
-	end
-	
-	if InputPressed("mmb", p) and GetPlayerCanUseTool(p) == true then
+	-- Check Tertiaryfire
+	elseif InputPressed("mmb", p) and GetPlayerCanUseTool(p) == true then
 		if data.tertiaryCoolDown < 0 then
 			data.tertiaryCoolDown = 0.5
 			data.suppressed = not data.suppressed

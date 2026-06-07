@@ -132,6 +132,7 @@ function client.tickPlayerM40(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
+	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
 		if data.clipamntM40 > 0 then
 			data.coolDown = RELOAD_TIME
@@ -140,14 +141,12 @@ function client.tickPlayerM40(p, dt)
 			data.coolDown = EMPTYRELOAD_TIME
 		end
 		data.inreload = true
-	end
-	
-	if data.coolDown < 0 and data.inreload == true then	
+	-- Finish Reload
+	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
 		data.clipamntM40 = math.min(CLIP_SIZE, ammo)
-	end
-
-	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntM40) then
+	-- Check Fire
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntM40) then
 		if data.coolDown < 0 then
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
@@ -188,9 +187,8 @@ function client.tickPlayerM40(p, dt)
 			
 			data.recoil = RECOIL_AMNT
 		end
-	end
-
-	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
+	-- Check Altfire	
+	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			if IsPlayerLocal(p) then
 				PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
@@ -233,7 +231,7 @@ function client.tickPlayerM40(p, dt)
 			if IsPlayerLocal(p) then
 				local toolBody = GetToolBody(p)
 				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 				local playervel = GetPlayerVelocity(p)
 				
 				-- shell ejection

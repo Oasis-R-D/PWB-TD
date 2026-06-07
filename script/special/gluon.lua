@@ -270,7 +270,7 @@ function client.tickPlayerGLU(p, dt)
 				data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
 			end
 
-				local playervel = GetPlayerVelocity(p)
+			local playervel = GetPlayerVelocity(p)
 
 			-- muzzleflash
 			ParticleReset()
@@ -306,9 +306,7 @@ function client.tickPlayerGLU(p, dt)
 	data.recoil = data.recoil - dt
 	data.damageTime = data.damageTime - dt
 	
-	if data.soundTime ~= nil then
-		data.soundTime = data.soundTime - dt
-	end
+	if data.soundTime ~= nil then data.soundTime = data.soundTime - dt end
 
 	-- RECOIL
 	if data.recoil > -0.5 then

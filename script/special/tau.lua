@@ -95,40 +95,32 @@ end
 
 function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 	local vecSrc = vecOrigSrc;
-	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local pentIgnore = p
 	local flMaxFrac = 1.0
 	local iPunches = 0
 	local fFirstBeam = true
-	local nMaxHits = 10.0
+	local nMaxHits = 10
 
-	while flDamage > 10.0 and nMaxHits > 0.0 do 
-		nMaxHits = nMaxHits - 1.0
+	while flDamage > 10.0 and nMaxHits > 0 do 
+		nMaxHits = nMaxHits - 1
 		
-		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, MAX_RANGE, 0.0, pentIgnore)
+		local raycastHit, raycastDist, raycastShape, raycastPlayer, _, raycastNormal = QueryShot(vecSrc, vecDir, MAX_RANGE, 0.0, p)
 		
 		--DrawLine(vecSrc, VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.0, 0.1, 0.1, 1)
 		if fFirstBeam == true then
+			local mt = GetToolLocationWorldTransform("muzzle", p)
 			ClientCall(0, "client.drawlaser", mt.pos, vecDir, raycastDist, laserSprite, p, primary)
 			fFirstBeam = false
-		else
-			ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary)
-		end
+		else ClientCall(0, "client.drawlaser", vecSrc, vecDir, raycastDist, laserSprite, p, primary) end
 		
-		if not raycastHit then
-			break
-		end
+		if not raycastHit then break end
 
-		if raycastPlayer ~= 0.0 then
+		if raycastPlayer ~= 0 then
 			ApplyPlayerDamage(raycastPlayer, flDamage/100.0, WPNNAME, p)
-			BloodVFX(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir, flDamage, raycastPlayer)
-		end
-
-		if raycastShape ~= 0.0 then -- hit the world, bounce and or penetrate
+			BloodVFX(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir, flDamage/100, raycastPlayer)
+			break
+		elseif raycastShape ~= 0 then -- hit the world, bounce and or penetrate
 			ApplyBodyImpulse(GetShapeBody(raycastShape), VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecScale(vecDir, flDamage*800.0))
-
-			pentIgnore = nil -- able to hit the player again
 
 			local n = -1.0 * VecDot(raycastNormal, vecDir);
 
@@ -148,69 +140,57 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				server.SpawnFireHook(vecSrc, 25)
 
 				-- lose energy
-				if n <= 0.0 then
-					n = 0.1
-				end
+				if n <= 0.0 then n = 0.1 end
 				flDamage = flDamage * (1.0 - n);
 
-			else -- penetrate
-				-- limit it to one hole punch
-				if iPunches > 5 then
-					break
-				end
+			elseif primary == false then -- try punching through wall if it's a secondary attack (primary is incapable of breaking through)
+				if iPunches > 5 then break end
 				
 				iPunches = iPunches + 1
 
-				--- try punching through wall if it's a secondary attack (primary is incapable of breaking through)
-				if primary == false then
-					local _, checkPenCastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), vecDir, 4.0, 0.0, pentIgnore)
+				local _, checkPenCastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), vecDir, 4.0, 0.0, p)
 
-					if checkPenCastDist >= 0.0625 then
-						local pencast2Hit, pencast2Dist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(vecDir, -1.0), 4.0, 0.0, pentIgnore)
-						local n2 = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
+				if checkPenCastDist >= 0.0625 then
+					local pencast2Hit, pencast2Dist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(vecDir, -1.0), 4.0, 0.0, p)
+					local n2 = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
 
-						--DebugWatch("penetration n", n2)
+					--DebugWatch("penetration n", n2)
 
-						if n2 < flDamage then
-							if n2 <= 0.0 then
-								n2 = 1.0
-							end
-							flDamage = flDamage - n2
-
-							MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 1.0, 0.75) -- entry hole
-							Paint(vecSrc, 1.5, "explosion", 0.6)
-
-							vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.25), vecDir)
-							server.SpawnFireHook(vecSrc, 50) 
-
-							MakeHole(vecSrc, 1.25, 1.0, 0.75) -- exit hole
-							Paint(vecSrc, 1.5, "explosion", 0.6)
-							server.SpawnFireHook(vecSrc, 50)
+					if n2 < flDamage then
+						if n2 <= 0.0 then
+							n2 = 1.0
 						end
-					else
-						flDamage = 0.0
-						local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
-						MakeHole(origin, 1.25, 0.75, 0.5)	
-						server.SpawnFireHook(origin, 50)
-						Paint(origin, 1.33, "explosion", 0.6)
+						flDamage = flDamage - n2
+
+						MakeHole(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), 1.25, 1.0, 0.75) -- entry hole
+						Paint(vecSrc, 1.5, "explosion", 0.6)
+
+						vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.25), vecDir)
+						server.SpawnFireHook(vecSrc, 50) 
+
+						MakeHole(vecSrc, 1.25, 1.0, 0.75) -- exit hole
+						Paint(vecSrc, 1.5, "explosion", 0.6)
+						server.SpawnFireHook(vecSrc, 50)
 					end
 				else
 					flDamage = 0.0
 					local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
-					MakeHole(origin, 1.25, 0.75, 0.5)
+					MakeHole(origin, 1.25, 0.75, 0.5)	
 					server.SpawnFireHook(origin, 50)
 					Paint(origin, 1.33, "explosion", 0.6)
 				end
+			else
+				flDamage = 0.0
+				local origin = VecAdd(vecSrc, VecScale(vecDir, raycastDist))
+				MakeHole(origin, 1.25, 0.75, 0.5)
+				server.SpawnFireHook(origin, 50)
+				Paint(origin, 1.33, "explosion", 0.6)
 			end
-		else
-			vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir)
-			--pentIgnore = ENT(pEntity->pev) -- ignore the hit player/ent next time?
-		end
+		else vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), vecDir) end
 	end
 end
 
 function server.startShootbeam(primary, p, chargetime)
-	chargetime = chargetime or 0
 	local data = TAUplayers[p]
 	
 	local flDamage = 0.0
@@ -220,6 +200,8 @@ function server.startShootbeam(primary, p, chargetime)
 
 	local _,vecSrc,_,vecAiming = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 	if primary == false then
+		chargetime = chargetime or 0
+
 		if chargetime > getFullChargeTime() then
 			flDamage = 200
 		else
@@ -235,8 +217,7 @@ function server.startShootbeam(primary, p, chargetime)
 		
 		if chargetime > 10 then
 			ApplyPlayerDamage(p, 0.5, "Overcharged")
-			local hitpos = GetPlayerEyeTransform(p)
-			BloodVFX(hitpos.pos, VecNormalize(back), 0.5, p)
+			BloodVFX(GetPlayerEyeTransform(p).pos, VecNormalize(back), 0.66, p)
 		end
 	else 
 		server.depleteAmmo(p, WPNID)
@@ -244,6 +225,7 @@ function server.startShootbeam(primary, p, chargetime)
 		flDamage = PLAYERDAMAGE -- fixed damage in primary
 		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	end
+
 	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p);
 end
 
@@ -301,6 +283,7 @@ function client.tickPlayerTAU(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
+	-- Check Fire
 	if InputDown("usetool", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
 		if data.coolDown < 0 then	
 			PointLight(mt.pos, 1, 0.5, 0.0, 3)
@@ -336,9 +319,8 @@ function client.tickPlayerTAU(p, dt)
 
 			data.recoil = RECOIL_AMNT
 		end
-	end
-
-	if InputPressed("grab", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
+	-- Check Altfire
+	elseif InputPressed("grab", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
 		if data.coolDown < 0 then
 			data.inAltAttack = true
 		end

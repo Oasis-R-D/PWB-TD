@@ -119,6 +119,7 @@ function client.tickPlayerTRIP(p, dt)
 	
 	data.toolAnimator.maxActionPoseTime = 0.075
 	
+	-- Check Fire
 	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
 		if data.coolDown < 0 then
 			local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
@@ -130,6 +131,7 @@ function client.tickPlayerTRIP(p, dt)
 				local pt = GetPlayerTransform(p)
 				if IsPlayerLocal(p) then
 					ServerCall("server.primaryFireTRIP", p)
+					PlayHaptic(shootHaptic, 1)
 				end
 
 				PlaySound(TMW_ON, VecAdd(pos, VecScale(dir, dist)), 1)

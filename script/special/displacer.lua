@@ -247,14 +247,14 @@ function client.tickPlayerDISP(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
+	-- Check Fire
 	if InputPressed("usetool", p) and canFire(p, ammo, ammo) and data.inAttack ~= true then
 		if data.coolDown < 0 then	
 			data.inAttack = true
 			data.coolDown = FIRERATE
 		end
-	end
-
-	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
+	-- Check Altfire
+	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
 		if data.coolDown < 0 then
 			data.coolDown = FIRERATE
 			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
@@ -310,15 +310,13 @@ function client.tickPlayerDISP(p, dt)
 
 			data.toolAnimator.forceActionPose = false
 
-			if data.inAltAttack == true then
-				if IsPlayerLocal(p) then
+			if IsPlayerLocal(p) then
+				if data.inAltAttack == true then
 					PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 20)
 					ServerCall("server.secondaryFireDISP", p)
 					camSineTime = 0
 					PlayHaptic(shootHaptic, 1)
-				end
-			else
-				if IsPlayerLocal(p) then
+				else
 					ServerCall("server.primaryFireDISP", p)
 					camSineTime = 0
 					PlayHaptic(shootHaptic, 1)

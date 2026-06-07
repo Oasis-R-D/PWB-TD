@@ -140,6 +140,7 @@ function client.tickPlayerPYTH(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 	
+	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamntPYTH < CLIP_SIZE and ammo > 0.5 and data.clipamntPYTH ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntPYTH > 0 then
@@ -147,14 +148,12 @@ function client.tickPlayerPYTH(p, dt)
 			data.timeuntileject = 1.35
 		end
 		data.inreload = true
-	end
-	
-	if data.coolDown < 0 and data.inreload == true then	
+	-- Finish Reload
+	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
 		data.clipamntPYTH = math.min(CLIP_SIZE, ammo)
-	end
-
-	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntPYTH) then
+	-- Check Fire
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntPYTH) then
 			if data.coolDown < 0 then	
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
@@ -193,9 +192,8 @@ function client.tickPlayerPYTH(p, dt)
 				
 				data.recoil = RECOIL_AMNT
 			end
-	end
-	
-	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
+	-- Check Altfire
+	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			data.altCoolDown = ALTFIRERATE
 			data.scoped = not data.scoped
@@ -270,7 +268,7 @@ function client.tickPlayerPYTH(p, dt)
 			if data.timeuntileject <= 0 then
 				local toolBody = GetToolBody(p)
 				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 				local playervel = GetPlayerVelocity(p)
 				
 				-- shell ejection

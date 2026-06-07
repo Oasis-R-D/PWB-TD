@@ -163,6 +163,7 @@ function client.tickPlayerDE357(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
+	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		if data.clipamntDE357 > 0.5 then
@@ -171,14 +172,12 @@ function client.tickPlayerDE357(p, dt)
 			data.coolDown = RELOAD_TIME
 		end
 		data.inreload = true
-	end
-	
-	if data.coolDown < 0 and data.inreload == true then	
+	-- Finish Reload
+	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
 		data.clipamntDE357 = math.min(CLIP_SIZE, ammo)
-	end
-
-	if InputDown("usetool", p) and canFire(p, ammo, data.clipamntDE357) then
+	-- Check Fire
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntDE357) then
 		if data.coolDown < 0 then	
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
@@ -192,7 +191,7 @@ function client.tickPlayerDE357(p, dt)
 				-- shell ejection
 				local toolBody = GetToolBody(p)
 				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, Vec(CASING_ORG[1],CASING_ORG[2],CASING_ORG[3]))
+				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
 				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 				ParticleReset()
 				ParticleGravity(rnd(-2, -8))
@@ -249,15 +248,13 @@ function client.tickPlayerDE357(p, dt)
 			
 			data.recoil = RECOIL_AMNT
 		end
-	end
-
-	if InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
+	-- Check Altfire
+	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.coolDown < 0 then
 			if IsPlayerLocal(p) then
 				ServerCall("server.secondaryFireDE357", p)
 			end
 			
-			data.toolAnimator.forceActionPose = true
 			if data.laseron == false then
 				PlaySound(LoadSound(LASERONSFX), pt.pos)
 			else
@@ -273,18 +270,17 @@ function client.tickPlayerDE357(p, dt)
 	if data.laseron == false or data.inreload then
 		data.toolAnimator.forceActionPose = false
 	else
+		data.toolAnimator.forceActionPose = true
 		if data.laserrefresh <= 0 then
 			local _,pos,_,dir = GetPlayerAimInfo(mt.pos, MAX_RANGE, p)
 			QueryInclude("player")
 			local hit, dist = QueryRaycast(VecSub(pos, Vec(0.0, 0.15, 0.0)), dir, 100)
 			local toolBody = GetToolBody(p)
-			local playervel = GetPlayerVelocity(p)
+			local playervel = VecScale(GetPlayerVelocity(p), dt)
 			local transform = GetBodyTransform(toolBody)
 			local laser_origin = TransformToParentPoint(transform, Vec(0.05, 0.05, -0.2))
 			dist = dist - 0.1
-			if IsPlayerLocal(p) then
-				DrawLine(VecAdd(laser_origin, VecScale(playervel, dt)), VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
-			end
+
 			if hit then
 				local breakPoint = VecAdd(pos, VecScale(dir, dist))
 				for i=0, 1 do
@@ -305,8 +301,10 @@ function client.tickPlayerDE357(p, dt)
 			
 			-- laser start point
 			if IsPlayerLocal(p) then
+
+				DrawLine(VecAdd(laser_origin, playervel), VecAdd(pos, VecScale(dir, dist)), 1.0, 0.1, 0.1, 0.25)
+
 				for i=0, 1 do
-					local playervel = GetPlayerVelocity(p)
 					ParticleReset()
 					ParticleGravity(0)
 					ParticleRadius(0.1)
@@ -328,10 +326,6 @@ function client.tickPlayerDE357(p, dt)
 				data.laserrefresh = 0.0
 			end
 		end
-	end
-	
-	if data.laseron == true then
-		data.toolAnimator.timeSinceFire = 0.0 -- use force on instead?
 	end
 	
 	-- decrease firing cooldown and recoil
