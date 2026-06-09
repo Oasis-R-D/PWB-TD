@@ -1,10 +1,6 @@
 -- copy this for the most basic mag loaded weapon (INCLUDES LASER)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local RELOAD_TIME = 1.5 -- seconds
 local RELOAD_SOUND = "MOD/snd/DeagR.ogg"
@@ -27,11 +23,11 @@ local WPNNAME = "Desert Eagle"
 local CASING_ORG = Vec(0.02, 0.25, 0.1)
 
 -- Per weapon data storer
-DE357players = {}
+local playerData = {}
 
 function createPlayerCLIENTdataDE357()
     return {
-		clipamntDE357 = CLIP_SIZE,
+		clipamnt = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -57,13 +53,13 @@ end
 
 function server.tickDE357(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerSERVERdataDE357()
+		playerData[p] = createPlayerSERVERdataDE357()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
-		DE357players[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -75,19 +71,19 @@ function server.tickPlayerDE357(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if DE357players[p].dataReset == false then
-			DE357players[p] = createPlayerSERVERdataDE357()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerSERVERdataDE357()
 		end
 		return
 	end
 
-	DE357players[p].dataReset = false
+	playerData[p].dataReset = false
 end
 
 function server.primaryFireDE357(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local data = DE357players[p]
+	local data = playerData[p]
 	
 	local spread = 0.1
 	if data.laseron == true then
@@ -105,7 +101,7 @@ function server.primaryFireDE357(p)
 end
 
 function server.secondaryFireDE357(p)
-	local data = DE357players[p]
+	local data = playerData[p]
 	data.laseron = not data.laseron
 end
 
@@ -117,11 +113,11 @@ end
 
 function client.tickDE357(dt)
 	for p in PlayersAdded() do
-		DE357players[p] = createPlayerCLIENTdataDE357();
+		playerData[p] = createPlayerCLIENTdataDE357();
 	end
 
 	for p in PlayersRemoved() do
-		DE357players[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -136,8 +132,8 @@ function client.tickPlayerDE357(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if DE357players[p].dataReset == false then
-			DE357players[p] = createPlayerCLIENTdataDE357()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataDE357()
 		end
 		return
 	end
@@ -158,15 +154,15 @@ function client.tickPlayerDE357(p, dt)
 		return
 	end
 	
-	local data = DE357players[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
 	-- Start Reload
-	if InputPressed("r", p) and data.inreload == false and data.clipamntDE357 < CLIP_SIZE and ammo > 0.5 and data.clipamntDE357 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-		if data.clipamntDE357 > 0.5 then
+		if data.clipamnt > 0.5 then
 			data.coolDown = RELOAD_TIME
 		else
 			data.coolDown = RELOAD_TIME
@@ -175,9 +171,9 @@ function client.tickPlayerDE357(p, dt)
 	-- Finish Reload
 	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntDE357 = math.min(CLIP_SIZE, ammo)
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntDE357) then
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then	
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
@@ -233,8 +229,8 @@ function client.tickPlayerDE357(p, dt)
 				SpawnParticle(mt.pos, playervel, 0.125)
 			end
 				
-			data.clipamntDE357 = data.clipamntDE357 - 1
-			if data.clipamntDE357 > 0.5 then
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0.5 then
 				if data.laseron == true then
 					data.coolDown = LASERFIRERATE
 				else
@@ -367,23 +363,15 @@ function client.tickPlayerDE357(p, dt)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
 		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntDE357
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 end
 
 function client.drawDE357()
-	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
+	if GetPlayerTool() ~= WPNID then return end
 
-	client.drawAmmo(clipamnt, CLIP_SIZE)
+	local p = GetLocalPlayer()
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
 end

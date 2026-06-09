@@ -1,10 +1,6 @@
 -- copy this for the most basic mag loaded weapon (INCLUDES PUSHBACK ON FIRE)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local RELOAD_TIME = 3.8 -- seconds
 local RELOAD_SOUND = "MOD/snd/m249r.ogg"
@@ -22,11 +18,11 @@ local WPNNAME = "M249 SAW"
 local CASING_ORG = Vec(0.02, 0.05, -0.05)
 
 -- Per weapon data storer
-M249players = {}
+local playerData = {}
 
 function createPlayerCLIENTdataM249()
     return {
-		clipamntM249 = CLIP_SIZE,
+		clipamnt = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -49,13 +45,13 @@ end
 
 function server.tickM249(dt)
 	for p in PlayersAdded() do
-		M249players[p] = createPlayerSERVERdataM249()
+		playerData[p] = createPlayerSERVERdataM249()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
-		M249players[p] = nil
+		playerData[p] = nil
 	end
 
 	-- doesn't need server ticking
@@ -71,13 +67,45 @@ function server.primaryFireM249(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 	
 	if IsPlayerGrounded(p) and GetPlayerCrouch(p) < 0.1 then
-		local playertrans = GetPlayerTransform(p)
-		local playerdir = TransformToParentVec(playertrans, Vec(0, 0, 1))
-		local newplayervel = VecScale(VecNormalize(playerdir), 1.5)
-		SetPlayerVelocity(VecAdd(GetPlayerVelocity(p), newplayervel), p)
+		local vecVelocity = GetPlayerVelocity(p)
+		local flZVel = vecVelocity[2]
+
+		local vecInvPushDir = TransformToParentVec(GetPlayerTransform(p), Vec(0, 0, -2))
+
+		local flNewZVel = 10.1575
+
+		if vecInvPushDir[2] >= 0.3714 then
+			flNewZVel = vecInvPushDir[2]
+		end
+
+		local newVel = 0
+
+		if isMP() then
+			newVel = VecSub(vecVelocity, vecInvPushDir)
+
+			-- Restore Z velocity to make deathmatch easier.
+			newVel[2] = flZVel
+		else
+			local flZTreshold = -1 * (flNewZVel + 3.174)
+
+			newVel = vecVelocity
+
+			if (vecVelocity[1] > flZTreshold) then
+				newVel[1] = newVel[1] - vecInvPushDir[1]
+			end
+
+			if (vecVelocity[3] > flZTreshold) then
+				newVel[3] = newVel[3] - vecInvPushDir[3]
+			end
+
+			newVel[2] = newVel[2] - vecInvPushDir[2]
+			
+		end
+
+		SetPlayerVelocity( newVel, p )
 	end
 	
-	local data = M249players[p]
+	local data = playerData[p]
 
 	local crouch = GetPlayerCrouch(p)
 	local pvel = GetPlayerVelocity(p)
@@ -109,11 +137,11 @@ end
 
 function client.tickM249(dt)
 	for p in PlayersAdded() do
-		M249players[p] = createPlayerCLIENTdataM249();
+		playerData[p] = createPlayerCLIENTdataM249();
 	end
 
 	for p in PlayersRemoved() do
-		M249players[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -121,15 +149,14 @@ function client.tickM249(dt)
 	end
 end
 
-clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM249(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if M249players[p].dataReset == false then
-			M249players[p] = createPlayerCLIENTdataM249()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataM249()
 		end
 		return
 	end
@@ -150,22 +177,22 @@ function client.tickPlayerM249(p, dt)
 		return
 	end
 	
-	local data = M249players[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 	
 	-- Start Reload
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM249 < CLIP_SIZE and ammo > 0.5 and data.clipamntM249 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		data.coolDown = RELOAD_TIME
 		data.inreload = true
 	-- Finish Reload
 	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntM249 = math.min(CLIP_SIZE, ammo)
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntM249) then
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
@@ -185,7 +212,7 @@ function client.tickPlayerM249(p, dt)
 				ParticleGravity(rnd(-2, -8))
 				ParticleRadius(0.02)
 				ParticleAlpha(1)
-				if data.alteject == true then -- this is unrealistic, it should eject BOTH at the same time but HLOPFOR works like this
+				if data.alteject == true then -- opfor ejects casings and belt bits separately
 					ParticleColor(0.8, 0.6, 0)
 				else
 					ParticleColor(0.5, 0.5, 0.5)
@@ -215,8 +242,8 @@ function client.tickPlayerM249(p, dt)
 				SpawnParticle(mt.pos, playervel, 0.125)
 			end
 				
-			data.clipamntM249 = data.clipamntM249 - 1
-			if data.clipamntM249 > 0 then
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
 				data.coolDown = FIRERATE
 			elseif ammo > 1 then
 				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
@@ -251,21 +278,21 @@ function client.tickPlayerM249(p, dt)
 	local toolBody = GetToolBody(p)
 	local shapes = GetBodyShapes(toolBody)
 	
-	if data.clipamntM249 < 4.5 then -- four shots left
+	if data.clipamnt < 4.5 then -- four shots left
 		-- hide third shell
 		SetTag(shapes[3], "invisible")
 	elseif HasTag(shapes[3], "invisible") == true then
 		RemoveTag(shapes[3], "invisible")
 	end
 	
-	if data.clipamntM249 < 2.5 then -- two shots left
+	if data.clipamnt < 2.5 then -- two shots left
 		-- hide second shell
 		SetTag(shapes[2], "invisible")
 	elseif HasTag(shapes[2], "invisible") == true then
 		RemoveTag(shapes[2], "invisible")
 	end
 	
-	if data.clipamntM249 < 0.5 then -- empty mag
+	if data.clipamnt < 0.5 then -- empty mag
 		-- hide first shell
 		SetTag(shapes[1], "invisible")
 	elseif HasTag(shapes[1], "invisible") == true then
@@ -289,23 +316,15 @@ function client.tickPlayerM249(p, dt)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
 		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntM249
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 end
 
 function client.drawM249()
-	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
+	if GetPlayerTool() ~= WPNID then return end
 
-	client.drawAmmo(clipamnt, CLIP_SIZE)
+	local p = GetLocalPlayer()
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
 end

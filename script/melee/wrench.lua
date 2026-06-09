@@ -1,11 +1,6 @@
 -- copy this for the most basic melee with charge attack
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
-
 -- Per weapon constants
 local RECOIL_AMNT = 0.3
 local DAMAGE = 0.2
@@ -14,7 +9,7 @@ local WPNID = "opforwrench"
 local WPNNAME = "Pipe Wrench"
 
 -- Per weapon data storer
-WRNCHplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataWRNCH()
     return {
@@ -49,13 +44,13 @@ end
 
 function server.tickWRNCH(dt)
 	for p in PlayersAdded() do
-		WRNCHplayers[p] = createPlayerSERVERdataWRNCH()
+		playerData[p] = createPlayerSERVERdataWRNCH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
 
 	for p in PlayersRemoved() do
-		WRNCHplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -64,7 +59,7 @@ function server.tickWRNCH(dt)
 end
 
 function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
-	local data = WRNCHplayers[m_pPlayer]
+	local data = playerData[m_pPlayer]
 	
 	local fDidHit = false
 	
@@ -101,7 +96,7 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 end
 
 function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
-	local data = WRNCHplayers[m_pPlayer]
+	local data = playerData[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
@@ -124,7 +119,7 @@ function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 end
 
 function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
-	local data = WRNCHplayers[m_pPlayer]
+	local data = playerData[m_pPlayer]
 	
 	local fDidHit = false
 	
@@ -168,7 +163,7 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 end
 
 function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
-	local data = WRNCHplayers[m_pPlayer]
+	local data = playerData[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
 	data.toolAnimator.forceSecondaryActionPose = false
@@ -196,20 +191,20 @@ function server.tickPlayerWRNCH(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerSERVERdataWRNCH()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerSERVERdataWRNCH()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
-		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerSERVERdataWRNCH()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerSERVERdataWRNCH()
 		end
 		return
 	end
 	
-	local data = WRNCHplayers[p]
+	local data = playerData[p]
 
 	data.dataReset = false
 
@@ -260,11 +255,11 @@ end
 
 function client.tickWRNCH(dt)
 	for p in PlayersAdded() do
-		WRNCHplayers[p] = createPlayerCLIENTdataWRNCH();
+		playerData[p] = createPlayerCLIENTdataWRNCH();
 	end
 
 	for p in PlayersRemoved() do
-		WRNCHplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -275,23 +270,23 @@ end
 function client.tickPlayerWRNCH(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
-	if GetPlayerHealth(p) <= 0 and WRNCHplayers[p].dataReset == false then
-		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
+	if GetPlayerHealth(p) <= 0 and playerData[p].dataReset == false then
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataWRNCH()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
-		if WRNCHplayers[p].dataReset == false then
-			WRNCHplayers[p] = createPlayerCLIENTdataWRNCH()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataWRNCH()
 		end
 		return
 	end
 
 	local pt = GetPlayerTransform(p)
 
-	local data = WRNCHplayers[p]
+	local data = playerData[p]
 
 	data.dataReset = false
 

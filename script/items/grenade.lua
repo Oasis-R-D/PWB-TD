@@ -1,10 +1,6 @@
 -- copy this for a "basic" grenade (this is the weapon, thrown object in items/thrown/throwngren.lua)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local PICKUP_SIZE = 5.0
 local RECOIL_AMNT = 0.075
@@ -14,7 +10,7 @@ local WPNID = "hlgrenade"
 local WPNNAME = "Mk2 Frag"
 
 -- Per weapon data storer
-FRAGplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataFRAG()
 	return {
@@ -97,11 +93,11 @@ end
 
 function client.tickFRAG(dt)
 	for p in PlayersAdded() do
-		FRAGplayers[p] = createPlayerCLIENTdataFRAG();
+		playerData[p] = createPlayerCLIENTdataFRAG();
 	end
 
 	for p in PlayersRemoved() do
-		FRAGplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -113,22 +109,22 @@ function client.tickPlayerFRAG(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if FRAGplayers[p].dataReset == false then
-			FRAGplayers[p] = createPlayerCLIENTdataFRAG()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataFRAG()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		if FRAGplayers[p].dataReset == false then
-			FRAGplayers[p] = createPlayerCLIENTdataFRAG()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataFRAG()
 		end
 		return
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	
-	local data = FRAGplayers[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false

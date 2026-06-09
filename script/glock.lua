@@ -1,10 +1,6 @@
 -- copy this for a basic pistol with separate sounds when not fired by the client
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local RELOAD_TIME = 1.5 -- seconds
 local RELOAD_SOUND = "MOD/snd/glockR.ogg"
@@ -26,11 +22,11 @@ local WPNNAME = "9mm HandGun"
 local CASING_ORG = Vec(0.02, 0.25, 0.0)
 
 -- Per weapon data storer
-PIST9MMplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataPIST9MM()
     return {
-		clipamntPIST9MM = CLIP_SIZE,
+		clipamnt = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		tertiaryCoolDown = 0.0,
@@ -95,11 +91,11 @@ end
 
 function client.tickPIST9MM(dt)
 	for p in PlayersAdded() do
-		PIST9MMplayers[p] = createPlayerCLIENTdataPIST9MM();
+		playerData[p] = createPlayerCLIENTdataPIST9MM();
 	end
 
 	for p in PlayersRemoved() do
-		PIST9MMplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -107,7 +103,6 @@ function client.tickPIST9MM(dt)
 	end
 end
 
-clipamnt = 0
 local camSineTime = nil
 
 function client.suppress(p, suppressed)
@@ -126,14 +121,14 @@ function client.tickPlayerPIST9MM(p, dt)
 	end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if PIST9MMplayers[p].dataReset == false then
-			PIST9MMplayers[p] = createPlayerCLIENTdataPIST9MM()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataPIST9MM()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		PIST9MMplayers[p].shapesNeedsUpd = true
+		playerData[p].shapesNeedsUpd = true
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end
@@ -143,7 +138,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	if PIST9MMplayers[p].suppressed == true then mt = GetToolLocationWorldTransform("supend", p) end
+	if playerData[p].suppressed == true then mt = GetToolLocationWorldTransform("supend", p) end
 
 	local ammo = GetToolAmmo(WPNID, p)
 
@@ -151,7 +146,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		return
 	end
 	
-	local data = PIST9MMplayers[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
@@ -163,18 +158,18 @@ function client.tickPlayerPIST9MM(p, dt)
 			data.shapesNeedsUpd = false
 		end
 	-- Start Reload
-	elseif InputPressed("r", p) and data.inreload == false and data.clipamntPIST9MM < CLIP_SIZE and ammo > 0.5 and data.clipamntPIST9MM ~= ammo then
+	elseif InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-		if data.clipamntPIST9MM > 0 then
+		if data.clipamnt > 0 then
 			data.coolDown = RELOAD_TIME
 		end
 		data.inreload = true
 	-- Finish Reload
 	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntPIST9MM = math.min(CLIP_SIZE, ammo)
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntPIST9MM) then
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
 			
@@ -263,8 +258,8 @@ function client.tickPlayerPIST9MM(p, dt)
 				end
 			end
 				
-			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
-			if data.clipamntPIST9MM > 0 then
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
 				data.coolDown = FIRERATE
 			elseif ammo > 1 then
 				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
@@ -276,7 +271,7 @@ function client.tickPlayerPIST9MM(p, dt)
 			data.recoil = RECOIL_AMNT
 		end
 	-- Check Altfire
-	elseif InputDown("grab", p) and canFire(p, ammo, data.clipamntPIST9MM) then
+	elseif InputDown("grab", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
 
@@ -368,8 +363,8 @@ function client.tickPlayerPIST9MM(p, dt)
 			
 			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 			
-			data.clipamntPIST9MM = data.clipamntPIST9MM - 1
-			if data.clipamntPIST9MM > 0 then
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
 				data.coolDown = ALTFIRERATE
 			elseif ammo > 1 then
 				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
@@ -427,23 +422,15 @@ function client.tickPlayerPIST9MM(p, dt)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
 		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntPIST9MM
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 end
 
 function client.drawPIST9MM()
-	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
+	if GetPlayerTool() ~= WPNID then return end
 
-	client.drawAmmo(clipamnt, CLIP_SIZE)
+	local p = GetLocalPlayer()
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
 end

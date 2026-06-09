@@ -22,11 +22,7 @@ function isMP()
 	return GetMaxPlayers() > 1
 end
 
-function client.drawAmmo(curclip, maxclip)
-	if curclip == -16 then -- gun is empty
-		return
-	end
-	
+function client.drawAmmo(curclip, maxclip)	
 	UiPush()
 		UiFont("bold.ttf", 32)
 		UiAlign("center middle")

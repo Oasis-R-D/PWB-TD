@@ -1,10 +1,6 @@
 -- copy this for the most basic tube loaded weapon with alt fire
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local RELOAD_TIME = 0.8 -- seconds
 local RELOAD_SOUND = "MOD/snd/sgreloadstart.ogg"
@@ -26,11 +22,11 @@ local WPNNAME = "Assault Shotgun"
 local CASING_ORG = Vec(0.02, 0.1, 0.075)
 
 -- Per weapon data storer
-SGplayers = {}
+local playerData = {}
 	
 function createPlayerCLIENTdataSG()
     return {
-		clipamntSG = CLIP_SIZE,
+		clipamnt = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -98,11 +94,11 @@ end
 
 function client.tickSG(dt)
 	for p in PlayersAdded() do
-		SGplayers[p] = createPlayerCLIENTdataSG();
+		playerData[p] = createPlayerCLIENTdataSG();
 	end
 
 	for p in PlayersRemoved() do
-		SGplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -110,15 +106,14 @@ function client.tickSG(dt)
 	end
 end
 
-clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerSG(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if SGplayers[p].dataReset == false then
-			SGplayers[p] = createPlayerCLIENTdataSG()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataSG()
 		end
 		return
 	end
@@ -139,18 +134,18 @@ function client.tickPlayerSG(p, dt)
 		return
 	end
 	
-	local data = SGplayers[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 	
 	-- Start Reload
-	if InputPressed("r", p) and data.inreload == false and data.clipamntSG < CLIP_SIZE and ammo > 0.5 and data.clipamntSG ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		local reloadtime = nil
-		local shellsneedingloading = math.min(CLIP_SIZE - data.clipamntSG, ammo)
+		local shellsneedingloading = math.min(CLIP_SIZE - data.clipamnt, ammo)
 
-		if data.clipamntSG > 0 then
+		if data.clipamnt > 0 then
 			reloadtime = RELOAD_TIME * shellsneedingloading
 			data.shellstoload = shellsneedingloading
 		else
@@ -165,9 +160,9 @@ function client.tickPlayerSG(p, dt)
 	-- Finish Reload
 	elseif data.inreload == true and data.coolDown < 0 then
 		data.inreload = false
-		data.clipamntSG = math.min(CLIP_SIZE, ammo)
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntSG) then
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 			if data.coolDown < 0 then				
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
@@ -199,14 +194,14 @@ function client.tickPlayerSG(p, dt)
 					SpawnParticle(mt.pos, playervel, 0.125)
 				end
 					
-				data.clipamntSG = data.clipamntSG - 1
-				if data.clipamntSG > 0 then
+				data.clipamnt = data.clipamnt - 1
+				if data.clipamnt > 0 then
 					data.coolDown = FIRERATE
 					data.pumptime = FIRERATE - 0.25 -- 0.5
 				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = nil
-					local shellsneedingloading = CLIP_SIZE - data.clipamntSG
+					local shellsneedingloading = CLIP_SIZE - data.clipamnt
 
 					if shellsneedingloading > ammo then
 						shellsneedingloading = ammo
@@ -223,7 +218,7 @@ function client.tickPlayerSG(p, dt)
 				data.recoil = RECOIL_AMNT
 			end
 	-- Check Altfire
-	elseif InputDown("grab", p) and canFire(p, ammo-1, data.clipamntSG-1) then 
+	elseif InputDown("grab", p) and canFire(p, ammo-1, data.clipamnt-1) then 
 			if data.coolDown < 0 then
 				PointLight(mt.pos, 1, 0.7, 0.5, 3)
 				if IsPlayerLocal(p) then
@@ -257,15 +252,15 @@ function client.tickPlayerSG(p, dt)
 
 				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 				
-				data.clipamntSG = data.clipamntSG - 2
-				if data.clipamntSG > 0 then
+				data.clipamnt = data.clipamnt - 2
+				if data.clipamnt > 0 then
 					data.coolDown = ALTFIRERATE
 					data.pumptime = ALTFIRERATE - 0.25
 				elseif ammo > 1 then
 					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 					local reloadtime = 0
 					
-					local shellsneedingloading = math.min(CLIP_SIZE - data.clipamntSG, ammo)
+					local shellsneedingloading = math.min(CLIP_SIZE - data.clipamnt, ammo)
 
 					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
 					data.pumptime = reloadtime - 0.25
@@ -375,23 +370,15 @@ function client.tickPlayerSG(p, dt)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
 		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntSG
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 end
 
 function client.drawSG()
-	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
+	if GetPlayerTool() ~= WPNID then return end
 
-	client.drawAmmo(clipamnt, CLIP_SIZE)
+	local p = GetLocalPlayer()
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
 end

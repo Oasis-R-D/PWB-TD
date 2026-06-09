@@ -1,10 +1,6 @@
 -- copy this for a "basic" grenade (this is the weapon, thrown object in items/thrown/throwngren.lua)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local PICKUP_SIZE = 3.0
 local RECOIL_AMNT = 0.075
@@ -13,7 +9,7 @@ local WPNID = "hltripmine"
 local WPNNAME = "Trip Mine"
 
 -- Per weapon data storer
-TRIPplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataTRIP()
 	return {
@@ -81,11 +77,11 @@ end
 
 function client.tickTRIP(dt)
 	for p in PlayersAdded() do
-		TRIPplayers[p] = createPlayerCLIENTdataTRIP();
+		playerData[p] = createPlayerCLIENTdataTRIP();
 	end
 
 	for p in PlayersRemoved() do
-		TRIPplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -97,22 +93,22 @@ function client.tickPlayerTRIP(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if TRIPplayers[p].dataReset == false then
-			TRIPplayers[p] = createPlayerCLIENTdataTRIP()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataTRIP()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		if TRIPplayers[p].dataReset == false then
-			TRIPplayers[p] = createPlayerCLIENTdataTRIP()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataTRIP()
 		end
 		return
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	
-	local data = TRIPplayers[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false

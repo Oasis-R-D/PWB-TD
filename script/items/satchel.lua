@@ -1,10 +1,6 @@
 -- copy this for a "basic" grenade (this is the weapon, thrown object in items/thrown/throwngren.lua)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/gren.ogg"
 local PICKUP_SIZE = 5.0
@@ -14,7 +10,7 @@ local WPNID = "hlsatchel"
 local WPNNAME = "Satchel Charge"
 
 -- Per weapon data storer
-SATCHplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataSATCH()
 	return {
@@ -39,13 +35,13 @@ end
 
 function server.tickSATCH(dt)
 	for p in PlayersAdded() do
-		SATCHplayers[p] = createPlayerSERVERdataSATCH()
+		playerData[p] = createPlayerSERVERdataSATCH()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 5, p)
 	end
 
 	for p in PlayersRemoved() do
-		SATCHplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -57,14 +53,14 @@ function server.tickPlayerSATCH(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerSERVERdataSATCH()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerSERVERdataSATCH()
 		end
 		return
 	end
 
 	-- make data reset when reset conditions are met
-	SATCHplayers[p].dataReset = false
+	playerData[p].dataReset = false
 
 	local ammo = GetToolAmmo(WPNID, p)
 	if ammo < 9999 and ammo > 10 then
@@ -73,7 +69,7 @@ function server.tickPlayerSATCH(p, dt)
 end
 
 function server.primaryFireSATCH(p)
-	local data = SATCHplayers[p]
+	local data = playerData[p]
 
 	local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, MAX_RANGE, p)
 
@@ -100,7 +96,7 @@ function server.primaryFireSATCH(p)
 end
 
 function server.secondaryFireSATCH(p)
-	local data = SATCHplayers[p]
+	local data = playerData[p]
 
 	for i = 1, #data.satchelBodies do
 		SetTag(data.satchelBodies[i], "detonate")
@@ -117,11 +113,11 @@ end
 
 function client.tickSATCH(dt)
 	for p in PlayersAdded() do
-		SATCHplayers[p] = createPlayerCLIENTdataSATCH();
+		playerData[p] = createPlayerCLIENTdataSATCH();
 	end
 
 	for p in PlayersRemoved() do
-		SATCHplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -133,22 +129,22 @@ function client.tickPlayerSATCH(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 
 	if GetPlayerHealth(p) <= 0 then
-		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerCLIENTdataSATCH()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataSATCH()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		if SATCHplayers[p].dataReset == false then
-			SATCHplayers[p] = createPlayerCLIENTdataSATCH()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataSATCH()
 		end
 		return
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
 	
-	local data = SATCHplayers[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false

@@ -1,10 +1,6 @@
 -- copy this for a basic pistol with separate sounds when not fired by the client
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/tauFire.ogg"
 local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
@@ -20,7 +16,7 @@ local WPNID = "hltau"
 local WPNNAME = "Tau Cannon"
 
 -- Per weapon data storer
-TAUplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataTAU()
     return {
@@ -56,13 +52,13 @@ end
 
 function server.tickTAU(dt)
 	for p in PlayersAdded() do
-		TAUplayers[p] = createPlayerSERVERdataTAU();
+		playerData[p] = createPlayerSERVERdataTAU();
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
-		TAUplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	-- doesn't need server ticking
@@ -134,11 +130,30 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				vecDir = r;
 				vecSrc = VecAdd(VecAdd(vecSrc, VecScale(oldVecDir, raycastDist)), VecScale(vecDir, 0.2))
 
-				-- small explosion here? (no idea how to do radius damage)
 				MakeHole(vecSrc, 0.9, 0.5, 0.25)
 				Paint(vecSrc, 1.0, "explosion", 0.6)
 				server.SpawnFireHook(vecSrc, 25)
 
+				local damage_radius = (flDamage * 2.5 * n) / 39.37
+				local falloff = flDamage / damage_radius
+
+				-- Radius Damage
+				for id in Players() do
+					local playerPos = TransformToParentPoint(GetPlayerTransform(id), Vec(0, 1))
+					local dist = VecLength(VecSub(vecSrc, playerPos))
+					if dist < damage_radius then
+						QueryRequire("large visible physical")
+						local pHit = QueryRaycast(playerPos, VecNormalize(VecSub(vecSrc, playerPos)), dist)
+						if not pHit then
+							local flAdjustedDamage = flDamage - (dist * falloff)
+							if flAdjustedDamage > 0 then 
+								ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, p)
+								BloodVFX(playerPos, VecNormalize(VecSub(playerPos, vecSrc)), flAdjustedDamage/100, id)
+							end
+						end
+					end
+				end
+						
 				-- lose energy
 				if n <= 0.0 then n = 0.1 end
 				flDamage = flDamage * (1.0 - n);
@@ -151,7 +166,9 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				local _, checkPenCastDist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), vecDir, 4.0, 0.0, p)
 
 				if checkPenCastDist >= 0.0625 then
+					-- trace backwards to find exit point
 					local pencast2Hit, pencast2Dist = QueryShot(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(vecDir, -1.0), 4.0, 0.0, p)
+
 					local n2 = VecLength(VecSub(VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 0.2)), VecScale(VecScale(vecDir, -1.0), pencast2Dist))))
 
 					--DebugWatch("penetration n", n2)
@@ -167,6 +184,35 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 
 						vecSrc = VecAdd(VecAdd(vecSrc, VecScale(vecDir, raycastDist + 1.5)), VecScale(VecScale(vecDir, -1), pencast2Dist - 0.25), vecDir)
 						server.SpawnFireHook(vecSrc, 50) 
+
+						local damage_radius = 0
+						if isMP() then
+							damage_radius = flDamage * 1.75
+						else
+							damage_radius = flDamage * 2.5
+						end
+
+						damage_radius = damage_radius / 39.37
+
+						local falloff = flDamage / damage_radius
+
+						local vecPos = VecAdd(vecSrc, VecScale(VecDir, 1))
+
+						-- Radius Damage
+						for id in Players() do
+							local playerPos = TransformToParentPoint(GetPlayerTransform(id), Vec(0, 1))
+							local dist = VecLength(VecSub(vecPos, playerPos))
+							if dist < damage_radius then
+								local pHit = QueryRaycast(playerPos, VecNormalize(VecSub(vecPos, playerPos)), dist)
+								if not pHit then
+									local flAdjustedDamage = flDamage - (dist * falloff)
+									if flAdjustedDamage > 0 then 
+										ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, p)
+										BloodVFX(playerPos, VecNormalize(VecSub(playerPos, vecPos)), flAdjustedDamage/100, id)
+									end
+								end
+							end
+						end
 
 						MakeHole(vecSrc, 1.25, 1.0, 0.75) -- exit hole
 						Paint(vecSrc, 1.5, "explosion", 0.6)
@@ -191,7 +237,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 end
 
 function server.startShootbeam(primary, p, chargetime)
-	local data = TAUplayers[p]
+	local data = playerData[p]
 	
 	local flDamage = 0.0
 	local mt = GetToolLocationWorldTransform("muzzle", p)
@@ -238,11 +284,11 @@ end
 
 function client.tickTAU(dt)
 	for p in PlayersAdded() do
-		TAUplayers[p] = createPlayerCLIENTdataTAU();
+		playerData[p] = createPlayerCLIENTdataTAU();
 	end
 
 	for p in PlayersRemoved() do
-		TAUplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -256,13 +302,17 @@ function client.tickPlayerTAU(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if TAUplayers[p].dataReset == false then
-			TAUplayers[p] = createPlayerCLIENTdataTAU()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataTAU()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataTAU()
+		end
+
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end
@@ -278,7 +328,7 @@ function client.tickPlayerTAU(p, dt)
 		return
 	end
 	
-	local data = TAUplayers[p]
+	local data = playerData[p]
 	
 	-- make data reset when reset conditions are met
 	data.dataReset = false
@@ -356,7 +406,6 @@ function client.tickPlayerTAU(p, dt)
 			end
 		end
 		
-
 		local pitch = (data.chargedTime) * (150 / getFullChargeTime()) + 100
 		if pitch > 250 then
 			pitch = 250

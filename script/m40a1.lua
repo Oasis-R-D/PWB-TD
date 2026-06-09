@@ -1,10 +1,6 @@
 -- copy this for the most basic scoped mag loaded weapon with slower empty reloads (INCLUDES SCOPE)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local RELOAD_TIME = 2.32 -- seconds
 local EMPTYRELOAD_TIME = 4.1 -- seconds
@@ -28,11 +24,11 @@ local WPNNAME = "M40A1"
 local CASING_ORG = Vec(0.02, 0.25, -0.2) -- casing origin
 
 -- Per weapon data storer
-M40players = {}
+local playerData = {}
 
 function createPlayerCLIENTdataM40()
     return {
-		clipamntM40 = CLIP_SIZE,
+		clipamnt = CLIP_SIZE,
 		inreload = false,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
@@ -85,11 +81,11 @@ end
 
 function client.tickM40(dt)
 	for p in PlayersAdded() do
-		M40players[p] = createPlayerCLIENTdataM40();
+		playerData[p] = createPlayerCLIENTdataM40();
 	end
 
 	for p in PlayersRemoved() do
-		M40players[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -97,16 +93,14 @@ function client.tickM40(dt)
 	end
 end
 
-scopeddraw = false
-clipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM40(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if M40players[p].dataReset == false then
-			M40players[p] = createPlayerCLIENTdataM40()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataM40()
 		end
 		return
 	end
@@ -127,14 +121,14 @@ function client.tickPlayerM40(p, dt)
 		return
 	end
 
-	local data = M40players[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
 	-- Start Reload
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM40 < CLIP_SIZE and ammo > 0.5 and data.clipamntM40 ~= ammo then
-		if data.clipamntM40 > 0 then
+	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
+		if data.clipamnt > 0 then
 			data.coolDown = RELOAD_TIME
 			PlaySound(LoadSound(TACRELOAD_SOUND), pt.pos)
 		else
@@ -144,9 +138,9 @@ function client.tickPlayerM40(p, dt)
 	-- Finish Reload
 	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		data.clipamntM40 = math.min(CLIP_SIZE, ammo)
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntM40) then
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
@@ -173,8 +167,8 @@ function client.tickPlayerM40(p, dt)
 				SpawnParticle(mt.pos, playervel, 0.125)
 			end
 			data.timetobolt = 0.842
-			data.clipamntM40 = data.clipamntM40 - 1
-			if data.clipamntM40 > 0 then
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
 				data.coolDown = FIRERATE
 				data.altCoolDown = SCOPEFIREDELAY
 				
@@ -198,19 +192,11 @@ function client.tickPlayerM40(p, dt)
 		end
 	end
 
-	if data.scoped == false or data.clipamntM40 < 0 or ammo <= 0 then
+	if data.scoped == false or data.clipamnt < 0 or ammo <= 0 then
 		data.toolAnimator.forceSecondaryActionPose = false
-
-		if IsPlayerLocal(p) then
-			scopeddraw = false
-		end
 	elseif data.scoped == true then
 		data.toolAnimator.forceSecondaryActionPose = true
-
-		if IsPlayerLocal(p) then
-			scopeddraw = true
-			SetCameraFov(18)
-		end
+		if IsPlayerLocal(p) then SetCameraFov(18) end
 	end
 		
 	-- decrease firing cooldown and recoil
@@ -221,7 +207,7 @@ function client.tickPlayerM40(p, dt)
 	if data.timetobolt ~= nil then
 		data.timetobolt = data.timetobolt - dt
 		if data.timetobolt <= 0 and data.playbolt == true then
-			if data.clipamntM40 > 0 then -- already plays bolt sfx in reload
+			if data.clipamnt > 0 then -- already plays bolt sfx in reload
 				PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
 			end
 			data.playbolt = false
@@ -289,29 +275,23 @@ function client.tickPlayerM40(p, dt)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
 		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntM40
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-		end
 	end
 end
 
 function client.drawM40()
-	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
-	if scopeddraw == true then
+	if GetPlayerTool() ~= WPNID then return end
+
+	local p = GetLocalPlayer()
+
+	if playerData[p].scoped == true then
 		UiPush()
 			UiTranslate(UiCenter(), UiMiddle())
 			UiAlign("center middle")
 			UiImage("MOD/scope.png")
 		UiPop()
 	end
-	client.drawAmmo(clipamnt, CLIP_SIZE)
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
 end

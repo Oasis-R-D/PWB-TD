@@ -1,9 +1,5 @@
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local PICKUP_SIZE = 20
 local DAMAGE = 0.4
@@ -19,7 +15,7 @@ local EGON_FIREOFF = 0.0
 local EGON_FIRECHARGE = 1.0
 
 -- Per weapon data storer
-GLUplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataGLU()
     return {
@@ -121,7 +117,27 @@ function server.fireGLU(p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
 		server.SpawnFireHook(origin, 80)
 		Paint(origin, 1.125, "explosion", 0.6)
 	end
-	-- TO-DO: gluon does radial damage in Half-Life!
+
+	-- Radius Damage
+	local flDamage = (100*PLAYERDAMAGE)/4
+	local falloff = flDamage / 4
+	local vecSrc = VecAdd(vecOrigSrc, VecScale(vecDir, iDist))
+
+	for id in Players() do
+		local playerPos = TransformToParentPoint(GetPlayerTransform(id), Vec(0, 1))
+		local dist = VecLength(VecSub(vecSrc, playerPos))
+		if dist < 4 then
+			QueryRequire("large visible physical")
+			local pHit = QueryRaycast(playerPos, VecNormalize(VecSub(vecSrc, playerPos)), dist)
+			if not pHit then
+				local flAdjustedDamage = flDamage - (dist * falloff)
+				if flAdjustedDamage > 0 then 
+					ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, p)
+					BloodVFX(playerPos, VecNormalize(VecSub(playerPos, vecSrc)), flAdjustedDamage/100, id)
+				end
+			end
+		end
+	end
 end
 
 function client.initGLU()
@@ -135,11 +151,11 @@ end
 
 function client.tickGLU(dt)
 	for p in PlayersAdded() do
-		GLUplayers[p] = createPlayerCLIENTdataGLU()
+		playerData[p] = createPlayerCLIENTdataGLU()
 	end
 
 	for p in PlayersRemoved() do
-		GLUplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -151,8 +167,8 @@ function client.tickPlayerGLU(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if GLUplayers[p].dataReset == false then
-			GLUplayers[p] = createPlayerCLIENTdataGLU()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataGLU()
 		end
 		return
 	end
@@ -167,7 +183,7 @@ function client.tickPlayerGLU(p, dt)
 	end
 
 	local ammo = GetToolAmmo(WPNID, p)
-	local data = GLUplayers[p]
+	local data = playerData[p]
 	
 	-- make data reset when reset conditions are met
 	data.dataReset = false
@@ -197,7 +213,7 @@ function client.tickPlayerGLU(p, dt)
 				local vecOrigSrc = GetPlayerEyeTransform(p).pos
 				local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
 
-				local data = GLUplayers[p]
+				local data = playerData[p]
 
 				local bHit, iDist, pShape, pPlayerHit = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
 

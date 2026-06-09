@@ -1,10 +1,6 @@
 -- copy this for a basic pistol with separate sounds when not fired by the client
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local PRIM_FIRESOUND = "MOD/snd/displacer_fire.ogg"
 local ALT_FIRESOUND = "MOD/snd/displacer_teleport_player.ogg"
@@ -21,7 +17,7 @@ local WPNID = "opfordisplacer"
 local WPNNAME = "Displacer Cannon"
 
 -- Per weapon data storer
-DISPplayers = {}
+local playerData = {}
 
 function createPlayerCLIENTdataDISP()
     return {
@@ -202,11 +198,11 @@ end
 
 function client.tickDISP(dt)
 	for p in PlayersAdded() do
-		DISPplayers[p] = createPlayerCLIENTdataDISP();
+		playerData[p] = createPlayerCLIENTdataDISP();
 	end
 
 	for p in PlayersRemoved() do
-		DISPplayers[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -220,13 +216,30 @@ function client.tickPlayerDISP(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if DISPplayers[p].dataReset == false then
-			DISPplayers[p] = createPlayerCLIENTdataDISP()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataDISP()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		-- punish players who try cheating
+		if playerData[p].inAttack == true then
+			if playerData[p].inAltAttack == true then
+				playerData[p].inAltAttack = false
+				if IsPlayerLocal(p) then
+					ServerCall("server.depleteAmmo", p, WPNID)
+				end
+			else
+				if IsPlayerLocal(p) then
+					ServerCall("server.depleteAmmo", p, WPNID, 3)
+				end
+			end
+
+			playerData[p].chargedTime = nil
+			playerData[p].inAttack = false
+		end
+
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end
@@ -242,7 +255,7 @@ function client.tickPlayerDISP(p, dt)
 		return
 	end
 	
-	local data = DISPplayers[p]
+	local data = playerData[p]
 	
 	-- make data reset when reset conditions are met
 	data.dataReset = false
@@ -329,6 +342,8 @@ function client.tickPlayerDISP(p, dt)
 			data.inAttack = false
 		end
 	elseif data.inAttack == true then -- start timer
+		SetSoundLoopProgress(spinLoop, 0.0)
+		SetSoundLoopProgress(spinLoopAlt, 0.0)
 		data.chargedTime = 0
 		data.toolAnimator.forceActionPose = true
 	end

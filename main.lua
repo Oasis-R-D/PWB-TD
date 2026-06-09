@@ -51,6 +51,12 @@ GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 
 ----------------------------------------------------------------------------------------------
 
+-- GLOBALS
+#include "script/include/player.lua"
+#include "script/pwbtoolanimation.lua"
+#include "script/util.lua"
+
+-- WEAPONS
 #include "script/mp5.lua"
 #include "script/m727.lua"
 #include "script/shotgun.lua"

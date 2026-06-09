@@ -1,10 +1,6 @@
 -- just copy the MP5 instead (also this has modified recoil to make the arm dislocation less noticeable)
 #version 2
 
-#include "script/include/player.lua"
-#include "script/pwbtoolanimation.lua"
-#include "script/util.lua"
-
 -- Per weapon constants
 local RELOAD_TIME = 1.5 -- seconds
 local RELOAD_SOUND = "MOD/snd/hkr.ogg"
@@ -25,12 +21,12 @@ local WPNNAME = "Colt M727"
 local CASING_ORG = Vec(0.02, 0.0, 0.1)
 
 -- Per weapon data storer
-M727players = {}
+local playerData = {}
 
 function createPlayerCLIENTdataM727()
     return {
-		clipamntM727 = CLIP_SIZE,
-		m203amntM727 = 1,
+		clipamnt = CLIP_SIZE,
+		m203amnt = 1,
 		inreload = false,
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -53,13 +49,13 @@ end
 
 function server.tickM727(dt)
 	for p in PlayersAdded() do
-		M727players[p] = createPlayerSERVERdataM727()
+		playerData[p] = createPlayerSERVERdataM727()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
 
 	for p in PlayersRemoved() do
-		M727players[p] = nil
+		playerData[p] = nil
 	end
 
 	-- doesn't need server ticking
@@ -74,7 +70,7 @@ end
 function server.primaryFireM727(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
-	local data = M727players[p]
+	local data = playerData[p]
 
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, GLOBAL_3DEGREES, p)
 	
@@ -113,11 +109,11 @@ end
 
 function client.tickM727(dt)
 	for p in PlayersAdded() do
-		M727players[p] = createPlayerCLIENTdataM727();
+		playerData[p] = createPlayerCLIENTdataM727();
 	end
 
 	for p in PlayersRemoved() do
-		M727players[p] = nil
+		playerData[p] = nil
 	end
 
 	for p in Players() do
@@ -125,16 +121,14 @@ function client.tickM727(dt)
 	end
 end
 
-clipamnt = 0
-altclipamnt = 0
 local camSineTime = nil
 
 function client.tickPlayerM727(p, dt)
 if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
-		if M727players[p].dataReset == false then
-			M727players[p] = createPlayerCLIENTdataM727()
+		if playerData[p].dataReset == false then
+			playerData[p] = createPlayerCLIENTdataM727()
 		end
 		return
 	end
@@ -155,23 +149,23 @@ if not IsToolEnabled(WPNID, p) then return end
 		return
 	end
 
-	local data = M727players[p]
+	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
 	-- Start Reload
-	if InputPressed("r", p) and data.inreload == false and data.clipamntM727 < CLIP_SIZE and ammo > 0.5 and data.clipamntM727 ~= ammo then
+	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
 		data.coolDown = RELOAD_TIME
 		data.inreload = true
 	-- Finish Reload
 	elseif data.coolDown < 0 and data.inreload == true then	
 		data.inreload = false
-		if data.clipamntM727 <= 0 then data.m203amntM727 = 1 end
-		data.clipamntM727 = math.min(CLIP_SIZE, ammo)
+		if data.clipamnt <= 0 then data.m203amnt = 1 end
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamntM727) then
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then	
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
@@ -217,8 +211,8 @@ if not IsToolEnabled(WPNID, p) then return end
 				SpawnParticle(mt.pos, playervel, 0.125)
 			end
 				
-			data.clipamntM727 = data.clipamntM727 - 1
-			if data.clipamntM727 > 0 then
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
 				data.coolDown = FIRERATE
 			elseif ammo > 1 then
 				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
@@ -229,7 +223,7 @@ if not IsToolEnabled(WPNID, p) then return end
 			data.recoil = RECOIL_AMNT
 		end
 	-- Check Altfire
-	elseif InputPressed("grab", p) and canFire(p, data.m203amntM727, data.m203amntM727) then
+	elseif InputPressed("grab", p) and canFire(p, data.m203amnt, data.m203amnt) then
 		if data.coolDown < 0 then
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
@@ -263,7 +257,7 @@ if not IsToolEnabled(WPNID, p) then return end
 			data.recoil = 1.5 * RECOIL_AMNT
 			
 			data.coolDown = ALTFIRERATE
-			data.m203amntM727 = data.m203amntM727 - 1
+			data.m203amnt = data.m203amnt - 1
 		end
 	end
 	
@@ -317,27 +311,16 @@ if not IsToolEnabled(WPNID, p) then return end
 				else camSineTime = nil end
 			end
 		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamntM727
-			altclipamnt = data.m203amntM727
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-			altclipamnt = -8
-		else
-			data.clipamntM727 = 0
-			clipamnt = -16
-			altclipamnt = data.m203amntM727
-		end
 	end
 end
 
 function client.drawM727()
-	if GetPlayerTool() ~= WPNID then -- shouldn't need the player pointer since this runs on client
-		return
-	end
+	if GetPlayerTool() ~= WPNID then return end
 
-	client.drawAmmo(clipamnt, CLIP_SIZE)
-	client.drawSecAmmo(altclipamnt)
+	local p = GetLocalPlayer()
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
+	client.drawSecAmmo(playerData[p].m203amnt)
 end
