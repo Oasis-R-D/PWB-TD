@@ -81,10 +81,10 @@ function server.swingKNFE(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 			
 			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 2))
 		else
-			PlayImpactSFX(pHitWorld, SoundPoint, pNorm, "m")
+			PlayImpactSFX(pHitWorld, SoundPoint, pNorm, "s")
 
 			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 2))
-			MakeHole(SoundPoint, 0.5, 0.05, 0) -- stronger than sledge
+			MakeHole(SoundPoint, 0.25, 0.05, 0)
 		end
 		
 		-- PLAYER DAMAGE END

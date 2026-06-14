@@ -42,6 +42,7 @@ GLOBAL_WEAPONS = {
    "TAU",
    "GLU",
    "DISP",
+   "SHCK",
 
    "FRAG",
    "SATCH",
@@ -76,6 +77,7 @@ GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 #include "script/special/tau.lua"
 #include "script/special/gluon.lua"
 #include "script/special/displacer.lua"
+#include "script/special/shockroach.lua"
 
 -- ITEMS
 #include "script/items/medkit.lua"
@@ -152,4 +154,5 @@ function client.draw()
 	client.drawPYTH()
 	client.drawM249()
 	client.drawSG()
+   client.drawSHCK()
 end
