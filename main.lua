@@ -27,6 +27,7 @@ GLOBAL_20DEGREES = 0.17365
 GLOBAL_WEAPONS = {
    "CRBR",
    "WRNCH",
+   "KNFE",
 
    "Mp5",
    "M727",
@@ -69,6 +70,7 @@ GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 -- MELEE
 #include "script/melee/crowber.lua"
 #include "script/melee/wrench.lua"
+#include "script/melee/knife.lua"
 
 -- SPECIAL
 #include "script/special/tau.lua"

@@ -5,13 +5,13 @@
 local RECOIL_AMNT = 0.3
 local DAMAGE = 0.1
 local MAX_RANGE = 2.25
-local WPNID = "hlcrowbar"
-local WPNNAME = "Crowbar"
+local WPNID = "opforknife"
+local WPNNAME = "Combat Knife"
 
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataCRBR()
+function createPlayerCLIENTdataKNFE()
     return {
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -22,21 +22,21 @@ function createPlayerCLIENTdataCRBR()
 	}
 end
 
-function createPlayerSERVERdataCRBR()
+function createPlayerSERVERdataKNFE()
     return {
 		coolDown = 0.0,
 		dataReset = true,
 	}
 end
 
-function server.initCRBR()
-	RegisterTool(WPNID, WPNNAME, "MOD/prefab/crowbar.xml", 1)
+function server.initKNFE()
+	RegisterTool(WPNID, WPNNAME, "MOD/prefab/knife.xml", 1)
 	SetToolAmmoPickupAmount(WPNID, 99999)
 end
 
-function server.tickCRBR(dt)
+function server.tickKNFE(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerSERVERdataCRBR()
+		playerData[p] = createPlayerSERVERdataKNFE()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
@@ -46,11 +46,11 @@ function server.tickCRBR(dt)
 	end
 
 	for p in Players() do
-		server.tickPlayerCRBR(p, dt)
+		server.tickPlayerKNFE(p, dt)
 	end
 end
 
-function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
+function server.swingKNFE(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for familiarity or whatever)
 	local data = playerData[m_pPlayer]
 	
 	local fDidHit = false
@@ -59,10 +59,10 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 	local _,pos,_,dir = GetPlayerAimInfo(vecSrc.pos, MAX_RANGE, m_pPlayer)
 	
 	local pHit, pDist, pHitWorld, pHitPlayer, _, pNorm = QueryShot(pos, dir, MAX_RANGE, 0.33, m_pPlayer)
-
+	
 	if pHit == false then
 		-- Miss
-		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
+		ClientCall(0, "client.swingKNFE", m_pPlayer, dt, fDidHit, SoundPoint, false, false)
 		data.coolDown = 0.5
 	else
 		-- Hit
@@ -78,38 +78,38 @@ function server.swingCRBR(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for 
 		elseif hitAnimator ~= 0 then
 			pHitPlayer = 1
 			BloodVFX(SoundPoint, dir, DAMAGE, nil, hitAnimator)
-
-			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 5))
+			
+			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 2))
 		else
-			PlayImpactSFX(pHitWorld, SoundPoint, pNorm)
+			PlayImpactSFX(pHitWorld, SoundPoint, pNorm, "m")
 
-			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 5))
-			MakeHole(SoundPoint, 0.75, 0.12, 0) -- stronger than sledge
+			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 2))
+			MakeHole(SoundPoint, 0.5, 0.05, 0) -- stronger than sledge
 		end
 		
 		-- PLAYER DAMAGE END
 		data.coolDown = 0.25
 		
-		ClientCall(0, "client.swingCRBR", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer)
+		ClientCall(0, "client.swingKNFE", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer)
 	end
 	
 	return fDidHit
 end
 
-function client.swingCRBR(m_pPlayer, dt, hit, pos, pHitPlayer)
+function client.swingKNFE(m_pPlayer, dt, hit, pos, pHitPlayer)
 	local data = playerData[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
 	if hit == false then
 		-- Miss
-		PlaySound(LoadSound("MOD/snd/cbar_miss.ogg"), vecSrc.pos, 0.5)
+		PlaySound(LoadSound("MOD/snd/knfe_miss0.ogg"), vecSrc.pos, 0.5)
 		data.toolAnimator.maxActionPoseTime = 0.1 -- stop midswing but further in
 		data.coolDown = 0.5
 	else
 		if pHitPlayer ~= 0 then
-			PlaySound(LoadSound("MOD/snd/crbr_hitplayer0.ogg"), pos, 0.5)
+			PlaySound(LoadSound("MOD/snd/knfe_hitplayer0.ogg"), pos, 0.5)
 		else
-			PlaySound(LoadSound("MOD/snd/crbr_hit0.ogg"), pos, 0.25)
+			PlaySound(LoadSound("MOD/snd/knfe_hit0.ogg"), pos, 0.25)
 		end
 		data.recoildelay = 0.1 -- more hit feedback and randomness
 		data.coolDown = 0.25
@@ -118,19 +118,19 @@ function client.swingCRBR(m_pPlayer, dt, hit, pos, pHitPlayer)
 	end
 end
 
-function server.tickPlayerCRBR(p, dt)
+function server.tickPlayerKNFE(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 and playerData[p].dataReset == false then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerSERVERdataCRBR()
+			playerData[p] = createPlayerSERVERdataKNFE()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID and playerData[p].dataReset == false then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerSERVERdataCRBR()
+			playerData[p] = createPlayerSERVERdataKNFE()
 		end
 		return
 	end
@@ -142,22 +142,22 @@ function server.tickPlayerCRBR(p, dt)
 	-- Check Fire
 	if InputDown("usetool", p) and GetPlayerCanUseTool(p) == true then
 		if data.coolDown < 0 then
-			server.swingCRBR(p, dt)
+			server.swingKNFE(p, dt)
 		end
 	end
 	
 	data.coolDown = data.coolDown - dt
 end
 
-function client.initCRBR()
+function client.initKNFE()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
 	SetToolHaptic(WPNID, toolHaptic);
 end
 
-function client.tickCRBR(dt)
+function client.tickKNFE(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataCRBR();
+		playerData[p] = createPlayerCLIENTdataKNFE();
 	end
 
 	for p in PlayersRemoved() do
@@ -165,23 +165,23 @@ function client.tickCRBR(dt)
 	end
 
 	for p in Players() do
-		client.tickPlayerCRBR(p, dt)
+		client.tickPlayerKNFE(p, dt)
 	end
 end
 
-function client.tickPlayerCRBR(p, dt)
+function client.tickPlayerKNFE(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataCRBR()
+			playerData[p] = createPlayerCLIENTdataKNFE()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataCRBR()
+			playerData[p] = createPlayerCLIENTdataKNFE()
 		end
 		return
 	end

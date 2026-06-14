@@ -76,26 +76,35 @@ function server.swingWRNCH(m_pPlayer, dt) -- HL1 uses m_pPlayer (use it here for
 		-- Hit
 		fDidHit = true
 		
+		local hitAnimator = GetBodyAnimator(GetShapeBody(pHitWorld))
+
 		-- PLAYER DAMAGE
-		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
+		local SoundPoint = VecAdd(pos, VecAdd(VecScale(dir, pDist), VecScale(pNorm, -0.33)))
 		if pHitPlayer ~= 0 then
 			ApplyPlayerDamage(pHitPlayer, DAMAGE, WPNNAME, m_pPlayer)
 			BloodVFX(SoundPoint, dir, DAMAGE, pHitPlayer)
-		elseif pHitWorld ~= 0 then
-			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, 0.1, MAX_RANGE, m_pPlayer, WPNID, WPNNAME, 5) -- push objects, "dent" metal
+		elseif hitAnimator ~= 0 then
+			pHitPlayer = 1
+			BloodVFX(SoundPoint, dir, DAMAGE, nil, hitAnimator)
+
+			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 5))
+		else
+			PlayImpactSFX(pHitWorld, SoundPoint, pNorm)
+
+			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 5))
 			MakeHole(SoundPoint, 0.9, 0.15, 0) -- stronger than sledge
 		end
 		
 		-- PLAYER DAMAGE END
 		data.coolDown = 0.5
 		
-		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
+		ClientCall(0, "client.swingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer)
 	end
 	
 	return fDidHit
 end
 
-function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
+function client.swingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer)
 	local data = playerData[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
@@ -139,8 +148,10 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 		-- Hit
 		fDidHit = true
 		
+		local hitAnimator = GetBodyAnimator(GetShapeBody(pHitWorld))
+
 		-- PLAYER DAMAGE
-		local SoundPoint = VecAdd(pos, VecScale(dir, pDist))
+		local SoundPoint = VecAdd(pos, VecAdd(VecScale(dir, pDist), VecScale(pNorm, -0.33)))
 		if pHitPlayer ~= 0 then
 			local damage = (heldtime * (DAMAGE*100) + 20)/100 -- 2.75 seconds to reach full charge
 			if damage > 0.75 then
@@ -148,21 +159,26 @@ function server.bigSwingWRNCH(m_pPlayer, dt, heldtime) -- HL1 uses m_pPlayer (us
 			end
 			ApplyPlayerDamage(pHitPlayer, damage, WPNNAME, m_pPlayer)
 			BloodVFX(SoundPoint, dir, DAMAGE, pHitPlayer)
+		elseif hitAnimator ~= 0 then
+			pHitPlayer = 1
+			BloodVFX(SoundPoint, dir, DAMAGE, nil, hitAnimator)
 		else
-			ShootHook(SoundPoint, VecScale(pNorm, -1), "bullet", 0.1, 0.1, MAX_RANGE, m_pPlayer, WPNID, WPNNAME, 5) -- push objects, "dent" metal
+			PlayImpactSFX(pHitWorld, SoundPoint, pNorm)
+
+			ApplyBodyImpulse(GetShapeBody(pHitWorld), SoundPoint, VecScale(dir, 800 * 6))
 			MakeHole(SoundPoint, 1, 0.2, 0) -- stronger than sledge
 		end
 		
 		-- PLAYER DAMAGE END
 		data.coolDown = 1
 	
-		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer, pHitWorld)
+		ClientCall(0, "client.bigSwingWRNCH", m_pPlayer, dt, fDidHit, SoundPoint, pHitPlayer)
 	end
 	
 	return fDidHit
 end
 
-function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
+function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer)
 	local data = playerData[m_pPlayer]
 	vecSrc = GetPlayerEyeTransform(m_pPlayer)
 	data.toolAnimator.timeSinceFire = 0.0
@@ -176,7 +192,7 @@ function client.bigSwingWRNCH(m_pPlayer, dt, hit, pos, pHitPlayer, pHitWorld)
 	else
 		if pHitPlayer ~= 0 then
 			PlaySound(LoadSound("MOD/snd/WRNCH_bighitplayer0.ogg"), pos, 0.5)
-		elseif pHitWorld ~= 0 then
+		else
 			PlaySound(LoadSound("MOD/snd/WRNCH_hit0.ogg"), pos, 0.5)
 		end
 		
