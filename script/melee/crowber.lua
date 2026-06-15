@@ -3,7 +3,7 @@
 
 -- Per weapon constants
 local RECOIL_AMNT = 0.3
-local DAMAGE = 0.1
+local DAMAGE = 0.25
 local MAX_RANGE = 2.25
 local WPNID = "hlcrowbar"
 local WPNNAME = "Crowbar"
