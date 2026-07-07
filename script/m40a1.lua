@@ -106,6 +106,7 @@ function client.tickPlayerM40(p, dt)
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
+		playerData[p].scoped = false
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end

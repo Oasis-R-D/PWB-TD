@@ -114,6 +114,7 @@ function client.tickPlayerPYTH(p, dt)
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
+		playerData[p].scoped = false
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end

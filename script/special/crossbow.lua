@@ -2,24 +2,27 @@
 #version 2
 
 -- Per weapon constants
+local RELOAD_TIME = 4.5 -- seconds
+local RELOAD_SOUND = "MOD/snd/glockR.ogg"
 local PRIM_FIRESOUND = "MOD/snd/crossbow_fire.ogg"
-local PRIM_FIRESOUND2 = "MOD/snd/crossbow_fire2.ogg"
 local BOLT_CYCLE = "MOD/snd/crossbow_load0.ogg"
-local PICKUP_SIZE = 3.0
+local CLIP_SIZE = 5
+local PICKUP_SIZE = 5
 local RECOIL_AMNT = 0.25
-local FIRERATE = 2.0
+local FIRERATE = 0.75
 local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
-local DAMAGE = 0.5
+local DAMAGE = 0.2
 local PLAYERDAMAGE = 1.0
-local WPNID = "hl2crossbow"
-local WPNNAME = "Rebar Crossbow"
+local WPNID = "hlcrossbow"
+local WPNNAME = "Crossbow"
 
 local BOLT_IMPACT = "MOD/snd/crossbow_bt_hit.ogg"
 local BOLT_PLAYER = "MOD/snd/crossbow_bt_player0.ogg"
 
-local BALL_VELOCITY = 128 -- 63.5 is game accurate, 128 is cooler for MP
+local BALL_VELOCITY = 50.8
+local BALL_VELOCITY_WATER = 25.4
 
 -- Per weapon data storer
 local playerData = {}
@@ -29,8 +32,10 @@ CrossbowBolts = {}
 
 function createPlayerCLIENTdataCROSS()
     return {
+		clipamnt = CLIP_SIZE,
 		coolDown = 0.0,
 		altCoolDown = 0.0,
+		inreload = false,
 		recoil = 0.0,
 		toolAnimator = ToolAnimator(),
 		scoped = false,
@@ -85,11 +90,9 @@ function server.tickCROSS(dt)
 				Delete(data.model)
 				table.remove(CrossbowBolts, index)
 			else
-				PointLight(data.curPos, 0.66,0.22,0, 0.2)
-
 				QueryRequire("large visible physical")
 				QueryRejectBody(data.model)
-				local hit, dist, shape, hitPlayer, _, normal = QueryShot(data.curPos, data.curDir, BALL_VELOCITY * dt, 0.0, data.owner)
+				local hit, dist, shape, hitPlayer, _, normal = QueryShot(data.curPos, data.curDir, (IsPointInWater(data.curPos) == true and BALL_VELOCITY_WATER or BALL_VELOCITY) * dt, 0.0, data.owner)
 
 				data.curPos = VecAdd(data.curPos, VecScale(data.curDir, dist))
 				
@@ -124,8 +127,6 @@ function server.tickCROSS(dt)
 							ApplyBodyImpulse(GetShapeBody(shape), data.curPos, VecScale(data.curDir, 800 * 2))
                         	MakeHole(data.curPos, 0.5, 0.25, 0.05)
 
-							Paint(data.curPos, 0.3, "explosion", 0.75)
-
 							data.curDir = VecAdd(VecScale(normal, 2 * hitDot), data.curDir)
 							data.curPos = VecAdd(data.curPos, VecScale(data.curDir, 0.01))
 
@@ -155,9 +156,6 @@ function server.tickCROSS(dt)
 
 							ApplyBodyImpulse(GetShapeBody(shape), data.curPos, VecScale(data.curDir, 800 * 4))
                         	MakeHole(data.curPos, 0.75, 0.4, 0.25)
-
-							server.SpawnFireHook(data.curPos, 80)
-							Paint(data.curPos, 0.5, "explosion", 0.75)
 
 							if matType ~= "glass" or HasTag(GetShapeBody(shape), "unbreakable") == true then
 								PlaySound(LoadSound(BOLT_IMPACT), data.curPos, 0.5)
@@ -193,7 +191,6 @@ function server.primaryFireCROSS(p)
 	CrossbowBolts[FindBoltSERVERdataOpening()] = createBallSERVERdataCB(p, pos, dir, boltEnt[1])
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), pos, 300)
-	PlaySound(LoadSound(PRIM_FIRESOUND2), pos, 10)
 	if ammo < 9999 then
 		SetToolAmmo(WPNID, ammo-1, p)
 	end
@@ -226,9 +223,9 @@ function client.suppress(p, suppressed)
 	local toolBody = GetToolBody(p)
 	local shapes = GetBodyShapes(toolBody)
 	if suppressed == false then
-		SetTag(shapes[6], "invisible")
+		SetTag(shapes[2], "invisible")
 	else
-		RemoveTag(shapes[6], "invisible")
+		RemoveTag(shapes[2], "invisible")
 	end
 end
 
@@ -244,6 +241,7 @@ function client.tickPlayerCROSS(p, dt)
 
 	if GetPlayerTool(p) ~= WPNID then
 		playerData[p].shapesNeedsUpd = true
+		playerData[p].scoped = false
 		if IsPlayerLocal(p) then
 			camSineTime = nil
 		end
@@ -264,16 +262,30 @@ function client.tickPlayerCROSS(p, dt)
 	-- tell gun to restore bolt state
 	if data.shapesNeedsUpd == true then
 		data.shapesNeedsUpd = false
-		data.hasBolt = false
-		data.timetobolt = 0.842
+
+		if data.timetobolt == nil or data.timetobolt <= 0 then
+			data.timetobolt = 0.1
+		end
+
 		data.toolAnimator.timeSinceFire = 0.0
 	end
 
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
+	-- Start Reload
+	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
+		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		if data.clipamnt > 0 then
+			data.coolDown = RELOAD_TIME
+		end
+		data.inreload = true
+	-- Finish Reload
+	elseif data.coolDown < 0 and data.inreload == true then	
+		data.inreload = false
+		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	if InputDown("usetool", p) and canFire(p, ammo, ammo) and data.hasBolt == true then -- not a good idea to use hasbolt here, only way to prevent THE BUG
+	elseif InputDown("usetool", p) and canFire(p, ammo, ammo) then -- not a good idea to use hasbolt here, only way to prevent THE BUG
 		if data.coolDown < 0 then
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
@@ -287,12 +299,20 @@ function client.tickPlayerCROSS(p, dt)
 			data.hasBolt = false
 			client.suppress(p, data.hasBolt)
 
-			if ammo-1 > 0 then data.timetobolt = 0.842 end
-
-			data.coolDown = FIRERATE
 			data.altCoolDown = SCOPEFIREDELAY
 
-			data.recoil = RECOIL_AMNT
+			data.recoil = data.scoped == true and 0 or RECOIL_AMNT
+
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
+				data.coolDown = FIRERATE
+				data.timetobolt = 0.842
+			elseif ammo > 1 then
+				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				data.coolDown = RELOAD_TIME
+				data.inreload = true
+				data.timetobolt = 4.4
+			end
 		end
 	-- Check Altfire
 	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
@@ -332,7 +352,7 @@ function client.tickPlayerCROSS(p, dt)
 		end
 	end
 	-- END SHELL EJECT
-	
+
 	-- RECOIL
 	if data.recoil > -0.5 then
 		local recoil = math.max(0, data.recoil)
@@ -361,10 +381,20 @@ function client.tickPlayerCROSS(p, dt)
 			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
 
 			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.1, 0), equation))
+				local t = Transform(Vec(), QuatAxisAngle(Vec(0.66, 0, 0), equation))
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
 		end
 	end
+end
+
+function client.drawCROSS()
+	if GetPlayerTool() ~= WPNID then return end
+
+	local p = GetLocalPlayer()
+
+	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
+
+	client.drawAmmo(ammoToDraw, CLIP_SIZE)
 end

@@ -44,6 +44,7 @@ GLOBAL_WEAPONS = {
    { "GLU",     false },
    { "DISP",    false },
    { "SHCK",    true  },
+   { "CROSS",   true  },
 
    { "FRAG",    false },
    { "SATCH",   false },
@@ -79,6 +80,7 @@ GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 #include "script/special/gluon.lua"
 #include "script/special/displacer.lua"
 #include "script/special/shockroach.lua"
+#include "script/special/crossbow.lua"
 
 -- ITEMS
 #include "script/items/medkit.lua"
