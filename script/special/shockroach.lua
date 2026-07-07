@@ -12,7 +12,7 @@ local PLAYERDAMAGE = 0.15
 local WPNID = "opforroach"
 local WPNNAME = "Shockroach"
 
-local BOLT_IMPACT = "MOD/snd/shck_imp.ogg"
+local PROJ_IMPACT = "MOD/snd/shck_imp.ogg"
 local BALL_VELOCITY = 50.8
 
 local COLOR = Vec(0, 1, 1)
@@ -39,14 +39,6 @@ function createPlayerSERVERdataSHCK()
     return {
 		firesound = nil,
 	}
-end
-
-function FindShockSERVERdataOpening()
-    local i = 1
-    while ElectricityBolts[i] ~= nil do
-        i = i + 1
-    end
-    return i
 end
 
 function createBallSERVERdataSR(p, pos, dir)
@@ -106,7 +98,7 @@ function server.tickSHCK(dt)
                     elseif hitWater ~= false and data.owner ~= 0 then
                         local firerPos = VecAdd(GetPlayerTransform(data.owner).pos, Vec(0,1,0))
 
-                        PlaySound(LoadSound(BOLT_IMPACT), data.curPos, 0.5)
+                        PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.5)
 
                         -- sparks
                         for i=1,10 do
@@ -153,7 +145,7 @@ function server.tickSHCK(dt)
                         Paint(data.curPos, 0.4, "explosion", 0.75)
                     end
 
-                    PlaySound(LoadSound(BOLT_IMPACT), data.curPos, 0.5)
+                    PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.5)
 
                     table.remove(ElectricityBolts, index)
                 else
@@ -186,7 +178,7 @@ function server.primaryFireSHCK(p)
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0, p)
 
 	-- add bolt to sim
-	ElectricityBolts[FindShockSERVERdataOpening()] = createBallSERVERdataSR(p, pos, dir)
+	ElectricityBolts[findArrayOpening(ElectricityBolts)] = createBallSERVERdataSR(p, pos, dir)
 
     local data = playerData[p]
 
