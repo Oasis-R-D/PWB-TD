@@ -66,7 +66,7 @@ function server.primaryFireM40(p)
 
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0, p)
 
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
+	server.ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	

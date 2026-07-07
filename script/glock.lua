@@ -66,7 +66,7 @@ function server.primaryFirePIST9MM(p, silenced)
 
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0.01, p)
 
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
+	server.ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	server.depleteAmmo(p, WPNID)
 end
@@ -78,7 +78,7 @@ function server.secondaryFirePIST9MM(p, silenced) -- separated for easy modifica
 
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0.1, p)
 
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
+	server.ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	server.depleteAmmo(p, WPNID)
 end

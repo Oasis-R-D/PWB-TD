@@ -92,7 +92,7 @@ function server.primaryFireDE357(p)
 
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, spread, p)
 
-	ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
+	server.ShootHook(pos, dir, "bullet", DAMAGE, PLAYERDAMAGE, MAX_RANGE, p, WPNID, WPNNAME, 2)
 	
 	StopSound(data.firesound)
 	data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)

@@ -24,29 +24,30 @@ GLOBAL_10DEGREES = 0.08716
 GLOBAL_15DEGREES = 0.13053
 GLOBAL_20DEGREES = 0.17365
 
+-- {func suffix, has Draw()}
 GLOBAL_WEAPONS = {
-   "CRBR",
-   "WRNCH",
-   "KNFE",
+   { "CRBR",    false },
+   { "WRNCH",   false },
+   { "KNFE",    false },
 
-   "Mp5",
-   "M727",
-   "DE357",
-   "PYTH",
-   "PIST9MM",
-   "SG",
+   { "Mp5",     true  },
+   { "M727",    true  },
+   { "DE357",   true  },
+   { "PYTH",    true  },
+   { "PIST9MM", true  },
+   { "SG",      true  },
 
-   "M40",
-   "M249",
+   { "M40",     true  },
+   { "M249",    true  },
 
-   "TAU",
-   "GLU",
-   "DISP",
-   "SHCK",
+   { "TAU",     false },
+   { "GLU",     false },
+   { "DISP",    false },
+   { "SHCK",    true  },
 
-   "FRAG",
-   "SATCH",
-   "TRIP",
+   { "FRAG",    false },
+   { "SATCH",   false },
+   { "TRIP",    false },
 }
 
 GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
@@ -87,6 +88,7 @@ GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 
 server.weaponTicks = {}
 client.weaponTicks = {}
+client.weaponDraws = {}
 
 ----------------------------------------------------------------------------------------------
 
@@ -105,14 +107,26 @@ client.weaponTicks = {}
 -- - Finish gluon gun and displacer model
 -- - Displacer prongs
 -- - displacer ball and other billboard sprites doesn't angle correctly when in vehicle camera
+-- - add weapon flags (replaces the has Draw() bool)
+-- - maybe redo the camera movement system (recreate half-life pev->punchangle system?)
 
 ----------------------------------------------------------------------------------------------
 
 -- declare weapons, pickup amounts
 function server.init()
+   local foo = 0
+
+   foo = addFlag(foo, 4)
+   foo = addFlag(foo, 256)
+   DebugPrint("------------------------------------------------------------------------------")
+   DebugPrint(hasFlag(foo, 4))
+   DebugPrint(hasFlag(foo, 256))
+   DebugPrint(hasFlag(foo, 128))
+   DebugPrint(hasFlag(foo, 2))
+   DebugPrint("------------------------------------------------------------------------------")
    for i = 1, GLOBAL_WEAPONS_AMNT do
-      _G.server["init" .. GLOBAL_WEAPONS[i]]()
-      table.insert(server.weaponTicks, _G.server["tick" .. GLOBAL_WEAPONS[i]]) 
+      server["init" .. GLOBAL_WEAPONS[i][1]]()
+      table.insert(server.weaponTicks, server["tick" .. GLOBAL_WEAPONS[i][1]]) 
    end
 
    -- only on server!
@@ -123,7 +137,7 @@ function server.tick(dt)
    for i = 1, GLOBAL_WEAPONS_AMNT do
       server.weaponTicks[i](dt)
    end
-   
+
    -- only on server!
    server.tickMED(dt)
 end
@@ -131,9 +145,16 @@ end
 -- mostly to load haptics, amongst other things
 function client.init()
    for i = 1, GLOBAL_WEAPONS_AMNT do
-      _G.client["init" .. GLOBAL_WEAPONS[i]]()
-      table.insert(client.weaponTicks, _G.client["tick" .. GLOBAL_WEAPONS[i]]) 
+      client["init" .. GLOBAL_WEAPONS[i][1]]()
+      table.insert(client.weaponTicks, client["tick" .. GLOBAL_WEAPONS[i][1]])
+
+      -- Set up weapon draws
+      if GLOBAL_WEAPONS[i][2] == true then
+         table.insert(client.weaponDraws, client["draw" .. GLOBAL_WEAPONS[i][1]])
+      end
    end
+
+   GLOBAL_WEAPON_DRAWS_AMNT = #client.weaponDraws
 end
 
 function client.tick(dt)
@@ -142,17 +163,13 @@ function client.tick(dt)
    end
 end
 
--- Draw the magazine amount hud
+-- Draws the magazine hud and scopes
 function client.draw()
+   if not GLOBAL_WEAPON_DRAWS_AMNT then return end
+   
 	if GetPlayerHealth() <= 0 or GetPlayerVehicle() ~= 0 then return end
    
-	client.drawM40()
-	client.drawPIST9MM()
-	client.drawDE357()
-	client.drawM727()
-	client.drawMp5()
-	client.drawPYTH()
-	client.drawM249()
-	client.drawSG()
-   client.drawSHCK()
+   for i = 1, GLOBAL_WEAPON_DRAWS_AMNT do
+      client.weaponDraws[i]()
+   end
 end
