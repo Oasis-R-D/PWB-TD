@@ -41,7 +41,7 @@ function createPlayerSERVERdataSHCK()
 	}
 end
 
-function FindBoltSERVERdataOpening()
+function FindShockSERVERdataOpening()
     local i = 1
     while ElectricityBolts[i] ~= nil do
         i = i + 1
@@ -49,7 +49,7 @@ function FindBoltSERVERdataOpening()
     return i
 end
 
-function createBallSERVERdataCB(p, pos, dir)
+function createBallSERVERdataSR(p, pos, dir)
     return {
 		curDir = dir,
 		curPos = pos,
@@ -127,8 +127,6 @@ function server.tickSHCK(dt)
                             ApplyPlayerDamage(data.owner, 0.5, WPNNAME, data.owner)
                             BloodVFX(firerPos, Vec(0, 1, 0), 0.5, data.owner)
                         end
-
-                        table.remove(ElectricityBolts, index)
                     else
                         -- sparks
                         for i=1,10 do
@@ -188,7 +186,7 @@ function server.primaryFireSHCK(p)
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0, p)
 
 	-- add bolt to sim
-	ElectricityBolts[FindBoltSERVERdataOpening()] = createBallSERVERdataCB(p, pos, dir)
+	ElectricityBolts[FindShockSERVERdataOpening()] = createBallSERVERdataSR(p, pos, dir)
 
     local data = playerData[p]
 
