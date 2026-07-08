@@ -185,34 +185,9 @@ function client.tickPlayerDE357(p, dt)
 				camSineTime = 0
 
 				-- shell ejection
-				local toolBody = GetToolBody(p)
-				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
-				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-				ParticleReset()
-				ParticleGravity(rnd(-2, -8))
-				ParticleRadius(0.02)
-				ParticleAlpha(1)
-				ParticleColor(0.8, 0.6, 0)
-				ParticleTile(6)
-				ParticleDrag(0.125)
-				ParticleSticky(0.5)
-				ParticleCollide(1)
-				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_50ae.xml", FSFX_BRASS)
 			end
 
-			-- shell ejection
-			ParticleReset()
-			ParticleGravity(rnd(-2, -8))
-			ParticleRadius(0.02)
-			ParticleAlpha(1)
-			ParticleColor(0.8, 0.6, 0)
-			ParticleTile(6)
-			ParticleDrag(0.125)
-			ParticleSticky(0.5)
-			ParticleCollide(1)
-			SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-			
 			-- muzzleflash
 			for i=0, 3 do
 				ParticleReset()

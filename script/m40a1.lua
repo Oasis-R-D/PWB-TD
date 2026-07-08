@@ -21,7 +21,7 @@ local PLAYERDAMAGE = 0.75 -- instakills in opfor
 local MAX_RANGE = 500.0
 local WPNID = "opform40a1"
 local WPNNAME = "M40A1"
-local CASING_ORG = Vec(0.02, 0.25, -0.2) -- casing origin
+local CASING_ORG = Vec(0.02, 0.25, -0.1) -- casing origin
 
 -- Per weapon data storer
 local playerData = {}
@@ -216,23 +216,7 @@ function client.tickPlayerM40(p, dt)
 		end
 		if data.timetobolt <= -0.1 then
 			if IsPlayerLocal(p) then
-				local toolBody = GetToolBody(p)
-				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
-				local playervel = GetPlayerVelocity(p)
-				
-				-- shell ejection
-				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-				ParticleReset()
-				ParticleGravity(rnd(-2, -8))
-				ParticleRadius(0.02)
-				ParticleAlpha(1)
-				ParticleColor(0.8, 0.6, 0)
-				ParticleTile(6)
-				ParticleDrag(0.125)
-				ParticleSticky(0.5)
-				ParticleCollide(1)
-				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
+				ejectBrass(p, CASING_ORG, Vec(0, -0.85, 0), "MOD/prefab/casing_762.xml", FSFX_BRASS)
 			end
 
 			data.timetobolt = nil

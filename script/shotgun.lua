@@ -313,17 +313,8 @@ function client.tickPlayerSG(p, dt)
 				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
 				local playervel = GetPlayerVelocity(p)
 				
-				for i=1, data.shellstopump do
-					ParticleReset()
-					ParticleGravity(rnd(-2, -8))
-					ParticleRadius(0.02)
-					ParticleAlpha(1)
-					ParticleColor(0.8, 0.1, 0)
-					ParticleTile(6)
-					ParticleDrag(0.125)
-					ParticleSticky(0.5)
-					ParticleCollide(1)
-					SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5)
+				for i=0, data.shellstopump-1 do
+					ejectBrass(p, VecAdd(CASING_ORG, Vec(0.066*i, -0.066*i)), Vec(1, -0.5, 0), "MOD/prefab/casing_shtgn.xml", FSFX_SHTGN)
 				end
 			end
 			-- SHELL EJECT END

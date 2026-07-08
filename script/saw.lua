@@ -15,7 +15,7 @@ local PLAYERDAMAGE = 0.15
 local MAX_RANGE = 125.0
 local WPNID = "opform249_saw"
 local WPNNAME = "M249 SAW"
-local CASING_ORG = Vec(0.02, 0.05, -0.05)
+local CASING_ORG = Vec(0.02, 0.0, 0.0)
 
 -- Per weapon data storer
 local playerData = {}
@@ -205,24 +205,12 @@ function client.tickPlayerM249(p, dt)
 				PlayHaptic(shootHaptic, 1)
 
 				-- shell ejection
-				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
-				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-				ParticleReset()
-				ParticleGravity(rnd(-2, -8))
-				ParticleRadius(0.02)
-				ParticleAlpha(1)
 				if data.alteject == true then -- opfor ejects casings and belt bits separately
-					ParticleColor(0.8, 0.6, 0)
+					ejectBrass(p, CASING_ORG, Vec(0, -0.75, 0), "MOD/prefab/casing_chain.xml", FSFX_NONE)
 				else
-					ParticleColor(0.5, 0.5, 0.5)
+					ejectBrass(p, CASING_ORG, Vec(0, -0.85, 0), "MOD/prefab/casing_556.xml", FSFX_BRASS)
 				end
-				ParticleTile(6)
-				ParticleDrag(0.125)
-				ParticleSticky(0.5)
-				ParticleCollide(1)
-				SpawnParticle(eject_origin, VecAdd(VecScale(eject_direction,3), playervel), 5) -- player velocity isn't functioning how i'd like but whatever
-				
+
 				data.alteject = not data.alteject
 			end
 
