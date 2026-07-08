@@ -13,8 +13,8 @@ local FIRERATE = 0.75
 local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
-local DAMAGE = 0.2
-local PLAYERDAMAGE = 1.0
+local DAMAGE = 0.5
+local PLAYERDAMAGE = 0.2
 local WPNID = "hlcrossbow"
 local WPNNAME = "Crossbow"
 
