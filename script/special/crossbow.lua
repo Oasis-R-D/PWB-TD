@@ -124,19 +124,21 @@ function server.tickCROSS(dt)
 
 							PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.25)
 						else
-							-- sparks
-							for i=1,10 do
-								ParticleReset()
-								ParticleCollide(1)
-								ParticleRadius(0.02, 0)
-								ParticleGravity(-10)
-								ParticleEmissive(5)
-								ParticleStretch(5)
-								ParticleTile(4)
-								ParticleColor(1,0.5,0.4, 1,0.25,0)
-								SpawnParticle(data.curPos, Vec(math.random(-2,2), math.random(1,4), math.random(-2,2)), 1)
+							if IsPointInWater(data.curPos) ~= true then
+								-- sparks
+								for i=1,10 do
+									ParticleReset()
+									ParticleCollide(1)
+									ParticleRadius(0.02, 0)
+									ParticleGravity(-10)
+									ParticleEmissive(5)
+									ParticleStretch(5)
+									ParticleTile(4)
+									ParticleColor(1,0.5,0.4, 1,0.25,0)
+									SpawnParticle(data.curPos, Vec(math.random(-2,2), math.random(1,4), math.random(-2,2)), 1)
+								end
 							end
-
+							
 							-- get mat type BEFORE we break it
 							local pos = VecSub(data.curPos, VecScale(normal, 0.05))
 							pos = TransformToLocalPoint(GetShapeWorldTransform(shape), pos)
@@ -211,7 +213,7 @@ end
 local camSineTime = nil
 
 -- stolen from glock, used to hide/show bolt
-function client.suppress(p, suppressed)
+function client.boltUPD(p, suppressed)
 	local toolBody = GetToolBody(p)
 	local shapes = GetBodyShapes(toolBody)
 	if suppressed == false then
@@ -289,7 +291,7 @@ function client.tickPlayerCROSS(p, dt)
 			local playervel = GetPlayerVelocity(p)
 
 			data.hasBolt = false
-			client.suppress(p, data.hasBolt)
+			client.boltUPD(p, data.hasBolt)
 
 			data.altCoolDown = SCOPEFIREDELAY
 
@@ -334,7 +336,7 @@ function client.tickPlayerCROSS(p, dt)
 		if data.timetobolt <= 0 then
 			data.hasBolt = true -- shouldn't matter since you can't switch out of and back with 0 ammo
 			if ammo > 0 then -- already plays bolt sfx in reload
-				client.suppress(p, data.hasBolt)
+				client.boltUPD(p, data.hasBolt)
 				PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
 				data.toolAnimator.timeSinceFire = 0.0
 			end

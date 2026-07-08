@@ -5,11 +5,18 @@
 -- - GearBox Software (Half-Life: Opposing Force)
 -- - Novena (radial spread code)
 
--- - Verbatim Man (crossbow bolt uses code loosely based on his pellet launcher's code) NOTE: Crossbow is not added yet
+-- - Verbatim Man (crossbow bolt uses code loosely based on his pellet launcher's code)
+
+----------------------------------------------------------------------------------------------
+
+-- LIBRARYS
+#include "script/lib/bit_ops.lua"
 
 ----------------------------------------------------------------------------------------------
 
 GLOBAL_HEADSHOTMULT = 2.0 -- 3.0 in the OG Half-Life
+
+GLOBAL_MAX_TEMPENTS = 1200
 
 GLOBAL_1DEGREE = 0.00873
 GLOBAL_2DEGREES = 0.01745
@@ -24,31 +31,33 @@ GLOBAL_10DEGREES = 0.08716
 GLOBAL_15DEGREES = 0.13053
 GLOBAL_20DEGREES = 0.17365
 
--- {func suffix, has Draw()}
+-- {func suffix, main flags}
 GLOBAL_WEAPONS = {
-   { "CRBR",    false },
-   { "WRNCH",   false },
-   { "KNFE",    false },
+   { "CRBR",    addFlag(0, MF_CL_NODRAW) },
+   { "WRNCH",   addFlag(0, MF_CL_NODRAW) },
+   { "KNFE",    addFlag(0, MF_CL_NODRAW) },
 
-   { "Mp5",     true  },
-   { "M727",    true  },
-   { "DE357",   true  },
-   { "PYTH",    true  },
-   { "PIST9MM", true  },
-   { "SG",      true  },
+   { "Mp5",     0  },
+   { "M727",    0  },
+   { "DE357",   0  },
+   { "PYTH",    0  },
+   { "PIST9MM", 0  },
+   { "SG",      0  },
 
-   { "M40",     true  },
-   { "M249",    true  },
+   { "M40",     0  },
+   { "M249",    0  },
 
-   { "TAU",     false },
-   { "GLU",     false },
-   { "DISP",    false },
-   { "SHCK",    true  },
-   { "CROSS",   true  },
+   { "TAU",     addFlag(0, MF_CL_NODRAW) },
+   { "GLU",     addFlag(0, MF_CL_NODRAW) },
+   { "DISP",    addFlag(0, MF_CL_NODRAW) },
+   { "SHCK",    0  },
+   { "CROSS",   0  },
 
-   { "FRAG",    false },
-   { "SATCH",   false },
-   { "TRIP",    false },
+   { "FRAG",    addFlag(0, MF_CL_NODRAW) },
+   { "SATCH",   addFlag(0, MF_CL_NODRAW) },
+   { "TRIP",    addFlag(0, MF_CL_NODRAW) },
+
+   { "MED",     addFlags(0, MF_CL_NODRAW, MF_CL_NOINIT, MF_CL_NOTICK) },
 }
 
 GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
@@ -58,6 +67,7 @@ GLOBAL_WEAPONS_AMNT = #GLOBAL_WEAPONS -- only calculate this once
 -- GLOBALS
 #include "script/include/player.lua"
 #include "script/pwbtoolanimation.lua"
+#include "script/temp_ent.lua"
 #include "script/util.lua"
 
 -- WEAPONS
@@ -114,55 +124,57 @@ client.weaponDraws = {}
 
 ----------------------------------------------------------------------------------------------
 
--- declare weapons, pickup amounts
+-- Declares weapons, pickup amounts
+-- Server doesn't have an option to be turned off since all weapons need it. Could automate that in the future though!
 function server.init()
-   local foo = 0
-
-   foo = addFlag(foo, 4)
-   foo = addFlag(foo, 256)
-   DebugPrint("------------------------------------------------------------------------------")
-   DebugPrint(hasFlag(foo, 4))
-   DebugPrint(hasFlag(foo, 256))
-   DebugPrint(hasFlag(foo, 128))
-   DebugPrint(hasFlag(foo, 2))
-   DebugPrint("------------------------------------------------------------------------------")
    for i = 1, GLOBAL_WEAPONS_AMNT do
       server["init" .. GLOBAL_WEAPONS[i][1]]()
       table.insert(server.weaponTicks, server["tick" .. GLOBAL_WEAPONS[i][1]]) 
    end
-
-   -- only on server!
-   server.initMED()
 end
 
 function server.tick(dt)
    for i = 1, GLOBAL_WEAPONS_AMNT do
       server.weaponTicks[i](dt)
    end
-
-   -- only on server!
-   server.tickMED(dt)
 end
 
--- mostly to load haptics, amongst other things
+-- Load haptics, amongst other things
 function client.init()
    for i = 1, GLOBAL_WEAPONS_AMNT do
-      client["init" .. GLOBAL_WEAPONS[i][1]]()
-      table.insert(client.weaponTicks, client["tick" .. GLOBAL_WEAPONS[i][1]])
 
-      -- Set up weapon draws
-      if GLOBAL_WEAPONS[i][2] == true then
+      -- check init
+      if not hasFlag(GLOBAL_WEAPONS[i][2], MF_CL_NOINIT) then
+         client["init" .. GLOBAL_WEAPONS[i][1]]()
+      end
+
+      -- check tick
+      if not hasFlag(GLOBAL_WEAPONS[i][2], MF_CL_NOTICK) then
+         table.insert(client.weaponTicks, client["tick" .. GLOBAL_WEAPONS[i][1]])
+      end
+
+      -- check HUD draw
+      if not hasFlag(GLOBAL_WEAPONS[i][2], MF_CL_NODRAW) then
          table.insert(client.weaponDraws, client["draw" .. GLOBAL_WEAPONS[i][1]])
       end
    end
 
+   GLOBAL_WEAPON_CL_TICKS_AMNT = #client.weaponTicks
    GLOBAL_WEAPON_DRAWS_AMNT = #client.weaponDraws
 end
 
+-- Runs most weapon code
 function client.tick(dt)
-   for i = 1, GLOBAL_WEAPONS_AMNT do
+   if not GLOBAL_WEAPON_CL_TICKS_AMNT then return end
+
+   for i = 1, GLOBAL_WEAPON_CL_TICKS_AMNT do
       client.weaponTicks[i](dt)
    end
+
+   HUD_TempEntUpdate_(
+    dt,	-- Simulation time
+	GetTime(), -- Absolute time on client
+	10)	-- True gravity on client
 end
 
 -- Draws the magazine hud and scopes
