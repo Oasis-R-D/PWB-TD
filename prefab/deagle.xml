@@ -9,9 +9,10 @@
 	<group name="tool_space">
 		<body dynamic="false">
 			<vox pos="0.0 -0.08 -0.04" file="MOD/vox/deagle.vox" object="shape_0" scale="0.4"/>
-			<vox pos="0.02 0.105 0.12" file="MOD/vox/deagle.vox" object="bump" scale="0.4"/>
-			<vox pos="0.02 -0.04 -0.04" file="MOD/vox/deagle.vox" object="right" scale="0.4"/>
-			<vox pos="-0.02 -0.04 -0.04" file="MOD/vox/deagle.vox" object="left" scale="0.4"/>
+			<vox pos="-0.008 0.08 -0.04" file="MOD/vox/deagle.vox" object="slide" scale="0.1333333333"/>
+			<vox pos="0.032 0.08 -0.04" file="MOD/vox/deagle.vox" object="slide" scale="0.1333333333" mirrorx="true"/>
+			<vox pos="0.02 -0.04 0.08" file="MOD/vox/deagle.vox" object="grip" scale="0.4"/>
+			<vox pos="-0.02 -0.04 0.08" file="MOD/vox/deagle.vox" object="grip" scale="0.4"/>
 		</body>
 		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>
 		<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>

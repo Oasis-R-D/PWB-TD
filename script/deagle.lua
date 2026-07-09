@@ -20,7 +20,7 @@ local PLAYERDAMAGE = 0.34
 local MAX_RANGE = 150.0
 local WPNID = "opfordeagle"
 local WPNNAME = "Desert Eagle"
-local CASING_ORG = Vec(0.02, 0.25, 0.1)
+local CASING_ORG = Vec(0.02, 0.2, 0.13)
 
 -- Per weapon data storer
 local playerData = {}
@@ -35,6 +35,12 @@ function createPlayerCLIENTdataDE357()
 		laseron = false,
 		laserrefresh = 0.0,
 		dataReset = true,
+
+		body = nil,
+		slide = nil,
+		slide_2pt = nil,
+		slideTransform = nil,
+		slideTransform_2pt = nil,
 	}
 end
 
@@ -125,8 +131,8 @@ function client.tickDE357(dt)
 	end
 end
 
-clipamnt = 0
 local camSineTime = nil
+local SlideTime = nil
 
 function client.tickPlayerDE357(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
@@ -183,6 +189,7 @@ function client.tickPlayerDE357(p, dt)
 				ServerCall("server.primaryFireDE357", p)
 				PlayHaptic(shootHaptic, 1)
 				camSineTime = 0
+				SlideTime = 0
 
 				-- shell ejection
 				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_50ae.xml", FSFX_BRASS)
@@ -337,6 +344,44 @@ function client.tickPlayerDE357(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		--Animate Slide
+		local GunBody = GetToolBody(p)
+		if data.body ~= GunBody then
+			data.body = GunBody
+			-- Slide is the third shape in vox file. Remember original position in attachment frame
+			local shapes = GetBodyShapes(GunBody)
+			data.slide = shapes[2]
+			data.slide_2pt = shapes[3]
+			data.slideTransform = GetShapeLocalTransform(data.slide)
+			data.slideTransform_2pt = GetShapeLocalTransform(data.slide_2pt)
+		end
+		if data.slide and SlideTime ~= nil then
+			SlideTime = SlideTime + dt
+
+			-- don't go over!
+			if SlideTime > 0.25 then
+				SlideTime = 0.25
+			-- Lock open during reloads
+			elseif SlideTime > 0.125 and data.inreload == true and data.coolDown > 0.63 then
+				SlideTime = 0.125
+			end
+
+			-- Slide has returned
+			if SlideTime >= 0.25 then
+				SetShapeLocalTransform(data.slide, data.slideTransform) -- force back just in case
+				SetShapeLocalTransform(data.slide_2pt, data.slideTransform_2pt) -- force back just in case
+				SlideTime = nil
+			else
+				local TOffset = Transform(Vec(0, 0, 0.08 * math.sin(4 * math.pi * SlideTime)))
+				local t = TransformToParentTransform(TOffset, data.slideTransform)
+				local t_2pt = TransformToParentTransform(TOffset, data.slideTransform_2pt)
+
+				
+				SetShapeLocalTransform(data.slide, t)
+				SetShapeLocalTransform(data.slide_2pt, t_2pt)
+			end
 		end
 	end
 end

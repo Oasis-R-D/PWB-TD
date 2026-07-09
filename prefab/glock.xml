@@ -10,11 +10,10 @@
 		<body dynamic="false">
 			<vox pos="-0.04 -0.08 -0.04" file="MOD/vox/glock.vox" object="left" scale="0.4">
 				<vox pos="0.02 0.0 0.0" file="MOD/vox/glock.vox" object="right" scale="0.4"/>
-				<vox name="port" pos="0.0375 0.1975 -0.02" file="MOD/vox/glock.vox" object="port" scale="0.2"/>
-				<vox name="barrel" pos="0.03 0.205 -0.1375" file="MOD/vox/glock.vox" object="port" scale="0.15"/>
-				<vox name="silencer" pos="0.03 0.1925 -0.2875" rot="0 0 45" file="MOD/vox/glock.vox" object="silencer" scale="0.4" tags="invisible"/>
-				<vox pos="0.0 0.2 -0.02" file="MOD/vox/glock.vox" object="portcover" scale="0.2"/>
-				<vox pos="0.02 0.2 -0.08" rot="0.0 -90.0 0.0" file="MOD/vox/glock.vox" object="portcover" scale="0.2"/>
+				<vox pos="0.02 0.2 -0.04" file="MOD/vox/glock.vox" object="slide" scale="0.2"/>
+				<vox name="port" pos="0.0375 0.1975 -0.06" file="MOD/vox/glock.vox" object="port" scale="0.2"/>
+				<vox name="barrel" pos="0.03 0.205 -0.1475" file="MOD/vox/glock.vox" object="barrel" scale="0.15"/>
+				<vox name="silencer" tags="invisible" pos="0.03 0.1925 -0.3275" rot="0 0 45" file="MOD/vox/glock.vox" object="silencer" scale="0.4"/>
 			</vox>
 		</body>
 		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.0 0.05 0.0" rot="0.0 90.0 0.0"/>

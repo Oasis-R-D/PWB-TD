@@ -10,11 +10,13 @@
 	</group>
 	<group name="tool_space">
 		<body dynamic="false">
-			<vox pos="0.0 -0.12 -0.24" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="gun" scale="0.4"/>
+			<vox pos="0.04 -0.12 -0.44" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="gun" scale="0.4"/>
 			<vox pos="-0.02 -0.04 -0.24" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="side" scale="0.4"/>
 			<vox pos="-0.02 0.1 -0.38" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="shroud" scale="0.4"/>
 			<vox pos="0.02 0.1 -0.38" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="shroud" scale="0.4"/>
 			<vox pos="0.02 -0.04 -0.24" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="side" scale="0.4"/>
+			<vox pos="0.0 -0.04 0.2" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="stock" scale="0.4"/>
+			<vox pos="0.014 0.16 -0.296" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/m40a1.vox" object="scope" scale="0.125"/>
 		</body>
 		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.05 -0.05 -0.05" rot="0.0 90.0 -35.0"/>
 		<location name="tp_secaction_rh" tags="name=tp_secaction_rh ik_hand" pos="0.05 -0.05 -0.05" rot="0.0 90.0 -35.0"/>

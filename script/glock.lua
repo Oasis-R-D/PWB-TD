@@ -36,6 +36,10 @@ function createPlayerCLIENTdataPIST9MM()
 		suppressed = false,
 		dataReset = true,
 		shapesNeedsUpd = true,
+		
+		body = nil,
+		slide = nil,
+		slideTransform = nil,
 	}
 end
 
@@ -104,14 +108,15 @@ function client.tickPIST9MM(dt)
 end
 
 local camSineTime = nil
+local SlideTime = nil
 
 function client.suppress(p, suppressed)
 	local toolBody = GetToolBody(p)
 	local shapes = GetBodyShapes(toolBody)
 	if suppressed == false then
-		SetTag(shapes[5], "invisible")
+		SetTag(shapes[6], "invisible")
 	else
-		RemoveTag(shapes[5], "invisible")
+		RemoveTag(shapes[6], "invisible")
 	end
 end
 
@@ -153,7 +158,7 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	-- Restore Suppresor
 	if data.shapesNeedsUpd == true then
-		if HasTag(GetBodyShapes(GetToolBody(p))[5], "invisible") == true then
+		if HasTag(GetBodyShapes(GetToolBody(p))[6], "invisible") == true then
 			client.suppress(p, data.suppressed)
 			data.shapesNeedsUpd = false
 		end
@@ -182,6 +187,7 @@ function client.tickPlayerPIST9MM(p, dt)
 					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
 					camSineTime = 0
+					SlideTime = 0
 					PlayHaptic(shootHaptic, 1)
 
 					-- shell ejection
@@ -210,6 +216,7 @@ function client.tickPlayerPIST9MM(p, dt)
 					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
 					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
 					camSineTime = 0
+					SlideTime = 0
 					PlayHaptic(shootHaptic, 1)
 
 					-- shell ejection
@@ -259,8 +266,9 @@ function client.tickPlayerPIST9MM(p, dt)
 					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
 					camSineTime = 0
+					SlideTime = 0
 					PlayHaptic(shootHaptic, 1)
-
+					
 					-- shell ejection
 					ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
 				else
@@ -287,6 +295,7 @@ function client.tickPlayerPIST9MM(p, dt)
 					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
 					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
 					camSineTime = 0
+					SlideTime = 0
 					PlayHaptic(shootHaptic, 1)
 
 					-- shell ejection
@@ -371,6 +380,37 @@ function client.tickPlayerPIST9MM(p, dt)
 				SetPlayerCameraOffsetTransform(t)
 				camSineTime = camSineTime + dt
 			else camSineTime = nil end
+		end
+
+		--Animate Slide
+		local GunBody = GetToolBody(p)
+		if data.body ~= GunBody then
+			data.body = GunBody
+			-- Slide is the third shape in vox file. Remember original position in attachment frame
+			local shapes = GetBodyShapes(GunBody)
+			data.slide = shapes[3]
+			data.slideTransform = GetShapeLocalTransform(data.slide)
+		end
+		if data.slide and SlideTime ~= nil then
+			SlideTime = SlideTime + dt
+
+			-- don't go over!
+			if SlideTime > 0.125 then
+				SlideTime = 0.125
+			-- Lock open during reloads
+			elseif SlideTime > 0.0625 and data.inreload == true and data.coolDown > 0.63 then
+				SlideTime = 0.0625
+			end
+
+			-- Slide has returned
+			if SlideTime >= 0.125 then
+				SetShapeLocalTransform(data.slide, data.slideTransform) -- force back just in case
+				SlideTime = nil
+			else
+				local TOffset = Transform(Vec(0, 0, 0.07 * math.sin(8 * math.pi * SlideTime)))
+				local t = TransformToParentTransform(TOffset, data.slideTransform)
+				SetShapeLocalTransform(data.slide, t)
+			end
 		end
 	end
 end

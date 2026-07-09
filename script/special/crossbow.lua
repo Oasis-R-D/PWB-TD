@@ -14,7 +14,7 @@ local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multip
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
 local DAMAGE = 0.5
-local PLAYERDAMAGE = 0.2
+local PLAYERDAMAGE = 0.45
 local WPNID = "hlcrossbow"
 local WPNNAME = "Crossbow"
 
@@ -99,8 +99,21 @@ function server.tickCROSS(dt)
 					if hitPlayer ~= 0 then
 						PlaySound(LoadSound(PROJ_IMPACT_PLAYER), data.curPos, 0.5)
 
-						ApplyPlayerDamage(hitPlayer, PLAYERDAMAGE, WPNNAME, data.owner)
-						BloodVFX(data.curPos, data.curDir, PLAYERDAMAGE, hitPlayer)
+						local playerdamage = PLAYERDAMAGE
+
+						-- apply hitgroups
+						QueryRequire("player")
+						QueryInclude("player")
+						QueryRejectPlayer(data.owner)
+						local _, _, _, bodyPart = QueryRaycast(data.curPos, data.curDir, 0.25)
+
+						local hitPart = GetTagValue(GetShapeBody(bodyPart), "bone")
+						if hitPart == "head" or hitPart == "neck" then
+							playerdamage = playerdamage * GLOBAL_HEADSHOTMULT
+						end
+
+						ApplyPlayerDamage(hitPlayer, playerdamage, WPNNAME, data.owner)
+						BloodVFX(data.curPos, data.curDir, playerdamage, hitPlayer)
 
 						Delete(data.model)
 						table.remove(CrossbowBolts, index)
