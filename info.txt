@@ -1,4 +1,4 @@
-name = [PWB] Half-Life: 1 weapons
+name = [PWB] Half-Life: 1 Trilogy weapons
 author = PackMan09
 description = [noupload]Collection of firearms from Half-Life: 1 and it's expansions, to be used as a weapon base.
 tags = Tool
