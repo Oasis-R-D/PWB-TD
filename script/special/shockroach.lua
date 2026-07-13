@@ -41,7 +41,7 @@ function createPlayerSERVERdataSHCK()
 	}
 end
 
-function createBallSERVERdataSR(p, pos, dir)
+function createProjSERVERdataSR(p, pos, dir)
     return {
 		curDir = dir,
 		curPos = pos,
@@ -178,7 +178,7 @@ function server.primaryFireSHCK(p)
 	local pos, dir = getAimVector(GetPlayerEyeTransform(p).pos, MAX_RANGE, 0, p)
 
 	-- add bolt to sim
-	ElectricityBolts[findArrayOpening(ElectricityBolts)] = createBallSERVERdataSR(p, pos, dir)
+	ElectricityBolts[findArrayOpening(ElectricityBolts)] = createProjSERVERdataSR(p, pos, dir)
 
     local data = playerData[p]
 

@@ -23,6 +23,7 @@ local PROJ_IMPACT_PLAYER = "MOD/snd/crossbow_bt_player0.ogg"
 
 local PROJ_VELOCITY = 50.8
 local PROJ_VELOCITY_WATER = 25.4
+local PROJ_VELOCITY_AIMED = 10000 -- Hitscan when fired while aiming
 
 -- Per weapon data storer
 local playerData = {}
@@ -46,14 +47,91 @@ function createPlayerCLIENTdataCROSS()
 	}
 end
 
-function createBallSERVERdataCB(p, pos, dir, body)
+function createProjSERVERdataCB(p, pos, dir, body, aimed)
     return {
 		curDir = dir,
 		curPos = pos,
 		model = body,
 		owner = p,
+		scoped = aimed,
 		totalDist = 0.0,
 	}
+end
+
+function server.crossbowExplode(pos, owner, model)
+	Paint(pos, 0.75, "explosion", 0.5)
+	PointLight(pos, 0.75, 0.5, 0.063, 3)
+	PlaySound(LoadSound("snd/explosion/m0.ogg"), pos, 1.0)
+
+	for i=0, 5 do
+		ParticleReset()
+		ParticleGravity(0)
+		ParticleRadius(rnd(0.5, 1), 2)
+		ParticleAlpha(1, 0)
+		ParticleTile(5)
+		ParticleDrag(0)
+		ParticleRotation(rnd(10, -10), 0)
+		ParticleSticky(0)
+		ParticleEmissive(5, 0)
+		ParticleCollide(0)
+		ParticleColor(1,0.35,0, 1,0,0)
+		SpawnParticle(pos, Vec(0,0,0), 0.125)
+	end
+
+	for id in Players() do
+        local playerPos = TransformToParentPoint(GetPlayerTransform(id), Vec(0, 1))
+		local dist = VecLength(VecSub(pos, playerPos))
+		if dist <= 3.2512 then
+			QueryRejectBody(model)
+			QueryRequire("large visible physical")
+			local pHit = QueryRaycast(playerPos, VecNormalize(VecSub(pos, playerPos)), dist+0.1)
+			if not pHit then
+				dist = dist * 39.37
+				local damage = 40
+				local falloff = damage / 128 -- 3.2512 meters in approx HU
+				local flAdjustedDamage = damage - (dist * falloff)
+				if flAdjustedDamage > 0 then ApplyPlayerDamage(id, flAdjustedDamage/100, WPNNAME, owner) end
+			end
+		end
+    end
+
+	local strength = 5.0	--Strength of blower
+	local maxMass = 1048576	--The maximum mass for a body to be affected
+	local maxDist = 3.2512	--The maximum distance for bodies to be affected
+	local mi = VecAdd(pos, Vec(-maxDist/2, -maxDist/2, -maxDist/2))
+	local ma = VecAdd(pos, Vec(maxDist/2, maxDist/2, maxDist/2))
+	QueryRequire("physical dynamic")
+	local bodies = QueryAabbBodies(mi, ma)
+
+	for i=1,#bodies do
+		local b = bodies[i]
+
+		--Compute body center point and distance
+		local bmi, bma = GetBodyBounds(b)
+		local bc = VecLerp(bmi, bma, 0.5)
+		local dir = VecSub(bc, pos)
+		local dist = VecLength(dir)
+		
+		--Get body mass
+		local mass = GetBodyMass(b)
+
+		dir = VecScale(dir, 1.0 / dist)
+			
+		--Check if body should be affected
+		if dist < maxDist and mass < maxMass then
+			dir = VecNormalize(dir)
+	
+			--Compute how much velocity to add
+			local massScale = 1 - math.min(mass/maxMass, 1.0)
+			local distScale = 1 - math.min(dist/maxDist, 1.0)
+			local add = VecScale(dir, strength * massScale * distScale)
+			
+			--Add velocity to body
+			local vel = GetBodyVelocity(b)
+			vel = VecAdd(vel, add)
+			SetBodyVelocity(b, vel)
+		end
+	end
 end
 
 function server.initCROSS()
@@ -84,7 +162,16 @@ function server.tickCROSS(dt)
 			else
 				QueryRequire("large visible physical")
 				QueryRejectBody(data.model)
-				local hit, dist, shape, hitPlayer, _, normal = QueryShot(data.curPos, data.curDir, (IsPointInWater(data.curPos) == true and PROJ_VELOCITY_WATER or PROJ_VELOCITY) * dt, 0.0, data.owner)
+				
+				local vel = PROJ_VELOCITY
+
+				if data.scoped == true then
+					vel = PROJ_VELOCITY_AIMED
+				elseif IsPointInWater(data.curPos) == true then
+					vel = PROJ_VELOCITY_WATER
+				end
+
+				local hit, dist, shape, hitPlayer, _, normal = QueryShot(data.curPos, data.curDir, vel * dt, 0.0, data.owner)
 
 				data.curPos = VecAdd(data.curPos, VecScale(data.curDir, dist))
 				
@@ -115,6 +202,10 @@ function server.tickCROSS(dt)
 						ApplyPlayerDamage(hitPlayer, playerdamage, WPNNAME, data.owner)
 						BloodVFX(data.curPos, data.curDir, playerdamage, hitPlayer)
 
+						if data.scoped ~= true then
+							server.crossbowExplode(data.curPos, data.owner, data.model)
+						end
+
 						Delete(data.model)
 						table.remove(CrossbowBolts, index)
 					elseif hitAnimator ~= 0 then
@@ -122,6 +213,10 @@ function server.tickCROSS(dt)
 
 						ApplyBodyImpulse(GetShapeBody(shape), data.curPos, VecScale(data.curDir, 800 * 4))
 						BloodVFX(data.curPos, data.curDir, PLAYERDAMAGE, nil, hitAnimator)
+
+						if data.scoped ~= true then
+							server.crossbowExplode(data.curPos, data.owner, data.model)
+						end
 
 						Delete(data.model)
 						table.remove(CrossbowBolts, index)
@@ -167,6 +262,10 @@ function server.tickCROSS(dt)
 							if matType ~= "glass" or HasTag(GetShapeBody(shape), "unbreakable") == true then
 								PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.5)
 
+								if data.scoped ~= true then
+									server.crossbowExplode(data.curPos, data.owner, data.model)
+								end
+
 								Delete(data.model)
 								table.remove(CrossbowBolts, index)
 							end
@@ -181,7 +280,7 @@ end
 function server.tickPlayerCROSS(p, dt)
 end
 
-function server.primaryFireCROSS(p)
+function server.primaryFireCROSS(p, scoped)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
 
 	local ammo = GetToolAmmo(WPNID, p)
@@ -195,7 +294,7 @@ function server.primaryFireCROSS(p)
 	local boltEnt = Spawn(xml, GrenTrans)
 
 	-- add bolt to sim
-	CrossbowBolts[findArrayOpening(CrossbowBolts)] = createBallSERVERdataCB(p, pos, dir, boltEnt[1])
+	CrossbowBolts[findArrayOpening(CrossbowBolts)] = createProjSERVERdataCB(p, pos, dir, boltEnt[1], scoped)
 
 	PlaySound(LoadSound(PRIM_FIRESOUND), pos, 300)
 	if ammo < 9999 then
@@ -296,7 +395,7 @@ function client.tickPlayerCROSS(p, dt)
 		if data.coolDown < 0 then
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireCROSS", p)
+				ServerCall("server.primaryFireCROSS", p, data.scoped)
 				camSineTime = 0
 				PlayHaptic(shootHaptic, 1)
 			end
