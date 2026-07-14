@@ -118,9 +118,6 @@ client.weaponDraws = {}
 -- - Gluon gun circular beam
 -- - Finish gluon gun and displacer model
 -- - Displacer prongs
--- - displacer ball and other billboard sprites doesn't angle correctly when in vehicle camera
--- - add weapon flags (replaces the has Draw() bool)
--- - maybe redo the camera movement system (recreate half-life pev->punchangle system?)
 
 ----------------------------------------------------------------------------------------------
 
