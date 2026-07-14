@@ -147,6 +147,55 @@ function client.SRC_PunchReset(tolerance)
 	vecPunchAngleVel = Vec(0,0,0)
 end
 
+function client.DoMachineGunKick(maxVerticleKickAngle, fireDurationTime, slideLimitTime )
+	local vecScratch = Vec()
+	
+	--Find how far into our accuracy degradation we are
+	local duration = fireDurationTime > slideLimitTime and slideLimitTime or fireDurationTime
+	local kickPerc = duration / slideLimitTime
+
+	-- do this to get a hard discontinuity, clear out anything under 10 degrees punch
+	client.SRC_PunchReset( 10 )
+
+	--Apply this to the view angles as well
+	vecScratch[1] =    0.2 + ( maxVerticleKickAngle * kickPerc )
+	vecScratch[2] = -( 0.2 + ( maxVerticleKickAngle * kickPerc ) ) / 3
+	vecScratch[3] =    0.1 + ( maxVerticleKickAngle * kickPerc )   / 8
+
+	--Wibble left and right
+	if math.random( -1, 1 ) >= 0 then
+		vecScratch[2] = vecScratch[2] * -1 
+	end
+
+	--Wobble up and down
+	if math.random( -1, 1 ) >= 0 then
+		vecScratch[3] = vecScratch[3] * -1
+	end
+
+	--Clip this to our desired min/max
+	local final = VecAdd(vecScratch, vecPunchAngle)
+	local clip = Vec(24, 3, 1)
+
+	--Clip each component
+	for i=1, 3 do
+		if final[i] > clip[i] then
+			final[i] = clip[i]
+		elseif final[i] < -clip[i] then
+			final[i] = -clip[i]
+		end
+
+		--Return the result
+		vecScratch[i] = final[i] - vecPunchAngle[i]
+	end
+
+	--Add it to the view punch
+	-- NOTE: 0.5 is just tuned to match the old effect before the punch became simulated
+	vecScratch = VecScale(vecScratch, 0.5)
+	client.SRC_PunchAxis(1, vecScratch[1])
+	client.SRC_PunchAxis(2, vecScratch[2])
+	client.SRC_PunchAxis(3, vecScratch[3])
+end
+
 ----------------------------------------------------------------------------------------------
 -- Random functions
 ----------------------------------------------------------------------------------------------
