@@ -241,43 +241,41 @@ function client.tickPlayerSHCK(p, dt)
 	data.dataReset = false
 
 	-- Check Fire
-	if InputDown("usetool", p) and canFire(p, data.fakeAmmo, data.fakeAmmo) then -- not a good idea to use hasbolt here, only way to prevent THE BUG
-		if data.coolDown < 0 then
-			PointLight(mt.pos, 0, 1, 1, 3)
-			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireSHCK", p)
-				PlayHaptic(shootHaptic, 1)
-			end
+	if InputDown("usetool", p) and canFire(p, data.fakeAmmo, data.fakeAmmo, data.coolDown) then -- not a good idea to use hasbolt here, only way to prevent THE BUG
+        PointLight(mt.pos, 0, 1, 1, 3)
+        if IsPlayerLocal(p) then
+            ServerCall("server.primaryFireSHCK", p)
+            PlayHaptic(shootHaptic, 1)
+        end
 
-			local playervel = GetPlayerVelocity(p)
+        local playervel = GetPlayerVelocity(p)
 
-            for i=1, 4 do
-                ParticleReset()
-                ParticleGravity(0)
-                ParticleRadius(0.3)
-                ParticleAlpha(1, 0)
-                ParticleTile(1)
-                ParticleDrag(0)
-                ParticleRotation(rnd(10, -10), 0)
-                ParticleSticky(0)
-                ParticleEmissive(5, 1)
-                ParticleCollide(0)
-                ParticleColor(0, 1, 1)
-                SpawnParticle(mt.pos, playervel, 0.125)
-            end
+        for i=1, 4 do
+            ParticleReset()
+            ParticleGravity(0)
+            ParticleRadius(0.3)
+            ParticleAlpha(1, 0)
+            ParticleTile(1)
+            ParticleDrag(0)
+            ParticleRotation(rnd(10, -10), 0)
+            ParticleSticky(0)
+            ParticleEmissive(5, 1)
+            ParticleCollide(0)
+            ParticleColor(0, 1, 1)
+            SpawnParticle(mt.pos, playervel, 0.125)
+        end
 
-			data.timetobolt = 1
+        data.timetobolt = 1
 
-            if isMP() then
-			    data.coolDown = FIRERATE/2
-            else
-                data.coolDown = FIRERATE  
-            end
+        if isMP() then
+            data.coolDown = FIRERATE/2
+        else
+            data.coolDown = FIRERATE  
+        end
 
-			data.recoil = RECOIL_AMNT
+        data.recoil = RECOIL_AMNT
 
-            data.fakeAmmo = data.fakeAmmo - 1
-		end
+        data.fakeAmmo = data.fakeAmmo - 1
 	end
 		
 	-- decrease firing cooldown and recoil

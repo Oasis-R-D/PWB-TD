@@ -154,116 +154,84 @@ function client.tickPlayerSG(p, dt)
 		data.inreload = false
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
-			if data.coolDown < 0 then				
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireSG", p)
-					client.GS_PunchAxis(1, 5)
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then			
+		PointLight(mt.pos, 1, 0.7, 0.5, 3)
+		if IsPlayerLocal(p) then
+			ServerCall("server.primaryFireSG", p)
+			client.GS_PunchAxis(1, 5)
 
-					PlayHaptic(shootHaptic, 1)
+			PlayHaptic(shootHaptic, 1)
 
-					-- shell ejection
-					data.shellstopump = 1.0
-				end
+			-- shell ejection
+			data.shellstopump = 1.0
+		end
 
-				local toolBody = GetToolBody(p)
-				local playervel = GetPlayerVelocity(p)
-				
-				-- muzzleflash
-				for i=0, 3 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.1, 0.15), 0.33)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-					
-				data.clipamnt = data.clipamnt - 1
-				if data.clipamnt > 0 then
-					data.coolDown = FIRERATE
-					data.pumptime = FIRERATE - 0.25 -- 0.5
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-					local reloadtime = nil
-					local shellsneedingloading = CLIP_SIZE - data.clipamnt
+		local toolBody = GetToolBody(p)
+		local playervel = GetPlayerVelocity(p)
+		
+		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+			
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0 then
+			data.coolDown = FIRERATE
+			data.pumptime = FIRERATE - 0.25 -- 0.5
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			local reloadtime = nil
+			local shellsneedingloading = CLIP_SIZE - data.clipamnt
 
-					if shellsneedingloading > ammo then
-						shellsneedingloading = ammo
-					end
-
-					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
-					data.pumptime = reloadtime - 0.25
-					data.shellstoload = shellsneedingloading
-					data.coolDown = reloadtime
-					data.shellinserttime = 0.8
-					data.inreload = true
-				end
-				
-				data.recoil = RECOIL_AMNT
+			if shellsneedingloading > ammo then
+				shellsneedingloading = ammo
 			end
+
+			reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
+			data.pumptime = reloadtime - 0.25
+			data.shellstoload = shellsneedingloading
+			data.coolDown = reloadtime
+			data.shellinserttime = 0.8
+			data.inreload = true
+		end
+		
+		data.recoil = RECOIL_AMNT
 	-- Check Altfire
-	elseif InputDown("grab", p) and canFire(p, ammo-1, data.clipamnt-1) then 
-			if data.coolDown < 0 then
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				if IsPlayerLocal(p) then
-					ServerCall("server.secondaryFireSG", p)
-					client.GS_PunchAxis(1, 10)
+	elseif InputDown("grab", p) and canFire(p, ammo-1, data.clipamnt-1, data.coolDown) then 
+		PointLight(mt.pos, 1, 0.7, 0.5, 3)
+		if IsPlayerLocal(p) then
+			ServerCall("server.secondaryFireSG", p)
+			client.GS_PunchAxis(1, 10)
 
-					PlayHaptic(shootHaptic, 1)
+			PlayHaptic(shootHaptic, 1)
 
-					-- shell ejection
-					data.shellstopump = 2
-				end
+			-- shell ejection
+			data.shellstopump = 2
+		end
 
-				local toolBody = GetToolBody(p)
-				local playervel = GetPlayerVelocity(p)
-				
-				-- muzzleflash
-				for i=0, 4 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.15, 0.2), 0.44)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
+		local toolBody = GetToolBody(p)
+		local playervel = GetPlayerVelocity(p)
+		
+		muzzleFlash(mt.pos, 5, 0.1, 0.2, 0.44)
 
-				data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
-				
-				data.clipamnt = data.clipamnt - 2
-				if data.clipamnt > 0 then
-					data.coolDown = ALTFIRERATE
-					data.pumptime = ALTFIRERATE - 0.25
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-					local reloadtime = 0
-					
-					local shellsneedingloading = math.min(CLIP_SIZE - data.clipamnt, ammo)
+		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
+		
+		data.clipamnt = data.clipamnt - 2
+		if data.clipamnt > 0 then
+			data.coolDown = ALTFIRERATE
+			data.pumptime = ALTFIRERATE - 0.25
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			local reloadtime = 0
+			
+			local shellsneedingloading = math.min(CLIP_SIZE - data.clipamnt, ammo)
 
-					reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
-					data.pumptime = reloadtime - 0.25
-					data.shellstoload = shellsneedingloading
-					data.coolDown = reloadtime
-					data.shellinserttime = 0.8
-					data.inreload = true
-				end
-				
-				data.recoil = 1.5 * RECOIL_AMNT
-			end
+			reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
+			data.pumptime = reloadtime - 0.25
+			data.shellstoload = shellsneedingloading
+			data.coolDown = reloadtime
+			data.shellinserttime = 0.8
+			data.inreload = true
+		end
+		
+		data.recoil = 1.5 * RECOIL_AMNT
 	end
 	
 	-- decrease firing cooldown and recoil

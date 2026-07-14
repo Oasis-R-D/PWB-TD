@@ -297,7 +297,7 @@ function client.tick(dt)
 	PointLight(pos, 0.36, 0.5, 0.063, 5)
 
 	local t = Transform(pos)
-	t.rot = GetPlayerCameraTransform().rot
+	t.rot = GetCameraTransform().rot
 
 	DrawSprite(portalSPR, t, 1.25, 1.25, 1.0, 1.0, 1.0, 1.0, true, true)
 

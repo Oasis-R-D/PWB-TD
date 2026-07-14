@@ -322,46 +322,42 @@ function client.tickPlayerTAU(p, dt)
 	data.dataReset = false
 
 	-- Check Fire
-	if InputDown("usetool", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
-		if data.coolDown < 0 then	
-			PointLight(mt.pos, 1, 0.5, 0.0, 3)
-			data.angVel = 1000
-			
-			data.aftershocksfx = rnd(0.3, 0.8)
-			if IsPlayerLocal(p) then
-				ServerCall("server.startShootbeam", true, p)
-				client.SRC_PunchAxis(1, 2)
+	if InputDown("usetool", p) and canFire(p, ammo, ammo, data.coolDown) and data.inAltAttack ~= true then	
+		PointLight(mt.pos, 1, 0.5, 0.0, 3)
+		data.angVel = 1000
+		
+		data.aftershocksfx = rnd(0.3, 0.8)
+		if IsPlayerLocal(p) then
+			ServerCall("server.startShootbeam", true, p)
+			client.SRC_PunchAxis(1, 2)
 
-				PlayHaptic(shootHaptic, 1)
-			end
-			
-			local playervel = GetPlayerVelocity(p)
-			
-			-- muzzleflash
-			for i=0, 2 do
-				ParticleReset()
-				ParticleGravity(0)
-				ParticleRadius(rnd(0.08, 0.13), 0.3)
-				ParticleAlpha(1, 0)
-				ParticleTile(5)
-				ParticleDrag(0)
-				ParticleRotation(rnd(10, -10), 0)
-				ParticleSticky(0)
-				ParticleEmissive(5, 1)
-				ParticleCollide(0)
-				ParticleColor(1,0.33,0)
-				SpawnParticle(mt.pos, playervel, 0.125)
-			end
-			
-			data.coolDown = FIRERATE
-
-			data.recoil = RECOIL_AMNT
+			PlayHaptic(shootHaptic, 1)
 		end
+		
+		local playervel = GetPlayerVelocity(p)
+		
+		-- muzzleflash
+		for i=0, 2 do
+			ParticleReset()
+			ParticleGravity(0)
+			ParticleRadius(rnd(0.08, 0.13), 0.3)
+			ParticleAlpha(1, 0)
+			ParticleTile(5)
+			ParticleDrag(0)
+			ParticleRotation(rnd(10, -10), 0)
+			ParticleSticky(0)
+			ParticleEmissive(5, 1)
+			ParticleCollide(0)
+			ParticleColor(1,0.33,0)
+			SpawnParticle(mt.pos, playervel, 0.125)
+		end
+		
+		data.coolDown = FIRERATE
+
+		data.recoil = RECOIL_AMNT
 	-- Check Altfire
-	elseif InputPressed("grab", p) and canFire(p, ammo, ammo) and data.inAltAttack ~= true then
-		if data.coolDown < 0 then
-			data.inAltAttack = true
-		end
+	elseif InputPressed("grab", p) and canFire(p, ammo, ammo, data.coolDown) and data.inAltAttack ~= true then
+		data.inAltAttack = true
 	end
 
 	if data.chargedTime ~= nil and data.inAltAttack == true then -- deplete timer and check if ready

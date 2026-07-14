@@ -133,57 +133,40 @@ function client.tickPlayerM40(p, dt)
 		data.inreload = false
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
-		if data.coolDown < 0 then
-			PointLight(mt.pos, 1, 0.7, 0.5, 3)
-			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireM40", p)
-				client.SRC_PunchAxis(1, 2)
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then
+		PointLight(mt.pos, 1, 0.7, 0.5, 3)
+		if IsPlayerLocal(p) then
+			ServerCall("server.primaryFireM40", p)
+			client.SRC_PunchAxis(1, 2)
 
-				PlayHaptic(shootHaptic, 1)
-			end
-			
-			local playervel = GetPlayerVelocity(p)
-
-			-- muzzleflash
-			for i=0, 3 do
-				ParticleReset()
-				ParticleGravity(0)
-				ParticleRadius(rnd(0.1, 0.15), 0.33)
-				ParticleAlpha(1, 0)
-				ParticleTile(5)
-				ParticleDrag(0)
-				ParticleRotation(rnd(10, -10), 0)
-				ParticleSticky(0)
-				ParticleEmissive(5, 1)
-				ParticleCollide(0)
-				ParticleColor(1,0.35,0, 1,0,0)
-				SpawnParticle(mt.pos, playervel, 0.125)
-			end
-			data.timetobolt = 0.842
-			data.clipamnt = data.clipamnt - 1
-			if data.clipamnt > 0 then
-				data.coolDown = FIRERATE
-				data.altCoolDown = SCOPEFIREDELAY
-				
-			elseif ammo > 1 then
-				data.recoil = 0.05
-				PlaySound(LoadSound(EMPTRELOAD_SOUND), mt.pos)
-				data.coolDown = EMPTYRELOAD_TIME
-				data.inreload = true
-			end
-			
-			data.recoil = RECOIL_AMNT
+			PlayHaptic(shootHaptic, 1)
 		end
+		
+		local playervel = GetPlayerVelocity(p)
+
+		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+
+		data.timetobolt = 0.842
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0 then
+			data.coolDown = FIRERATE
+			data.altCoolDown = SCOPEFIREDELAY
+			
+		elseif ammo > 1 then
+			data.recoil = 0.05
+			PlaySound(LoadSound(EMPTRELOAD_SOUND), mt.pos)
+			data.coolDown = EMPTYRELOAD_TIME
+			data.inreload = true
+		end
+		
+		data.recoil = RECOIL_AMNT
 	-- Check Altfire	
-	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
-		if data.altCoolDown < 0 then
-			if IsPlayerLocal(p) then
-				PlaySound(LoadSound(ALT_FIRESOUND), mt.pos)
-			end
-			data.altCoolDown = ALTFIRERATE
-			data.scoped = not data.scoped
+	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.altCoolDown < 0 then
+		if IsPlayerLocal(p) then
+			PlaySound(LoadSound(ALT_FIRESOUND), mt.pos)
 		end
+		data.altCoolDown = ALTFIRERATE
+		data.scoped = not data.scoped
 	end
 
 	if data.scoped == false or data.clipamnt < 0 or ammo <= 0 then

@@ -188,120 +188,118 @@ function client.tickPlayerGLU(p, dt)
 	-- make data reset when reset conditions are met
 	data.dataReset = false
 
-	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
-		if data.coolDown < 0 then
-			if data.fireState == EGON_FIREOFF then
-				if IsPlayerLocal(p) then
-					data.ammoDepleteTime = 0
-					data.shakeTime = 0
-				end
-
-				data.currentSnd = PlayLoop(startSND, mt.pos, 80)
-				data.soundState = 1
-				data.soundTime = 3
-
+	if InputDown("usetool", p) and canFire(p, ammo, ammo, data.coolDown) then
+		if data.fireState == EGON_FIREOFF then
+			if IsPlayerLocal(p) then
+				data.ammoDepleteTime = 0
 				data.shakeTime = 0
-
-				data.checkOff = 0.1
-
-				data.damageTime = EGON_PULSE_INTERVAL
-				data.fireState = EGON_FIRECHARGE
-			elseif data.fireState == EGON_FIRECHARGE then
-				local eyeTrans = GetPlayerEyeTransform(p)
-				local front = TransformToParentVec(eyeTrans, Vec(0, 0, -1))
-				local vecDir = VecNormalize(front)
-				local vecOrigSrc = GetPlayerEyeTransform(p).pos
-				local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
-
-				local data = playerData[p]
-
-				local bHit, iDist, pShape, pPlayerHit = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
-
-				local timedist = (data.damageTime / EGON_DISCHARGE_INTERVAL)
-
-				if timedist < 0 then
-					timedist = 0
-				elseif timedist > 1 then
-					timedist = 1
-				end
-				timedist = 1 - timedist
-
-				local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
-				client.UpdateEffectGlu(beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
-
-				if IsPlayerLocal(p) then
-					ShakeCamera(rnd(0.2, 0.3))
-
-					data.shakeTime = data.shakeTime - dt
-					if data.shakeTime < 0 then
-						ShakeCamera(rnd(0.45, 0.55))
-
-						data.recoil = data.recoil + 0.0625
-
-						data.shakeDur = data.shakeDur + dt
-						if data.shakeDur >= 0.75 then
-							data.shakeTime = 1.5
-							data.shakeDur = 0
-						end
-					end
-
-					if data.damageTime <= 0 and bHit then
-						-- tell the server to do damage
-						ServerCall("server.fireGLU", p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
-					end
-
-					if data.ammoDepleteTime ~= nil then
-						data.ammoDepleteTime = data.ammoDepleteTime - dt
-						if data.ammoDepleteTime <= 0 then
-							ServerCall("server.depleteAmmo", p, WPNID)
-
-							if isMP() == true then
-								data.ammoDepleteTime = 0.2
-							else
-								data.ammoDepleteTime = 0.1
-							end
-						end
-					end
-
-					PlayHaptic(shootHaptic, 1)
-
-					PointLight(mt.pos, 0.1, 0.1, 0.5, math.abs((math.sin(GetTime() + rnd(1, 6)) * 3)) + 3) -- add sin wave to the B channel to make it flicker
-					data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
-				else -- OPTIMIZATION: use less math for other clients
-					PointLight(mt.pos, 0.1, 0.1, 0.5, 3)
-					data.recoil = math.abs((math.sin(GetTime()) * 0.0625)) + 0.0625
-				end
-
-				if data.damageTime <= 0 then data.damageTime = EGON_DISCHARGE_INTERVAL end
-
-				if (data.soundState == 1 and data.soundTime <= 0.0) or data.soundState == 2 then
-					data.soundState = 2
-					data.currentSnd = PlayLoop(loopSND, mt.pos, 80)
-				elseif data.soundState == 1 and data.soundTime > 0.0 then
-					data.currentSnd = PlayLoop(startSND, mt.pos, 80)
-				end
-
-				if ammo <= 0 then data.coolDown = 1 end
-
-				data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
 			end
 
-			local playervel = GetPlayerVelocity(p)
+			data.currentSnd = PlayLoop(startSND, mt.pos, 80)
+			data.soundState = 1
+			data.soundTime = 3
 
-			-- muzzleflash
-			ParticleReset()
-			ParticleGravity(0)
-			ParticleRadius(rnd(0.15, 0.2), 0.35)
-			ParticleAlpha(1, 0)
-			ParticleTile(5)
-			ParticleDrag(0)
-			ParticleRotation(rnd(10, -10), 0)
-			ParticleSticky(0)
-			ParticleEmissive(5, 1)
-			ParticleCollide(0)
-			ParticleColor(0,0,1, 0.5,0,0.5)
-			SpawnParticle(mt.pos, playervel, 0.125)
+			data.shakeTime = 0
+
+			data.checkOff = 0.1
+
+			data.damageTime = EGON_PULSE_INTERVAL
+			data.fireState = EGON_FIRECHARGE
+		elseif data.fireState == EGON_FIRECHARGE then
+			local eyeTrans = GetPlayerEyeTransform(p)
+			local front = TransformToParentVec(eyeTrans, Vec(0, 0, -1))
+			local vecDir = VecNormalize(front)
+			local vecOrigSrc = GetPlayerEyeTransform(p).pos
+			local tmpSrc = GetToolLocationWorldTransform("muzzle", p)
+
+			local data = playerData[p]
+
+			local bHit, iDist, pShape, pPlayerHit = QueryShot(vecOrigSrc, vecDir, 100, 0, p)
+
+			local timedist = (data.damageTime / EGON_DISCHARGE_INTERVAL)
+
+			if timedist < 0 then
+				timedist = 0
+			elseif timedist > 1 then
+				timedist = 1
+			end
+			timedist = 1 - timedist
+
+			local beamstart = VecAdd(tmpSrc.pos, VecScale(GetPlayerVelocity(player), dt))
+			client.UpdateEffectGlu(beamstart, VecAdd(vecOrigSrc, VecScale(vecDir, iDist)), vecDir, iDist, timedist, p, dt)
+
+			if IsPlayerLocal(p) then
+				ShakeCamera(rnd(0.2, 0.3))
+
+				data.shakeTime = data.shakeTime - dt
+				if data.shakeTime < 0 then
+					ShakeCamera(rnd(0.45, 0.55))
+
+					data.recoil = data.recoil + 0.0625
+
+					data.shakeDur = data.shakeDur + dt
+					if data.shakeDur >= 0.75 then
+						data.shakeTime = 1.5
+						data.shakeDur = 0
+					end
+				end
+
+				if data.damageTime <= 0 and bHit then
+					-- tell the server to do damage
+					ServerCall("server.fireGLU", p, vecOrigSrc, vecDir, iDist, pShape, pPlayerHit)
+				end
+
+				if data.ammoDepleteTime ~= nil then
+					data.ammoDepleteTime = data.ammoDepleteTime - dt
+					if data.ammoDepleteTime <= 0 then
+						ServerCall("server.depleteAmmo", p, WPNID)
+
+						if isMP() == true then
+							data.ammoDepleteTime = 0.2
+						else
+							data.ammoDepleteTime = 0.1
+						end
+					end
+				end
+
+				PlayHaptic(shootHaptic, 1)
+
+				PointLight(mt.pos, 0.1, 0.1, 0.5, math.abs((math.sin(GetTime() + rnd(1, 6)) * 3)) + 3) -- add sin wave to the B channel to make it flicker
+				data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
+			else -- OPTIMIZATION: use less math for other clients
+				PointLight(mt.pos, 0.1, 0.1, 0.5, 3)
+				data.recoil = math.abs((math.sin(GetTime()) * 0.0625)) + 0.0625
+			end
+
+			if data.damageTime <= 0 then data.damageTime = EGON_DISCHARGE_INTERVAL end
+
+			if (data.soundState == 1 and data.soundTime <= 0.0) or data.soundState == 2 then
+				data.soundState = 2
+				data.currentSnd = PlayLoop(loopSND, mt.pos, 80)
+			elseif data.soundState == 1 and data.soundTime > 0.0 then
+				data.currentSnd = PlayLoop(startSND, mt.pos, 80)
+			end
+
+			if ammo <= 0 then data.coolDown = 1 end
+
+			data.recoil = math.abs((math.sin(GetTime() + rnd(0.1, 0.2)) * 0.0625)) + 0.0625
 		end
+
+		local playervel = GetPlayerVelocity(p)
+
+		-- muzzleflash
+		ParticleReset()
+		ParticleGravity(0)
+		ParticleRadius(rnd(0.15, 0.2), 0.35)
+		ParticleAlpha(1, 0)
+		ParticleTile(5)
+		ParticleDrag(0)
+		ParticleRotation(rnd(10, -10), 0)
+		ParticleSticky(0)
+		ParticleEmissive(5, 1)
+		ParticleCollide(0)
+		ParticleColor(0,0,1, 0.5,0,0.5)
+		SpawnParticle(mt.pos, playervel, 0.125)
 	elseif data.fireState ~= EGON_FIREOFF then
 		data.checkOff = data.checkOff - dt
 		if data.checkOff <= 0 then

@@ -166,172 +166,140 @@ function client.tickPlayerPIST9MM(p, dt)
 		data.inreload = false
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
-		if data.coolDown < 0 then
-			StopSound(data.firesound)
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then
+		StopSound(data.firesound)
 
-			local playervel = GetPlayerVelocity(p)
+		local playervel = GetPlayerVelocity(p)
 
-			if data.suppressed == false then
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
-					client.SRC_PunchAxis(1, 2)
+		if data.suppressed == false then
+			PointLight(mt.pos, 1, 0.7, 0.5, 3)
+			if IsPlayerLocal(p) then
+				data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+				ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
+				client.SRC_PunchAxis(1, 2)
 
-					SlideTime = 0
+				SlideTime = 0
 
-					PlayHaptic(shootHaptic, 1)
+				PlayHaptic(shootHaptic, 1)
 
-					-- shell ejection
-					ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
-				else
-					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
-				end
-
-				-- muzzleflash
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.13), 0.3)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
+				-- shell ejection
+				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
 			else
-				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
-					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
-					client.SRC_PunchAxis(1, 2)
-
-					SlideTime = 0
-
-					PlayHaptic(shootHaptic, 1)
-
-					-- shell ejection
-					ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
-				else
-					data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
-				end
-
-				-- muzzleflash
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.12), 0.2)
-					ParticleAlpha(0.75, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleCollide(0)
-					ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
+				data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 			end
-				
-			data.clipamnt = data.clipamnt - 1
-			if data.clipamnt > 0 then
-				data.coolDown = FIRERATE
-			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-				data.coolDown = RELOAD_TIME
 
-				data.inreload = true
+			muzzleFlash(mt.pos, 3, 0.08, 0.12, 0.2)
+		else
+			if IsPlayerLocal(p) then
+				data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
+				ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
+				client.SRC_PunchAxis(1, 2)
+
+				SlideTime = 0
+
+				PlayHaptic(shootHaptic, 1)
+
+				-- shell ejection
+				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
+			else
+				data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
 			end
-			
-			data.recoil = RECOIL_AMNT
+
+			-- smoke
+			for i=0, 2 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.08, 0.12), 0.2)
+				ParticleAlpha(0.75, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleCollide(0)
+				ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
 		end
+			
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0 then
+			data.coolDown = FIRERATE
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			data.coolDown = RELOAD_TIME
+
+			data.inreload = true
+		end
+		
+		data.recoil = RECOIL_AMNT
 	-- Check Altfire
-	elseif InputDown("grab", p) and canFire(p, ammo, data.clipamnt) then
-		if data.coolDown < 0 then
-			StopSound(data.firesound)
+	elseif InputDown("grab", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then
+		StopSound(data.firesound)
 
-			local playervel = GetPlayerVelocity(p)
+		local playervel = GetPlayerVelocity(p)
 
-			if data.suppressed == false then
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
-					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
-					client.SRC_PunchAxis(1, 2)
+		if data.suppressed == false then
+			PointLight(mt.pos, 1, 0.7, 0.5, 3)
+			if IsPlayerLocal(p) then
+				data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
+				ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
+				client.SRC_PunchAxis(1, 2)
 
-					SlideTime = 0
+				SlideTime = 0
 
-					PlayHaptic(shootHaptic, 1)
-					
-					-- shell ejection
-					ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
-				else
-					data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
-				end
-
-				-- muzzleflash
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.13), 0.3)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
+				PlayHaptic(shootHaptic, 1)
+				
+				-- shell ejection
+				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
 			else
-				if IsPlayerLocal(p) then
-					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
-					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
-					client.SRC_PunchAxis(1, 2)
-
-					SlideTime = 0
-
-					PlayHaptic(shootHaptic, 1)
-
-					-- shell ejection
-					ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
-				else
-					data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
-				end
-
-				-- muzzleflash
-				for i=0, 2 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.08, 0.12), 0.2)
-					ParticleAlpha(0.75, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleCollide(0)
-					ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
+				data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 			end
-			
-			data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
-			
-			data.clipamnt = data.clipamnt - 1
-			if data.clipamnt > 0 then
-				data.coolDown = ALTFIRERATE
-			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-				data.coolDown = RELOAD_TIME
-				data.inreload = true
+
+			muzzleFlash(mt.pos, 3, 0.08, 0.12, 0.2)
+		else
+			if IsPlayerLocal(p) then
+				data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
+				ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
+				client.SRC_PunchAxis(1, 2)
+
+				SlideTime = 0
+
+				PlayHaptic(shootHaptic, 1)
+
+				-- shell ejection
+				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
+			else
+				data.firesound = PlaySound(LoadSound(SUPNONCLIENTPRIM_FIRESOUND), mt.pos, 20)
 			end
-			
-			data.recoil = RECOIL_AMNT
+
+			-- smoke
+			for i=0, 2 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.08, 0.12), 0.2)
+				ParticleAlpha(0.75, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleCollide(0)
+				ParticleColor(0.5,0.5,0.5, 0.25,0.25,0.25)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
 		end
+		
+		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
+		
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0 then
+			data.coolDown = ALTFIRERATE
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			data.coolDown = RELOAD_TIME
+			data.inreload = true
+		end
+		
+		data.recoil = RECOIL_AMNT
 	-- Check Tertiaryfire
 	elseif InputPressed("mmb", p) and GetPlayerCanUseTool(p) == true then
 		if data.tertiaryCoolDown < 0 then

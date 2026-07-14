@@ -171,71 +171,55 @@ function client.tickPlayerDE357(p, dt)
 		data.inreload = false
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
-		if data.coolDown < 0 then	
-			PointLight(mt.pos, 1, 0.7, 0.5, 3)
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then
+		PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
-			local playervel = GetPlayerVelocity(p)
+		local playervel = GetPlayerVelocity(p)
 
-			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireDE357", p)
-				PlayHaptic(shootHaptic, 1)
+		if IsPlayerLocal(p) then
+			ServerCall("server.primaryFireDE357", p)
+			PlayHaptic(shootHaptic, 1)
 
-				client.SRC_PunchAxis(1, 4)
+			client.SRC_PunchAxis(1, 4)
 
-				SlideTime = 0
+			SlideTime = 0
 
-				-- shell ejection
-				ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_50ae.xml", FSFX_BRASS)
-			end
-
-			-- muzzleflash
-			for i=0, 3 do
-				ParticleReset()
-				ParticleGravity(0)
-				ParticleRadius(rnd(0.1, 0.15), 0.33)
-				ParticleAlpha(1, 0)
-				ParticleTile(5)
-				ParticleDrag(0)
-				ParticleRotation(rnd(10, -10), 0)
-				ParticleSticky(0)
-				ParticleEmissive(5, 1)
-				ParticleCollide(0)
-				ParticleColor(1,0.35,0, 1,0,0)
-				SpawnParticle(mt.pos, playervel, 0.125)
-			end
-				
-			data.clipamnt = data.clipamnt - 1
-			if data.clipamnt > 0.5 then
-				if data.laseron == true then
-					data.coolDown = LASERFIRERATE
-				else
-					data.coolDown = FIRERATE
-				end
-			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-				data.coolDown = RELOAD_TIME
-				data.inreload = true
-			end
-			
-			data.recoil = RECOIL_AMNT
+			-- shell ejection
+			ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_50ae.xml", FSFX_BRASS)
 		end
-	-- Check Altfire
-	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
-		if data.coolDown < 0 then
-			if IsPlayerLocal(p) then
-				ServerCall("server.secondaryFireDE357", p)
-			end
-			
-			if data.laseron == false then
-				PlaySound(LoadSound(LASERONSFX), mt.pos)
+
+		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0.5 then
+			if data.laseron == true then
+				data.coolDown = LASERFIRERATE
 			else
-				PlaySound(LoadSound(LASEROFFSFX), mt.pos)
+				data.coolDown = FIRERATE
 			end
-			data.coolDown = ALTFIRERATE
-			data.laseron = not data.laseron
-			data.laserrefresh = 0
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			data.coolDown = RELOAD_TIME
+			data.inreload = true
 		end
+		
+		data.recoil = RECOIL_AMNT
+	-- Check Altfire
+	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.coolDown < 0 then
+		if IsPlayerLocal(p) then
+			ServerCall("server.secondaryFireDE357", p)
+		end
+		
+		if data.laseron == false then
+			PlaySound(LoadSound(LASERONSFX), mt.pos)
+		else
+			PlaySound(LoadSound(LASEROFFSFX), mt.pos)
+		end
+		
+		data.coolDown = ALTFIRERATE
+
+		data.laseron = not data.laseron
+		data.laserrefresh = 0
 	end
 
 	-- turn off when reloading (accurate to HL:OP4)

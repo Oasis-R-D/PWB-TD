@@ -252,11 +252,9 @@ function client.tickPlayerDISP(p, dt)
 	data.dataReset = false
 
 	-- Check Fire
-	if InputPressed("usetool", p) and canFire(p, ammo, ammo) and data.inAttack ~= true then
-		if data.coolDown < 0 then	
-			data.inAttack = true
-			data.coolDown = FIRERATE
-		end
+	if InputPressed("usetool", p) and canFire(p, ammo, ammo, data.coolDown) and data.inAttack ~= true then
+		data.inAttack = true
+		data.coolDown = FIRERATE
 	-- Check Altfire
 	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true and data.inAttack ~= true then
 		if data.coolDown < 0 then
@@ -265,7 +263,6 @@ function client.tickPlayerDISP(p, dt)
 			local spawns = FindLocations("playerspawn", true)
 			if spawns == nil or #spawns == 0 or ammo < 3 then
 				PlaySound(LoadSound(FAILSOUND), mt.pos, 1)
-				return
 			else
 				data.inAttack = true
 				data.inAltAttack = true

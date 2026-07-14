@@ -184,57 +184,41 @@ function client.tickPlayerM249(p, dt)
 		data.inreload = false
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
-		if data.coolDown < 0 then
-			PointLight(mt.pos, 1, 0.7, 0.5, 3)
+	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then
+		PointLight(mt.pos, 1, 0.7, 0.5, 3)
 
-			local toolBody = GetToolBody(p)
-			local playervel = GetPlayerVelocity(p)
+		local toolBody = GetToolBody(p)
+		local playervel = GetPlayerVelocity(p)
 
-			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireM249", p)
-				client.GS_PunchAxis(1, rnd(-2, 2))
-				client.GS_PunchAxis(2, rnd(-1, 1))
-				
-				PlayHaptic(shootHaptic, 1)
-
-				-- shell ejection
-				if data.alteject == true then -- opfor ejects casings and belt bits separately
-					ejectBrass(p, CASING_ORG, Vec(0, -0.75, 0), "MOD/prefab/casing_chain.xml", FSFX_NONE)
-				else
-					ejectBrass(p, CASING_ORG, Vec(0, -0.85, 0), "MOD/prefab/casing_556.xml", FSFX_BRASS)
-				end
-
-				data.alteject = not data.alteject
-			end
-
-			-- muzzleflash
-			for i=0, 3 do
-				ParticleReset()
-				ParticleGravity(0)
-				ParticleRadius(rnd(0.12, 0.17), 0.33)
-				ParticleAlpha(1, 0)
-				ParticleTile(5)
-				ParticleDrag(0)
-				ParticleRotation(rnd(10, -10), 0)
-				ParticleSticky(0)
-				ParticleEmissive(5, 1)
-				ParticleCollide(0)
-				ParticleColor(1,0.35,0, 1,0,0)
-				SpawnParticle(mt.pos, playervel, 0.125)
-			end
-				
-			data.clipamnt = data.clipamnt - 1
-			if data.clipamnt > 0 then
-				data.coolDown = FIRERATE
-			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-				data.coolDown = RELOAD_TIME
-				data.inreload = true
-			end
+		if IsPlayerLocal(p) then
+			ServerCall("server.primaryFireM249", p)
+			client.GS_PunchAxis(1, rnd(-2, 2))
+			client.GS_PunchAxis(2, rnd(-1, 1))
 			
-			data.recoil = RECOIL_AMNT
+			PlayHaptic(shootHaptic, 1)
+
+			-- shell ejection
+			if data.alteject == true then -- opfor ejects casings and belt bits separately
+				ejectBrass(p, CASING_ORG, Vec(0, -0.75, 0), "MOD/prefab/casing_chain.xml", FSFX_NONE)
+			else
+				ejectBrass(p, CASING_ORG, Vec(0, -0.85, 0), "MOD/prefab/casing_556.xml", FSFX_BRASS)
+			end
+
+			data.alteject = not data.alteject
 		end
+
+		muzzleFlash(mt.pos, 4, 0.12, 0.17, 0.33)
+
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0 then
+			data.coolDown = FIRERATE
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			data.coolDown = RELOAD_TIME
+			data.inreload = true
+		end
+		
+		data.recoil = RECOIL_AMNT
 	end
 
 	-- decrease firing cooldown and recoil

@@ -373,35 +373,33 @@ function client.tickPlayerCROSS(p, dt)
 		data.inreload = false
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
-	elseif InputDown("usetool", p) and canFire(p, ammo, ammo) then -- not a good idea to use hasbolt here, only way to prevent THE BUG
-		if data.coolDown < 0 then
-			PointLight(mt.pos, 1, 0.7, 0.5, 3)
-			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireCROSS", p, data.scoped)
-				client.SRC_PunchAxis(1, 2)
+	elseif InputDown("usetool", p) and canFire(p, ammo, ammo, data.coolDown) then -- not a good idea to use hasbolt here, only way to prevent THE BUG
+		PointLight(mt.pos, 1, 0.7, 0.5, 3)
+		if IsPlayerLocal(p) then
+			ServerCall("server.primaryFireCROSS", p, data.scoped)
+			client.SRC_PunchAxis(1, 2)
 
-				PlayHaptic(shootHaptic, 1)
-			end
-			
-			local playervel = GetPlayerVelocity(p)
+			PlayHaptic(shootHaptic, 1)
+		end
+		
+		local playervel = GetPlayerVelocity(p)
 
-			data.hasBolt = false
-			client.boltUPD(p, data.hasBolt)
+		data.hasBolt = false
+		client.boltUPD(p, data.hasBolt)
 
-			data.altCoolDown = SCOPEFIREDELAY
+		data.altCoolDown = SCOPEFIREDELAY
 
-			data.recoil = data.scoped == true and 0 or RECOIL_AMNT
+		data.recoil = data.scoped == true and 0 or RECOIL_AMNT
 
-			data.clipamnt = data.clipamnt - 1
-			if data.clipamnt > 0 then
-				data.coolDown = FIRERATE
-				data.timetobolt = 0.842
-			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-				data.coolDown = RELOAD_TIME
-				data.inreload = true
-				data.timetobolt = 4.4
-			end
+		data.clipamnt = data.clipamnt - 1
+		if data.clipamnt > 0 then
+			data.coolDown = FIRERATE
+			data.timetobolt = 0.842
+		elseif ammo > 1 then
+			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+			data.coolDown = RELOAD_TIME
+			data.inreload = true
+			data.timetobolt = 4.4
 		end
 	-- Check Altfire
 	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
