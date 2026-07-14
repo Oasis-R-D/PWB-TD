@@ -17,7 +17,7 @@ local EGON_FIRECHARGE = 1.0
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataGLU()
+local function createPlayerCLIENTdata()
     return {
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -151,7 +151,7 @@ end
 
 function client.tickGLU(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataGLU()
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -168,7 +168,7 @@ function client.tickPlayerGLU(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataGLU()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end

@@ -9,7 +9,6 @@ local CLIP_SIZE = 50
 local PICKUP_SIZE = 100
 local RECOIL_AMNT = 0.2
 local FIRERATE = 0.067 -- NO
-local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local DAMAGE = 0.4
 local PLAYERDAMAGE = 0.15
 local MAX_RANGE = 125.0
@@ -20,7 +19,7 @@ local CASING_ORG = Vec(0.02, 0.0, 0.0)
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataM249()
+local function createPlayerCLIENTdata()
     return {
 		clipamnt = CLIP_SIZE,
 		inreload = false,
@@ -32,7 +31,7 @@ function createPlayerCLIENTdataM249()
 	}
 end
 
-function createPlayerSERVERdataM249()
+local function createPlayerSERVERdata()
     return {
 		firesound = nil,
 	}
@@ -45,7 +44,7 @@ end
 
 function server.tickM249(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerSERVERdataM249()
+		playerData[p] = createPlayerSERVERdata()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -137,7 +136,7 @@ end
 
 function client.tickM249(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataM249();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -149,34 +148,27 @@ function client.tickM249(dt)
 	end
 end
 
-local camSineTime = nil
-
 function client.tickPlayerM249(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataM249()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
-		if IsPlayerLocal(p) then
-			camSineTime = nil
-		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
-	
+
+	local ammo = GetToolAmmo(WPNID, p)
+
 	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
@@ -184,7 +176,7 @@ function client.tickPlayerM249(p, dt)
 	
 	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
-		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 		data.coolDown = RELOAD_TIME
 		data.inreload = true
 	-- Finish Reload
@@ -201,7 +193,9 @@ function client.tickPlayerM249(p, dt)
 
 			if IsPlayerLocal(p) then
 				ServerCall("server.primaryFireM249", p)
-				camSineTime = 0
+				client.GS_PunchAxis(1, rnd(-2, 2))
+				client.GS_PunchAxis(2, rnd(-1, 1))
+				
 				PlayHaptic(shootHaptic, 1)
 
 				-- shell ejection
@@ -234,7 +228,7 @@ function client.tickPlayerM249(p, dt)
 			if data.clipamnt > 0 then
 				data.coolDown = FIRERATE
 			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 				data.coolDown = RELOAD_TIME
 				data.inreload = true
 			end
@@ -263,8 +257,7 @@ function client.tickPlayerM249(p, dt)
 	-- END RECOIL
 	
 	-- hide shells if low ammo
-	local toolBody = GetToolBody(p)
-	local shapes = GetBodyShapes(toolBody)
+	local shapes = GetBodyShapes(GetToolBody(p))
 	
 	if data.clipamnt < 4.5 then -- four shots left
 		-- hide third shell
@@ -288,23 +281,6 @@ function client.tickPlayerM249(p, dt)
 	end
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
-	if IsPlayerLocal(p) then
-		-- CAMERA MOVEMENT
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 7.5 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-	end
 end
 
 function client.drawM249()

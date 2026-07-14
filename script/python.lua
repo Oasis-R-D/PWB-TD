@@ -9,7 +9,6 @@ local CLIP_SIZE = 6.0
 local PICKUP_SIZE = 12.0
 local RECOIL_AMNT = 0.3
 local FIRERATE = 0.75
-local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.5
 local DAMAGE = 0.5
 local PLAYERDAMAGE = 0.4
@@ -22,7 +21,7 @@ local ADSFOV = 40
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataPYTH()
+local function createPlayerCLIENTdata()
     return {
 		clipamnt = CLIP_SIZE,
 		inreload = false,
@@ -36,7 +35,7 @@ function createPlayerCLIENTdataPYTH()
 	}
 end
 
-function createPlayerSERVERdataPYTH()
+local function createPlayerSERVERdata()
     return {
 		firesound = nil,
 	}
@@ -49,7 +48,7 @@ end
 
 function server.tickPYTH(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerSERVERdataPYTH()
+		playerData[p] = createPlayerSERVERdata()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -84,12 +83,12 @@ end
 function client.initPYTH()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickPYTH(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataPYTH();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -101,34 +100,27 @@ function client.tickPYTH(dt)
 	end
 end
 
-local camSineTime = nil
-
 function client.tickPlayerPYTH(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataPYTH()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
 		playerData[p].scoped = false
-		if IsPlayerLocal(p) then
-			camSineTime = nil
-		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
+
+	local ammo = GetToolAmmo(WPNID, p)
 
 	local data = playerData[p]
 
@@ -137,7 +129,7 @@ function client.tickPlayerPYTH(p, dt)
 	
 	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
-		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 		if data.clipamnt > 0 then
 			data.coolDown = RELOAD_TIME
 			data.timeuntileject = 1.35
@@ -149,44 +141,45 @@ function client.tickPlayerPYTH(p, dt)
 		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
 	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
-			if data.coolDown < 0 then	
-				PointLight(mt.pos, 1, 0.7, 0.5, 3)
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFirePYTH", p)
-					camSineTime = 0
-					PlayHaptic(shootHaptic, 1)
-				end
+		if data.coolDown < 0 then	
+			PointLight(mt.pos, 1, 0.7, 0.5, 3)
+			if IsPlayerLocal(p) then
+				ServerCall("server.primaryFirePYTH", p)
+				client.SRC_PunchAxis(1, 10)
 				
-				local playervel = GetPlayerVelocity(p)
-
-				-- muzzleflash
-				for i=0, 3 do
-					ParticleReset()
-					ParticleGravity(0)
-					ParticleRadius(rnd(0.1, 0.15), 0.33)
-					ParticleAlpha(1, 0)
-					ParticleTile(5)
-					ParticleDrag(0)
-					ParticleRotation(rnd(10, -10), 0)
-					ParticleSticky(0)
-					ParticleEmissive(5, 1)
-					ParticleCollide(0)
-					ParticleColor(1,0.35,0, 1,0,0)
-					SpawnParticle(mt.pos, playervel, 0.125)
-				end
-					
-				data.clipamnt = data.clipamnt - 1
-				if data.clipamnt > 0 then
-					data.coolDown = FIRERATE
-				elseif ammo > 1 then
-					PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
-					data.coolDown = RELOAD_TIME
-					data.timeuntileject = 1.35
-					data.inreload = true
-				end
-				
-				data.recoil = RECOIL_AMNT
+				PlayHaptic(shootHaptic, 1)
 			end
+			
+			local playervel = GetPlayerVelocity(p)
+
+			-- muzzleflash
+			for i=0, 3 do
+				ParticleReset()
+				ParticleGravity(0)
+				ParticleRadius(rnd(0.1, 0.15), 0.33)
+				ParticleAlpha(1, 0)
+				ParticleTile(5)
+				ParticleDrag(0)
+				ParticleRotation(rnd(10, -10), 0)
+				ParticleSticky(0)
+				ParticleEmissive(5, 1)
+				ParticleCollide(0)
+				ParticleColor(1,0.35,0, 1,0,0)
+				SpawnParticle(mt.pos, playervel, 0.125)
+			end
+				
+			data.clipamnt = data.clipamnt - 1
+			if data.clipamnt > 0 then
+				data.coolDown = FIRERATE
+			elseif ammo > 1 then
+				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
+				data.coolDown = RELOAD_TIME
+				data.timeuntileject = 1.35
+				data.inreload = true
+			end
+			
+			data.recoil = RECOIL_AMNT
+		end
 	-- Check Altfire
 	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
@@ -228,33 +221,8 @@ function client.tickPlayerPYTH(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
 	
 	if IsPlayerLocal(p) then
-		-- CAMERA MOVEMENT
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 200 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, 0.0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-
-		-- UPD AMMO HUD
-		if data.inreload == false and ammo > 0.5 then
-			clipamnt = data.clipamnt
-		elseif ammo > 0.5 then
-			clipamnt = -8 -- negative 8 means reloading
-		else
-			clipamnt = -16
-		end
-
 		-- SHELL EJECT
 		if data.timeuntileject ~= nil then
 			data.timeuntileject = data.timeuntileject - dt

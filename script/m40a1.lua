@@ -13,7 +13,6 @@ local CLIP_SIZE = 5.0
 local PICKUP_SIZE = 15.0
 local RECOIL_AMNT = 0.25
 local FIRERATE = 2.0
-local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
 local DAMAGE = 0.6 -- x5
@@ -26,7 +25,7 @@ local CASING_ORG = Vec(0.02, 0.25, -0.1) -- casing origin
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataM40()
+local function createPlayerCLIENTdata()
     return {
 		clipamnt = CLIP_SIZE,
 		inreload = false,
@@ -76,12 +75,12 @@ end
 function client.initM40()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickM40(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataM40();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -93,34 +92,27 @@ function client.tickM40(dt)
 	end
 end
 
-local camSineTime = nil
-
 function client.tickPlayerM40(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataM40()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		playerData[p].scoped = false
-		if IsPlayerLocal(p) then
-			camSineTime = nil
-		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
+
+	local ammo = GetToolAmmo(WPNID, p)
 
 	local data = playerData[p]
 
@@ -131,7 +123,7 @@ function client.tickPlayerM40(p, dt)
 	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		if data.clipamnt > 0 then
 			data.coolDown = RELOAD_TIME
-			PlaySound(LoadSound(TACRELOAD_SOUND), pt.pos)
+			PlaySound(LoadSound(TACRELOAD_SOUND), mt.pos)
 		else
 			data.coolDown = EMPTYRELOAD_TIME
 		end
@@ -146,7 +138,8 @@ function client.tickPlayerM40(p, dt)
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
 				ServerCall("server.primaryFireM40", p)
-				camSineTime = 0
+				client.SRC_PunchAxis(1, 2)
+
 				PlayHaptic(shootHaptic, 1)
 			end
 			
@@ -175,7 +168,7 @@ function client.tickPlayerM40(p, dt)
 				
 			elseif ammo > 1 then
 				data.recoil = 0.05
-				PlaySound(LoadSound(EMPTRELOAD_SOUND), pt.pos)
+				PlaySound(LoadSound(EMPTRELOAD_SOUND), mt.pos)
 				data.coolDown = EMPTYRELOAD_TIME
 				data.inreload = true
 			end
@@ -186,7 +179,7 @@ function client.tickPlayerM40(p, dt)
 	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true then
 		if data.altCoolDown < 0 then
 			if IsPlayerLocal(p) then
-				PlaySound(LoadSound(ALT_FIRESOUND), pt.pos)
+				PlaySound(LoadSound(ALT_FIRESOUND), mt.pos)
 			end
 			data.altCoolDown = ALTFIRERATE
 			data.scoped = not data.scoped
@@ -209,7 +202,7 @@ function client.tickPlayerM40(p, dt)
 		data.timetobolt = data.timetobolt - dt
 		if data.timetobolt <= 0 and data.playbolt == true then
 			if data.clipamnt > 0 then -- already plays bolt sfx in reload
-				PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
+				PlaySound(LoadSound(BOLT_CYCLE), mt.pos)
 			end
 			data.playbolt = false
 			data.recoil = 0.05
@@ -243,24 +236,6 @@ function client.tickPlayerM40(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
-	
-	if IsPlayerLocal(p) then
-		-- CAMERA MOVEMENT
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 800 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.33, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-	end
 end
 
 function client.drawM40()

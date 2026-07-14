@@ -11,7 +11,7 @@ local WPNNAME = "Trip Mine"
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataTRIP()
+local function createPlayerCLIENTdata()
 	return {
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -77,7 +77,7 @@ end
 
 function client.tickTRIP(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataTRIP();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -94,14 +94,14 @@ function client.tickPlayerTRIP(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataTRIP()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataTRIP()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end

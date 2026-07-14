@@ -11,7 +11,7 @@ local WPNNAME = "Combat Knife"
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataKNFE()
+local function createPlayerCLIENTdata()
     return {
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -22,7 +22,7 @@ function createPlayerCLIENTdataKNFE()
 	}
 end
 
-function createPlayerSERVERdataKNFE()
+local function createPlayerSERVERdata()
     return {
 		coolDown = 0.0,
 		dataReset = true,
@@ -36,7 +36,7 @@ end
 
 function server.tickKNFE(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerSERVERdataKNFE()
+		playerData[p] = createPlayerSERVERdata()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 99999, p)
 	end
@@ -123,14 +123,14 @@ function server.tickPlayerKNFE(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 and playerData[p].dataReset == false then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerSERVERdataKNFE()
+			playerData[p] = createPlayerSERVERdata()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID and playerData[p].dataReset == false then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerSERVERdataKNFE()
+			playerData[p] = createPlayerSERVERdata()
 		end
 		return
 	end
@@ -152,12 +152,12 @@ end
 function client.initKNFE()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickKNFE(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataKNFE();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -174,19 +174,17 @@ function client.tickPlayerKNFE(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataKNFE()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 
 	if GetPlayerTool(p) ~= WPNID then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataKNFE()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
-
-	local pt = GetPlayerTransform(p)
 
 	local data = playerData[p]
 

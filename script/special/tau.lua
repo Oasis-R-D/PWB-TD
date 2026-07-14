@@ -7,9 +7,7 @@ local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
 local PICKUP_SIZE = 10.0
 local RECOIL_AMNT = 0.17
 local FIRERATE = 0.2
-local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.2
-local CAMALTMOVETIME = (2 * math.pi) * (0.5 / 0.4) -- Cam movement sine multiplier, 0.4 is how long until it's over
 local PLAYERDAMAGE = 20 -- divided by 100 later
 local MAX_RANGE = 208.0
 local WPNID = "hltau"
@@ -18,7 +16,7 @@ local WPNNAME = "Tau Cannon"
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataTAU()
+local function createPlayerCLIENTdata()
     return {
 		coolDown = 0.0,
 		inAltAttack = false,
@@ -32,15 +30,13 @@ function createPlayerCLIENTdataTAU()
 		body = nil,
 		barrel = nil,
 		barrelTransform = nil,
-		camAltMove = false,
 		dataReset = true,
 	}
 end
 
-function createPlayerSERVERdataTAU()
+local function createPlayerSERVERdata()
     return {
 		firesound = nil,
-		-- fire sound doesn't need reset
 	}
 end
 
@@ -52,7 +48,7 @@ end
 
 function server.tickTAU(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerSERVERdataTAU();
+		playerData[p] = createPlayerSERVERdata()
 		SetToolEnabled(WPNID, true, p)
 		SetToolAmmo(WPNID, 250, p)
 	end
@@ -90,7 +86,7 @@ function client.drawlaser(vecSrc, vecDir, raycastDist, clLaserSprite, p, primary
 end
 
 function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
-	local vecSrc = vecOrigSrc;
+	local vecSrc = vecOrigSrc
 
 	local flMaxFrac = 1.0
 	local iPunches = 0
@@ -118,7 +114,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 		elseif raycastShape ~= 0 then -- hit the world, bounce and or penetrate
 			ApplyBodyImpulse(GetShapeBody(raycastShape), VecAdd(vecSrc, VecScale(vecDir, raycastDist)), VecScale(vecDir, flDamage*800.0))
 
-			local n = -1.0 * VecDot(raycastNormal, vecDir);
+			local n = -1.0 * VecDot(raycastNormal, vecDir)
 
 			if n < 0.5 then -- 60 degrees
 				-- reflect
@@ -127,7 +123,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 				r = VecAdd(VecScale(raycastNormal, 2.0 * n), vecDir) -- probably not the right math
 				flMaxFrac = flMaxFrac - ((1/MAX_RANGE) * raycastDist)
 				local oldVecDir = vecDir
-				vecDir = r;
+				vecDir = r
 				vecSrc = VecAdd(VecAdd(vecSrc, VecScale(oldVecDir, raycastDist)), VecScale(vecDir, 0.2))
 
 				MakeHole(vecSrc, 0.9, 0.5, 0.25)
@@ -156,7 +152,7 @@ function server.shootbeam(vecOrigSrc, vecDir, flDamage, primary, p)
 						
 				-- lose energy
 				if n <= 0.0 then n = 0.1 end
-				flDamage = flDamage * (1.0 - n);
+				flDamage = flDamage * (1.0 - n)
 
 			elseif primary == false then -- try punching through wall if it's a secondary attack (primary is incapable of breaking through)
 				if iPunches > 5 then break end
@@ -272,19 +268,19 @@ function server.startShootbeam(primary, p, chargetime)
 		data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 	end
 
-	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p);
+	server.shootbeam(vecSrc, vecAiming, flDamage, primary, p)
 end
 
 function client.initTAU()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	gaussLoop = LoadLoop("MOD/snd/tauCharge.ogg")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickTAU(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataTAU();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -296,37 +292,29 @@ function client.tickTAU(dt)
 	end
 end
 
-local camSineTime = nil
-
 function client.tickPlayerTAU(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataTAU()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataTAU()
-		end
-
-		if IsPlayerLocal(p) then
-			camSineTime = nil
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
+
+	local ammo = GetToolAmmo(WPNID, p)
 	
 	local data = playerData[p]
 	
@@ -342,8 +330,8 @@ function client.tickPlayerTAU(p, dt)
 			data.aftershocksfx = rnd(0.3, 0.8)
 			if IsPlayerLocal(p) then
 				ServerCall("server.startShootbeam", true, p)
-				camSineTime = 0
-				data.camAltMove = false
+				client.SRC_PunchAxis(1, 2)
+
 				PlayHaptic(shootHaptic, 1)
 			end
 			
@@ -444,8 +432,8 @@ function client.tickPlayerTAU(p, dt)
 
 			if IsPlayerLocal(p) then
 				ServerCall("server.startShootbeam", false, p, data.chargedTime)
-				camSineTime = 0
-				data.camAltMove = true
+				client.SRC_PunchAxis(1, 4)
+
 				PlayHaptic(shootHaptic, 1)
 			end
 
@@ -494,30 +482,6 @@ function client.tickPlayerTAU(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
-	-- CAMERA MOVEMENT
-	if IsPlayerLocal(p) then
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 10 -- how intense (y at the peak will not equal this though)
-
-			local equation = nil
-			if data.camAltMove == true then
-				balance = -15
-				amp = 250
-				equation = amp * ((math.sin(CAMALTMOVETIME * x) * math.exp(balance * x)) * x)
-			else
-				equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-			end
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0.0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-	end
 
 	--Animate barrel around the attachment point
 	local b = GetToolBody(p)

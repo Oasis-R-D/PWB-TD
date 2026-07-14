@@ -10,7 +10,6 @@ local CLIP_SIZE = 5
 local PICKUP_SIZE = 5
 local RECOIL_AMNT = 0.25
 local FIRERATE = 0.75
-local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.5
 local SCOPEFIREDELAY = 0.1
 local DAMAGE = 0.5
@@ -31,7 +30,7 @@ local playerData = {}
 -- Stores data for all the BOLTS
 CrossbowBolts = {}
 
-function createPlayerCLIENTdataCROSS()
+local function createPlayerCLIENTdata()
     return {
 		clipamnt = CLIP_SIZE,
 		coolDown = 0.0,
@@ -221,54 +220,42 @@ function server.tickCROSS(dt)
 						Delete(data.model)
 						table.remove(CrossbowBolts, index)
 					else
-						-- See if we should reflect off this surface
-						local hitDot = VecDot(normal, VecScale(data.curDir, -1))
-						if hitDot < 0.5 and dist ~= 0 then
-							ApplyBodyImpulse(GetShapeBody(shape), data.curPos, VecScale(data.curDir, 800 * 2))
-                        	MakeHole(data.curPos, 0.5, 0.25, 0.05)
-
-							data.curDir = VecAdd(VecScale(normal, 2 * hitDot), data.curDir)
-							data.curPos = VecAdd(data.curPos, VecScale(data.curDir, 0.01))
-
-							PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.25)
-						else
-							if IsPointInWater(data.curPos) ~= true then
-								-- sparks
-								for i=1,10 do
-									ParticleReset()
-									ParticleCollide(1)
-									ParticleRadius(0.02, 0)
-									ParticleGravity(-10)
-									ParticleEmissive(5)
-									ParticleStretch(5)
-									ParticleTile(4)
-									ParticleColor(1,0.5,0.4, 1,0.25,0)
-									SpawnParticle(data.curPos, Vec(math.random(-2,2), math.random(1,4), math.random(-2,2)), 1)
-								end
+						if IsPointInWater(data.curPos) ~= true then
+							-- sparks
+							for i=1,10 do
+								ParticleReset()
+								ParticleCollide(1)
+								ParticleRadius(0.02, 0)
+								ParticleGravity(-10)
+								ParticleEmissive(5)
+								ParticleStretch(5)
+								ParticleTile(4)
+								ParticleColor(1,0.5,0.4, 1,0.25,0)
+								SpawnParticle(data.curPos, Vec(math.random(-2,2), math.random(1,4), math.random(-2,2)), 1)
 							end
-							
-							-- get mat type BEFORE we break it
-							local pos = VecSub(data.curPos, VecScale(normal, 0.05))
-							pos = TransformToLocalPoint(GetShapeWorldTransform(shape), pos)
-							for i = 1, 3 do
-								pos[i] = math.floor(pos[i]*10)
+						end
+						
+						-- get mat type BEFORE we break it
+						local pos = VecSub(data.curPos, VecScale(normal, 0.05))
+						pos = TransformToLocalPoint(GetShapeWorldTransform(shape), pos)
+						for i = 1, 3 do
+							pos[i] = math.floor(pos[i]*10)
+						end
+
+						local matType = GetShapeMaterialAtIndex(shape, pos[1], pos[2], pos[3])
+
+						ApplyBodyImpulse(GetShapeBody(shape), data.curPos, VecScale(data.curDir, 800 * 4))
+						MakeHole(data.curPos, 0.75, 0.4, 0.25)
+
+						if matType ~= "glass" or HasTag(GetShapeBody(shape), "unbreakable") == true then
+							PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.5)
+
+							if data.scoped ~= true then
+								server.crossbowExplode(data.curPos, data.owner, data.model)
 							end
 
-							local matType = GetShapeMaterialAtIndex(shape, pos[1], pos[2], pos[3])
-
-							ApplyBodyImpulse(GetShapeBody(shape), data.curPos, VecScale(data.curDir, 800 * 4))
-                        	MakeHole(data.curPos, 0.75, 0.4, 0.25)
-
-							if matType ~= "glass" or HasTag(GetShapeBody(shape), "unbreakable") == true then
-								PlaySound(LoadSound(PROJ_IMPACT), data.curPos, 0.5)
-
-								if data.scoped ~= true then
-									server.crossbowExplode(data.curPos, data.owner, data.model)
-								end
-
-								Delete(data.model)
-								table.remove(CrossbowBolts, index)
-							end
+							Delete(data.model)
+							table.remove(CrossbowBolts, index)
 						end
 					end
 				end
@@ -305,12 +292,12 @@ end
 function client.initCROSS()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickCROSS(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataCROSS();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -321,8 +308,6 @@ function client.tickCROSS(dt)
 		client.tickPlayerCROSS(p, dt)
 	end
 end
-
-local camSineTime = nil
 
 -- stolen from glock, used to hide/show bolt
 function client.boltUPD(p, suppressed)
@@ -340,7 +325,7 @@ function client.tickPlayerCROSS(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataCROSS()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
@@ -348,20 +333,17 @@ function client.tickPlayerCROSS(p, dt)
 	if GetPlayerTool(p) ~= WPNID then
 		playerData[p].shapesNeedsUpd = true
 		playerData[p].scoped = false
-		if IsPlayerLocal(p) then
-			camSineTime = nil
-		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
+
+	local ammo = GetToolAmmo(WPNID, p)
+
+	
 
 	local data = playerData[p]
 
@@ -381,7 +363,7 @@ function client.tickPlayerCROSS(p, dt)
 
 	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
-		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 		if data.clipamnt > 0 then
 			data.coolDown = RELOAD_TIME
 		end
@@ -396,7 +378,8 @@ function client.tickPlayerCROSS(p, dt)
 			PointLight(mt.pos, 1, 0.7, 0.5, 3)
 			if IsPlayerLocal(p) then
 				ServerCall("server.primaryFireCROSS", p, data.scoped)
-				camSineTime = 0
+				client.SRC_PunchAxis(1, 2)
+
 				PlayHaptic(shootHaptic, 1)
 			end
 			
@@ -414,7 +397,7 @@ function client.tickPlayerCROSS(p, dt)
 				data.coolDown = FIRERATE
 				data.timetobolt = 0.842
 			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 				data.coolDown = RELOAD_TIME
 				data.inreload = true
 				data.timetobolt = 4.4
@@ -449,7 +432,7 @@ function client.tickPlayerCROSS(p, dt)
 			data.hasBolt = true -- shouldn't matter since you can't switch out of and back with 0 ammo
 			if ammo > 0 then -- already plays bolt sfx in reload
 				client.boltUPD(p, data.hasBolt)
-				PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
+				PlaySound(LoadSound(BOLT_CYCLE), mt.pos)
 				data.toolAnimator.timeSinceFire = 0.0
 			end
 
@@ -475,24 +458,6 @@ function client.tickPlayerCROSS(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
-	
-	if IsPlayerLocal(p) then
-		-- CAMERA MOVEMENT
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 1000 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(0.66, 0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-	end
 end
 
 function client.drawCROSS()

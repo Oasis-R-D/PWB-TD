@@ -10,7 +10,6 @@ local AFTERSHOCKSFX = "MOD/snd/tauElect0.ogg"
 local PICKUP_SIZE = 1.0
 local RECOIL_AMNT = 0.3
 local FIRERATE = 2.5
-local CAMMOVETIME = (2 * math.pi) * (0.5 / (FIRERATE-1)) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local PLAYERDAMAGE = 1.0
 local MAX_RANGE = 208.0
 local WPNID = "opfordisplacer"
@@ -19,7 +18,7 @@ local WPNNAME = "Displacer Cannon"
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataDISP()
+local function createPlayerCLIENTdata()
     return {
 		coolDown = 0.0,
 		inAltAttack = false,
@@ -32,7 +31,6 @@ function createPlayerCLIENTdataDISP()
 		body = nil,
 		barrel = nil,
 		barrelTransform = nil,
-		camAltMove = false,
 		dataReset = true,
 	}
 end
@@ -193,12 +191,12 @@ function client.initDISP()
 	spinLoop = LoadLoop("MOD/snd/displacer_spin.ogg")
 	spinLoopAlt = LoadLoop("MOD/snd/displacer_spin2.ogg")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickDISP(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataDISP();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -210,14 +208,12 @@ function client.tickDISP(dt)
 	end
 end
 
-local camSineTime = nil
-
 function client.tickPlayerDISP(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataDISP()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
@@ -240,21 +236,16 @@ function client.tickPlayerDISP(p, dt)
 			playerData[p].inAttack = false
 		end
 
-		if IsPlayerLocal(p) then
-			camSineTime = nil
-		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
-	
+
+	local ammo = GetToolAmmo(WPNID, p)
+
 	local data = playerData[p]
 	
 	-- make data reset when reset conditions are met
@@ -324,14 +315,15 @@ function client.tickPlayerDISP(p, dt)
 			data.toolAnimator.forceActionPose = false
 
 			if IsPlayerLocal(p) then
+				client.SRC_PunchAxis(1, 2)
 				if data.inAltAttack == true then
 					PlaySound(LoadSound(ALT_FIRESOUND), mt.pos, 20)
 					ServerCall("server.secondaryFireDISP", p)
-					camSineTime = 0
+
 					PlayHaptic(shootHaptic, 1)
 				else
 					ServerCall("server.primaryFireDISP", p)
-					camSineTime = 0
+
 					PlayHaptic(shootHaptic, 1)
 				end
 			end
@@ -370,23 +362,6 @@ function client.tickPlayerDISP(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
-
-	-- CAMERA MOVEMENT
-	if IsPlayerLocal(p) then
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -10 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 300 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -0.33, 0.0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-	end
 
 	--Animate barrel around the attachment point
 	local b = GetToolBody(p)

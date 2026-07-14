@@ -9,7 +9,7 @@ local HEAL_AMNT = 0.33
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerSERVERdataMED()
+local function createPlayerSERVERdata()
     return {
 		oldTool = "wrench",
 	}
@@ -23,7 +23,7 @@ end
 
 function server.tickMED(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerSERVERdataMED()
+		playerData[p] = createPlayerSERVERdata()
 		SetToolEnabled(WPNID, false, p)
 		SetToolAmmo(WPNID, 0, p)
 	end

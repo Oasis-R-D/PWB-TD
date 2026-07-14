@@ -55,6 +55,98 @@ function ejectBrass(p, org, dir, model, casingtype)
 
 	R_TempModel(eject_origin, eject_vel, Vec(x, y, z), 2.5, model, casingtype)
 end
+
+----------------------------------------------------------------------------------------------
+-- Goldsource Viewpunch
+----------------------------------------------------------------------------------------------
+
+local cl_punchangle = Vec(0,0,0)
+
+function client.GS_ApplyPlayerPunch(dt)
+	local t = Transform(Vec(), QuatEuler(cl_punchangle[1], cl_punchangle[2], cl_punchangle[3]))
+	SetPlayerCameraOffsetTransform(t, true)
+
+	client.GS_DropPunchAngle(dt)
+end
+
+function client.GS_DropPunchAngle(dt)
+	local len = VecLength(cl_punchangle)
+	len = len - ((10.0 + len * 0.5) * dt)
+	len = math.max(len, 0.0)
+	cl_punchangle = VecScale(VecNormalize(cl_punchangle), len)
+end
+
+function client.GS_PunchAxis(axis, punch)
+	cl_punchangle[axis] = punch
+end
+
+----------------------------------------------------------------------------------------------
+-- Source Viewpunch
+----------------------------------------------------------------------------------------------
+
+function math.clamp(val, min, max)
+    if val < min then return min end
+    if val > max then return max end
+    return val
+end
+
+local vecPunchAngle    = Vec(0,0,0)
+local vecPunchAngleVel = Vec(0,0,0)
+
+function client.SRC_ApplyPlayerPunch(dt)
+	local t = Transform(Vec(), QuatEuler(vecPunchAngle[1], vecPunchAngle[2], vecPunchAngle[3]))
+	SetPlayerCameraOffsetTransform(t, true)
+
+	client.SRC_DecayPunchAngle(dt)
+end
+
+function client.SRC_DecayPunchAngle(dt)
+	if VecLength(vecPunchAngle) > 0.03 or VecLength(vecPunchAngleVel) > 0.03 then
+		vecPunchAngle = VecAdd(vecPunchAngle, VecScale(vecPunchAngleVel, dt))
+		local damping = 1 - (9 * dt)
+		
+		if damping < 0 then 
+			damping = 0
+		end
+
+		vecPunchAngleVel = VecScale(vecPunchAngleVel, damping)
+		
+		-- torsional spring
+		-- UNDONE: Per-axis spring constant?
+		local springForceMagnitude = 65 * dt
+		springForceMagnitude = math.clamp( springForceMagnitude, 0.0, 2.0 )
+		vecPunchAngleVel = VecSub(vecPunchAngleVel, VecScale(vecPunchAngle, springForceMagnitude))
+
+		-- don't wrap around
+		vecPunchAngle[1] = math.clamp(vecPunchAngle[1], -89,  89 )
+		vecPunchAngle[2] = math.clamp(vecPunchAngle[2], -179, 179)
+		vecPunchAngle[3] = math.clamp(vecPunchAngle[3], -89,  89 )
+	else
+		vecPunchAngle 	 = Vec(0,0,0)
+		vecPunchAngleVel = Vec(0,0,0)
+	end
+end
+
+function client.SRC_PunchAxis(axis, punch)
+	vecPunchAngleVel[axis] = vecPunchAngleVel[axis] + punch * 20
+end
+
+function client.SRC_PunchReset(tolerance)
+	tolerance = tolerance or 0
+	if tolerance ~= 0 then
+		tolerance = tolerance
+
+		local check = VecLength(PunchAngleVel) + VecLength(PunchAngle)
+
+		if check > tolerance then
+			return
+		end
+	end
+
+	vecPunchAngle 	 = Vec(0,0,0)
+	vecPunchAngleVel = Vec(0,0,0)
+end
+
 ----------------------------------------------------------------------------------------------
 -- Random functions
 ----------------------------------------------------------------------------------------------

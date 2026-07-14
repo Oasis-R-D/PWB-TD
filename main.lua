@@ -37,7 +37,7 @@ GLOBAL_WEAPONS = {
    { "WRNCH",   addFlag(0, MF_CL_NODRAW) },
    { "KNFE",    addFlag(0, MF_CL_NODRAW) },
 
-   { "Mp5",     0  },
+   { "MP5",     0  },
    { "M727",    0  },
    { "DE357",   0  },
    { "PYTH",    0  },
@@ -171,8 +171,11 @@ function client.tick(dt)
       client.weaponTicks[i](dt)
    end
 
+   client.GS_ApplyPlayerPunch(dt)
+   client.SRC_ApplyPlayerPunch(dt)
+
    HUD_TempEntUpdate_(
-    dt,	-- Simulation time
+   dt,	-- Simulation time
 	GetTime(), -- Absolute time on client
 	10)	-- True gravity on client
 end

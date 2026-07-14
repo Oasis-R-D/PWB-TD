@@ -23,7 +23,7 @@ local playerData = {}
 -- Stores data for all the BOLTS
 ElectricityBolts = {}
 
-function createPlayerCLIENTdataSHCK()
+local function createPlayerCLIENTdata()
     return {
 		coolDown = 0.0,
 		recoil = 0.0,
@@ -189,12 +189,12 @@ end
 function client.initSHCK()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickSHCK(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataSHCK();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -211,7 +211,7 @@ function client.tickPlayerSHCK(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataSHCK()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
@@ -221,9 +221,7 @@ function client.tickPlayerSHCK(p, dt)
         return
     end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
 	if mt == nil then
 		return
 	end
@@ -289,7 +287,7 @@ function client.tickPlayerSHCK(p, dt)
 	if data.timetobolt ~= nil then
 		data.timetobolt = data.timetobolt - dt
 		if data.timetobolt <= 0 then
-            PlaySound(LoadSound(BOLT_CYCLE), pt.pos)
+            PlaySound(LoadSound(BOLT_CYCLE), mt.pos)
             data.fakeAmmo = data.fakeAmmo + 1
             data.toolAnimator.timeSinceFire = 0.0
             data.recoil = 0.05

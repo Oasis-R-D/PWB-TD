@@ -12,7 +12,6 @@ local CLIP_SIZE = 17.0
 local PICKUP_SIZE = 17.0
 local RECOIL_AMNT = 0.17
 local FIRERATE = 0.3
-local CAMMOVETIME = (2 * math.pi) * (0.5 / FIRERATE) -- Cam movement sine multiplier, FIRERATE is how long until it's over
 local ALTFIRERATE = 0.2
 local DAMAGE = 0.4
 local PLAYERDAMAGE = 0.12
@@ -24,7 +23,7 @@ local CASING_ORG = Vec(0.02, 0.25, 0.0)
 -- Per weapon data storer
 local playerData = {}
 
-function createPlayerCLIENTdataPIST9MM()
+local function createPlayerCLIENTdata()
     return {
 		clipamnt = CLIP_SIZE,
 		inreload = false,
@@ -90,12 +89,12 @@ end
 function client.initPIST9MM()
 	shootHaptic = LoadHaptic("MOD/haptic/gun_fire.xml")
 	local toolHaptic = LoadHaptic("MOD/haptic/background.xml")
-	SetToolHaptic(WPNID, toolHaptic);
+	SetToolHaptic(WPNID, toolHaptic)
 end
 
 function client.tickPIST9MM(dt)
 	for p in PlayersAdded() do
-		playerData[p] = createPlayerCLIENTdataPIST9MM();
+		playerData[p] = createPlayerCLIENTdata()
 	end
 
 	for p in PlayersRemoved() do
@@ -107,7 +106,6 @@ function client.tickPIST9MM(dt)
 	end
 end
 
-local camSineTime = nil
 local SlideTime = nil
 
 function client.suppress(p, suppressed)
@@ -127,30 +125,24 @@ function client.tickPlayerPIST9MM(p, dt)
 	
 	if GetPlayerHealth(p) <= 0 then
 		if playerData[p].dataReset == false then
-			playerData[p] = createPlayerCLIENTdataPIST9MM()
+			playerData[p] = createPlayerCLIENTdata()
 		end
 		return
 	end
 	
 	if GetPlayerTool(p) ~= WPNID then
 		playerData[p].shapesNeedsUpd = true
-		if IsPlayerLocal(p) then
-			camSineTime = nil
-		end
 		return
 	end
 
-	local pt = GetPlayerTransform(p)
 	local mt = GetToolLocationWorldTransform("muzzle", p)
-
 	if playerData[p].suppressed == true then mt = GetToolLocationWorldTransform("supend", p) end
-
-	local ammo = GetToolAmmo(WPNID, p)
-
 	if mt == nil then
 		return
 	end
-	
+
+	local ammo = GetToolAmmo(WPNID, p)
+
 	local data = playerData[p]
 
 	-- make data reset when reset conditions are met
@@ -164,7 +156,7 @@ function client.tickPlayerPIST9MM(p, dt)
 		end
 	-- Start Reload
 	elseif InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
-		PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+		PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 		if data.clipamnt > 0 then
 			data.coolDown = RELOAD_TIME
 		end
@@ -177,8 +169,7 @@ function client.tickPlayerPIST9MM(p, dt)
 	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt) then
 		if data.coolDown < 0 then
 			StopSound(data.firesound)
-			
-			local toolBody = GetToolBody(p)
+
 			local playervel = GetPlayerVelocity(p)
 
 			if data.suppressed == false then
@@ -186,8 +177,10 @@ function client.tickPlayerPIST9MM(p, dt)
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
-					camSineTime = 0
+					client.SRC_PunchAxis(1, 2)
+
 					SlideTime = 0
+
 					PlayHaptic(shootHaptic, 1)
 
 					-- shell ejection
@@ -215,8 +208,10 @@ function client.tickPlayerPIST9MM(p, dt)
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
 					ServerCall("server.primaryFirePIST9MM", p, data.suppressed)
-					camSineTime = 0
+					client.SRC_PunchAxis(1, 2)
+
 					SlideTime = 0
+
 					PlayHaptic(shootHaptic, 1)
 
 					-- shell ejection
@@ -245,7 +240,7 @@ function client.tickPlayerPIST9MM(p, dt)
 			if data.clipamnt > 0 then
 				data.coolDown = FIRERATE
 			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 				data.coolDown = RELOAD_TIME
 
 				data.inreload = true
@@ -265,8 +260,10 @@ function client.tickPlayerPIST9MM(p, dt)
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(PRIM_FIRESOUND), mt.pos, 300)
 					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
-					camSineTime = 0
+					client.SRC_PunchAxis(1, 2)
+
 					SlideTime = 0
+
 					PlayHaptic(shootHaptic, 1)
 					
 					-- shell ejection
@@ -294,8 +291,10 @@ function client.tickPlayerPIST9MM(p, dt)
 				if IsPlayerLocal(p) then
 					data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
 					ServerCall("server.secondaryFirePIST9MM", p, data.suppressed)
-					camSineTime = 0
+					client.SRC_PunchAxis(1, 2)
+
 					SlideTime = 0
+
 					PlayHaptic(shootHaptic, 1)
 
 					-- shell ejection
@@ -326,7 +325,7 @@ function client.tickPlayerPIST9MM(p, dt)
 			if data.clipamnt > 0 then
 				data.coolDown = ALTFIRERATE
 			elseif ammo > 1 then
-				PlaySound(LoadSound(RELOAD_SOUND), pt.pos)
+				PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
 				data.coolDown = RELOAD_TIME
 				data.inreload = true
 			end
@@ -367,21 +366,6 @@ function client.tickPlayerPIST9MM(p, dt)
 
 	
 	if IsPlayerLocal(p) then
-		-- CAMERA MOVEMENT
-		if camSineTime ~= nil then
-			local x = camSineTime
-			local balance = -15 -- where the peak is (10 for middle, higher to move left also has to be negative)
-			local amp = 15 -- how intense (y at the peak will not equal this though)
-
-			local equation = amp * ((math.sin(CAMMOVETIME * x) * math.exp(balance * x)) * x)
-
-			if equation >= 0 then
-				local t = Transform(Vec(), QuatAxisAngle(Vec(1.0, -1.0, 0), equation))
-				SetPlayerCameraOffsetTransform(t)
-				camSineTime = camSineTime + dt
-			else camSineTime = nil end
-		end
-
 		--Animate Slide
 		local GunBody = GetToolBody(p)
 		if data.body ~= GunBody then
@@ -398,7 +382,7 @@ function client.tickPlayerPIST9MM(p, dt)
 			if SlideTime > 0.125 then
 				SlideTime = 0.125
 			-- Lock open during reloads
-			elseif SlideTime > 0.0625 and data.inreload == true and data.coolDown > 0.63 then
+			elseif SlideTime > 0.0625 and data.inreload == true and data.coolDown > 0.2 then
 				SlideTime = 0.0625
 			end
 
