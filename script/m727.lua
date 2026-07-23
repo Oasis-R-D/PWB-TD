@@ -170,7 +170,7 @@ if not IsToolEnabled(WPNID, p) then return end
 			ejectBrass(p, CASING_ORG, Vec(0, 0, 0), "MOD/prefab/casing_556.xml", FSFX_BRASS)
 		end
 		
-		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+		muzzleFlash(mt.pos, 4)
 			
 		data.clipamnt = data.clipamnt - 1
 		if data.clipamnt > 0 then
@@ -195,7 +195,7 @@ if not IsToolEnabled(WPNID, p) then return end
 		local playervel = GetPlayerVelocity(p)
 		local m203FlashPos = VecAdd(mt.pos, Vec(0.15, -0.2, 0))
 
-		muzzleFlash(m203FlashPos, 5, 0.1, 0.15, 0.33)
+		muzzleFlash(m203FlashPos, 5)
 		
 		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		

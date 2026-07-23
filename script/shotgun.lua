@@ -17,7 +17,7 @@ local PLAYERDAMAGE = 0.1
 local MAX_RANGE = 60.0
 local WPNID = "hlshotgun"
 local WPNNAME = "Assault Shotgun"
-local CASING_ORG = Vec(0.02, 0.1, 0.075)
+local CASING_ORG = Vec(0.02, 0.05, 0.033)
 
 -- Per weapon data storer
 local playerData = {}
@@ -34,6 +34,10 @@ local function createPlayerCLIENTdata()
 		shellstoload = 0,
 		shellstopump = 0.0,
 		dataReset = true,
+
+		body = nil,
+		slide = nil,
+		slideTransform = nil,
 	}
 end
 
@@ -105,6 +109,8 @@ function client.tickSG(dt)
 	end
 end
 
+local SlideTime = nil
+
 function client.tickPlayerSG(p, dt)
 	if not IsToolEnabled(WPNID, p) then return end
 	
@@ -169,7 +175,7 @@ function client.tickPlayerSG(p, dt)
 		local toolBody = GetToolBody(p)
 		local playervel = GetPlayerVelocity(p)
 		
-		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+		muzzleFlash(mt.pos, 5)
 			
 		data.clipamnt = data.clipamnt - 1
 		if data.clipamnt > 0 then
@@ -209,7 +215,7 @@ function client.tickPlayerSG(p, dt)
 		local toolBody = GetToolBody(p)
 		local playervel = GetPlayerVelocity(p)
 		
-		muzzleFlash(mt.pos, 5, 0.1, 0.2, 0.44)
+		muzzleFlash(mt.pos, 7)
 
 		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		
@@ -265,12 +271,7 @@ function client.tickPlayerSG(p, dt)
 			data.pumptime = nil
 			-- SHELL EJECT
 			if IsPlayerLocal(p) then
-				local toolBody = GetToolBody(p)
-				local transform = GetBodyTransform(toolBody)
-				local eject_origin = TransformToParentPoint(transform, CASING_ORG)
-				local eject_direction=TransformToParentVec(transform, Vec(1, -0.2, 0))
-				local playervel = GetPlayerVelocity(p)
-				
+				SlideTime = 0
 				for i=0, data.shellstopump-1 do
 					ejectBrass(p, VecAdd(CASING_ORG, Vec(0.066*i, -0.066*i)), Vec(1, -0.5, 0), "MOD/prefab/casing_shtgn.xml", FSFX_SHTGN)
 				end
@@ -297,6 +298,45 @@ function client.tickPlayerSG(p, dt)
 	-- END RECOIL
 	
 	tickToolAnimator(data.toolAnimator, dt, nil, p)
+
+	if IsPlayerLocal(p) then
+		--Animate Slide
+		local GunBody = GetToolBody(p)
+		if data.body ~= GunBody then
+			data.body = GunBody
+			-- Slide is the third shape in vox file. Remember original position in attachment frame
+			local shapes = GetBodyShapes(GunBody)
+			data.slide = shapes[3]
+			data.slideTransform = GetShapeLocalTransform(data.slide)
+		end
+		if data.slide and SlideTime ~= nil then
+			SlideTime = SlideTime + dt
+		
+			local UseValue = SlideTime
+
+			-- don't go over, add a delay between the pump forward!
+			if SlideTime >= 0.375 then
+				SlideTime = 0.375
+			elseif SlideTime > 0.125 and SlideTime < 0.25 then
+				UseValue = 0.125 -- lock back for a little
+			elseif SlideTime >= 0.25 then
+				UseValue = SlideTime - 0.125
+			end
+
+			-- Slide has returned
+			if SlideTime >= 0.375 then
+				SetShapeLocalTransform(data.slide, data.slideTransform) -- force back just in case
+				SlideTime = nil
+			else
+				local position = Vec(0, 0, 0.10 * math.sin(4 * math.pi * UseValue))
+				local TOffset = Transform(position)
+				data.toolAnimator.leftHand.transform.pos = position
+
+				local t = TransformToParentTransform(TOffset, data.slideTransform)
+				SetShapeLocalTransform(data.slide, t)
+			end
+		end
+	end
 end
 
 function client.drawSG()

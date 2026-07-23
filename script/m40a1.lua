@@ -144,7 +144,7 @@ function client.tickPlayerM40(p, dt)
 		
 		local playervel = GetPlayerVelocity(p)
 
-		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+		muzzleFlash(mt.pos, 5)
 
 		data.timetobolt = 0.842
 		data.clipamnt = data.clipamnt - 1

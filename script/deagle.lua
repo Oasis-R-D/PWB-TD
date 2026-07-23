@@ -188,7 +188,7 @@ function client.tickPlayerDE357(p, dt)
 			ejectBrass(p, CASING_ORG, Vec(0.6, 0.2, 0), "MOD/prefab/casing_50ae.xml", FSFX_BRASS)
 		end
 
-		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+		muzzleFlash(mt.pos, 5)
 
 		data.clipamnt = data.clipamnt - 1
 		if data.clipamnt > 0.5 then

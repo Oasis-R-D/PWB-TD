@@ -8,13 +8,15 @@
 	</group>
 	<group name="tool_space">
 		<body dynamic="false">
-			<vox pos="0.0 -0.1625 -0.05" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/shotgun.vox" object="shape_0" scale="0.4">
-				<vox pos="0.0145 0.3055 0.127" file="MOD/vox/shotgun.vox" object="sight" scale="0.1"/>
+			<vox pos="0.0 0.0015 -0.262" texture="12 0.5" blendtexture="3 0.1" file="MOD/vox/shotgun.vox" object="shape_0" scale="0.2">
+				<vox pos="-0.006 0.148 0.26" file="MOD/vox/shotgun.vox" object="sight" scale="0.1"/>
+				<vox pos="-0.008 -0.04 0.012" file="MOD/vox/shotgun.vox" object="pump" scale="0.2"/>
+				<vox pos="0.0 -0.152 0.52" file="MOD/vox/shotgun.vox" object="grip" scale="0.2"/>
 			</vox>
 		</body>
-		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.05 -0.05 0.4" rot="0.0 90.0 -35.0"/>
-		<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.05 -0.05 0.4" rot="0.0 90.0 -35.0"/>
-		<location name="tp_crouch_rh" tags="name=tp_crouch_rh ik_hand" pos="0.05 -0.05 0.4" rot="0.0 90.0 -35.0"/>
+		<location name="tp_action_rh" tags="name=tp_action_rh ik_hand" pos="0.05 -0.058 0.4" rot="0.0 90.0 -35.0"/>
+		<location name="tp_run_rh" tags="name=tp_run_rh ik_hand" pos="0.05 -0.058 0.4" rot="0.0 90.0 -35.0"/>
+		<location name="tp_crouch_rh" tags="name=tp_crouch_rh ik_hand" pos="0.05 -0.058 0.4" rot="0.0 90.0 -35.0"/>
 		<location name="tp_action_lh" tags="name=tp_action_lh ik_hand" pos="0.05 -0.05 -0.2" rot="-90.0 0.0 0.0"/>
 		<location name="tp_run_lh" tags="name=tp_run_lh ik_hand" pos="0.0 -0.025 -0.2" rot="-90.0 0 0.0"/>
 		<location name="tp_crouch_lh" tags="name=tp_crouch_lh ik_hand" pos="0.05 -0.05 -0.2" rot="-90.0 0 0.0"/>

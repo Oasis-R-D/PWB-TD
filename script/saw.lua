@@ -207,7 +207,7 @@ function client.tickPlayerM249(p, dt)
 			data.alteject = not data.alteject
 		end
 
-		muzzleFlash(mt.pos, 4, 0.12, 0.17, 0.33)
+		muzzleFlash(mt.pos, 4)
 
 		data.clipamnt = data.clipamnt - 1
 		if data.clipamnt > 0 then

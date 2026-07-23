@@ -170,7 +170,7 @@ function client.tickPlayerMP5(p, dt)
 			ejectBrass(p, CASING_ORG, Vec(0, 0, 0), "MOD/prefab/casing_9mm.xml", FSFX_BRASS)
 		end
 		
-		muzzleFlash(mt.pos, 4, 0.1, 0.15, 0.33)
+		muzzleFlash(mt.pos, 4)
 			
 		data.clipamnt = data.clipamnt - 1
 		if data.clipamnt > 0 then
@@ -195,7 +195,7 @@ function client.tickPlayerMP5(p, dt)
 		local playervel = GetPlayerVelocity(p)
 		local m203FlashPos = VecAdd(mt.pos, Vec(0, -0.25, 0))
 
-		muzzleFlash(m203FlashPos, 5, 0.1, 0.15, 0.33)
+		muzzleFlash(m203FlashPos, 5)
 
 		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
 		

@@ -188,7 +188,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 			end
 
-			muzzleFlash(mt.pos, 3, 0.08, 0.12, 0.2)
+			muzzleFlash(mt.pos, 2)
 		else
 			if IsPlayerLocal(p) then
 				data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
@@ -255,7 +255,7 @@ function client.tickPlayerPIST9MM(p, dt)
 				data.firesound = PlaySound(LoadSound(NONCLIENTPRIM_FIRESOUND), mt.pos, 300)
 			end
 
-			muzzleFlash(mt.pos, 3, 0.08, 0.12, 0.2)
+			muzzleFlash(mt.pos, 2)
 		else
 			if IsPlayerLocal(p) then
 				data.firesound = PlaySound(LoadSound(SUPPRIM_FIRESOUND), mt.pos, 20)
