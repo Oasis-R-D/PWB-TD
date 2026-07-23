@@ -132,10 +132,8 @@ function client.tickPlayerFRAG(p, dt)
 	data.toolAnimator.maxActionPoseTime = 0.075
 
 	-- Check Fire
-	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
-		if data.coolDown < 0 then
-			data.inAttack = true
-		end
+	if InputDown("usetool", p) and canFire(p, ammo, ammo, data.coolDown) then
+		data.inAttack = true
 	end
 
 	if data.chargedTime ~= nil and data.inAttack == true then -- deplete timer and check if ready

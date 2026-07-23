@@ -31,7 +31,6 @@ local function createPlayerCLIENTdata()
 		toolAnimator = ToolAnimator(),
 		pumptime = nil, -- time until pump sound is played (and animations if those are ever added)
 		shellinserttime = nil,
-		shellstoload = 0,
 		shellstopump = 0.0,
 		dataReset = true,
 
@@ -140,25 +139,18 @@ function client.tickPlayerSG(p, dt)
 	-- Start Reload
 	if InputPressed("r", p) and data.inreload == false and data.clipamnt < CLIP_SIZE and ammo > 0.5 and data.clipamnt ~= ammo then
 		PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-		local reloadtime = nil
 		local shellsneedingloading = math.min(CLIP_SIZE - data.clipamnt, ammo)
 
-		if data.clipamnt > 0 then
-			reloadtime = RELOAD_TIME * shellsneedingloading
-			data.shellstoload = shellsneedingloading
+		if data.clipamnt <= 0 then
+			data.pumptime = 0.1
+			data.shellinserttime = 0.9
 		else
-			reloadtime = (RELOAD_TIME * shellsneedingloading) + 0.3
-			data.pumptime = reloadtime - 0.25
-			data.shellstoload = shellsneedingloading
+			data.coolDown = 0.25
+			data.shellinserttime = 0.8
 		end
 
-		data.coolDown = reloadtime
-		data.shellinserttime = 0.8
+		
 		data.inreload = true
-	-- Finish Reload
-	elseif data.inreload == true and data.coolDown < 0 then
-		data.inreload = false
-		data.clipamnt = math.min(CLIP_SIZE, ammo)
 	-- Check Fire
 	elseif InputDown("usetool", p) and canFire(p, ammo, data.clipamnt, data.coolDown) then			
 		PointLight(mt.pos, 1, 0.7, 0.5, 3)
@@ -172,29 +164,27 @@ function client.tickPlayerSG(p, dt)
 			data.shellstopump = 1.0
 		end
 
+		if data.inreload then
+			data.inreload = false
+			data.shellinserttime = nil
+		end
+
 		local toolBody = GetToolBody(p)
 		local playervel = GetPlayerVelocity(p)
 		
 		muzzleFlash(mt.pos, 5)
 			
 		data.clipamnt = data.clipamnt - 1
+		
+		data.pumptime = FIRERATE - 0.25 -- 0.5
+
 		if data.clipamnt > 0 then
 			data.coolDown = FIRERATE
-			data.pumptime = FIRERATE - 0.25 -- 0.5
 		elseif ammo > 1 then
 			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-			local reloadtime = nil
-			local shellsneedingloading = CLIP_SIZE - data.clipamnt
 
-			if shellsneedingloading > ammo then
-				shellsneedingloading = ammo
-			end
-
-			reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
-			data.pumptime = reloadtime - 0.25
-			data.shellstoload = shellsneedingloading
-			data.coolDown = reloadtime
-			data.shellinserttime = 0.8
+			data.coolDown = 1.0 -- doesn't matter, shell loading overrides
+			data.shellinserttime = 0.8 + FIRERATE - 0.25
 			data.inreload = true
 		end
 		
@@ -212,32 +202,29 @@ function client.tickPlayerSG(p, dt)
 			data.shellstopump = 2
 		end
 
-		local toolBody = GetToolBody(p)
-		local playervel = GetPlayerVelocity(p)
+		if data.inreload then
+			data.inreload = false
+			data.shellinserttime = nil
+		end
 		
 		muzzleFlash(mt.pos, 7)
 
 		data.toolAnimator.timeSinceFire = 0.0 -- hold the gun straight
-		
+		data.recoil = 1.5 * RECOIL_AMNT
+
 		data.clipamnt = data.clipamnt - 2
+		
+		data.pumptime = ALTFIRERATE - 0.25
+
 		if data.clipamnt > 0 then
 			data.coolDown = ALTFIRERATE
-			data.pumptime = ALTFIRERATE - 0.25
 		elseif ammo > 1 then
 			PlaySound(LoadSound(RELOAD_SOUND), mt.pos)
-			local reloadtime = 0
-			
-			local shellsneedingloading = math.min(CLIP_SIZE - data.clipamnt, ammo)
 
-			reloadtime = (shellsneedingloading * RELOAD_TIME) + 0.3
-			data.pumptime = reloadtime - 0.25
-			data.shellstoload = shellsneedingloading
-			data.coolDown = reloadtime
-			data.shellinserttime = 0.8
+			data.coolDown = 1.0 -- doesn't matter, shell loading overrides
+			data.shellinserttime = 0.8 + ALTFIRERATE - 0.25
 			data.inreload = true
 		end
-		
-		data.recoil = 1.5 * RECOIL_AMNT
 	end
 	
 	-- decrease firing cooldown and recoil
@@ -248,15 +235,18 @@ function client.tickPlayerSG(p, dt)
 	if data.shellinserttime ~= nil then
 		data.shellinserttime = data.shellinserttime - dt
 		
-		if data.shellinserttime < 0 and data.shellstoload >= 0.5 then
+		if data.shellinserttime < 0  then
 			PlaySound(LoadSound("MOD/snd/sgshellin0.ogg"), mt.pos)
-			data.shellinserttime = 0.8
-			data.shellstoload = data.shellstoload - 1
 			data.recoil = 0.1
-		end
-		
-		if data.shellstoload <= 0 then
-			data.shellinserttime = nil
+			data.clipamnt = data.clipamnt + 1
+
+			if ammo > 0 and data.clipamnt < CLIP_SIZE then
+				data.shellinserttime = RELOAD_TIME
+				data.coolDown = 0.2 -- wait a bit before player can interrupt
+			else
+				data.coolDown = 0.5
+				data.shellinserttime = nil
+			end
 		end
 	end
 	-- END SHELL LOADING
@@ -344,7 +334,6 @@ function client.drawSG()
 
 	local p = GetLocalPlayer()
 
-	local ammoToDraw = playerData[p].inreload and -8 or playerData[p].clipamnt
-
-	client.drawAmmo(ammoToDraw, CLIP_SIZE)
+	-- TO-DO: tell player when they are reloading
+	client.drawAmmo(playerData[p].clipamnt, CLIP_SIZE)
 end

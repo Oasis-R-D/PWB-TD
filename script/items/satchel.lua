@@ -152,18 +152,16 @@ function client.tickPlayerSATCH(p, dt)
 	data.toolAnimator.maxActionPoseTime = 0.075
 
 	-- Check Fire
-	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
-		if data.coolDown < 0 then
-			if IsPlayerLocal(p) then
-				ServerCall("server.primaryFireSATCH", p)
-				PlayHaptic(shootHaptic, 1)
-			end
-			
-			data.toolAnimator.timeSinceFire = 0.0
-
-			data.coolDown = FIRERATE
-			data.recoil = RECOIL_AMNT
+	if InputDown("usetool", p) and canFire(p, ammo, ammo, data.coolDown) then
+		if IsPlayerLocal(p) then
+			ServerCall("server.primaryFireSATCH", p)
+			PlayHaptic(shootHaptic, 1)
 		end
+			
+		data.toolAnimator.timeSinceFire = 0.0
+
+		data.coolDown = FIRERATE
+		data.recoil = RECOIL_AMNT
 	-- Check Altfire
 	elseif InputPressed("grab", p) and GetPlayerCanUseTool(p) == true  then
 		if data.coolDown < 0 then

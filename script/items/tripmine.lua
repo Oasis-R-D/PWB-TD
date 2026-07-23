@@ -116,30 +116,28 @@ function client.tickPlayerTRIP(p, dt)
 	data.toolAnimator.maxActionPoseTime = 0.075
 	
 	-- Check Fire
-	if InputDown("usetool", p) and canFire(p, ammo, ammo) then
-		if data.coolDown < 0 then
-			local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
+	if InputDown("usetool", p) and canFire(p, ammo, ammo, data.coolDown) then
+		local _,pos,_,angThrow = GetPlayerAimInfo(GetPlayerEyeTransform(p).pos, 2.5, p)
 
-			local dir = TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -1))
-			local hit, dist, normal = QueryRaycast(pos, dir, 2.5, 0)
+		local dir = TransformToParentVec(GetPlayerEyeTransform(p), Vec(0, 0, -1))
+		local hit, dist, normal = QueryRaycast(pos, dir, 2.5, 0)
 
-			if hit then
-				local pt = GetPlayerTransform(p)
-				if IsPlayerLocal(p) then
-					ServerCall("server.primaryFireTRIP", p)
-					PlayHaptic(shootHaptic, 1)
-				end
-
-				PlaySound(TMW_ON, VecAdd(pos, VecScale(dir, dist)), 1)
-				PlaySound(TMW_ON2, VecAdd(pos, VecScale(dir, dist)), 10)
-
-				data.toolAnimator.timeSinceFire = 0.0
-
-				data.coolDown = FIRERATE
-				data.recoil = RECOIL_AMNT
-			else
-				data.coolDown = 0.05 -- prevent spamming raycasts
+		if hit then
+			local pt = GetPlayerTransform(p)
+			if IsPlayerLocal(p) then
+				ServerCall("server.primaryFireTRIP", p)
+				PlayHaptic(shootHaptic, 1)
 			end
+
+			PlaySound(TMW_ON, VecAdd(pos, VecScale(dir, dist)), 1)
+			PlaySound(TMW_ON2, VecAdd(pos, VecScale(dir, dist)), 10)
+
+			data.toolAnimator.timeSinceFire = 0.0
+
+			data.coolDown = FIRERATE
+			data.recoil = RECOIL_AMNT
+		else
+			data.coolDown = 0.05 -- prevent spamming raycasts
 		end
 	end
 
