@@ -95,7 +95,6 @@ function client.tick(dt)
 		t.rot = QuatAlignXZ(xAxis, zAxis)
 
 		DrawSprite(LaserSPR, t, client.raycastDist, 0.1, 0.0, 0.83, 0.77, 0.25, true, true)
-		DrawLine(client.vecSrc, VecAdd(client.vecSrc, VecScale(client.vecDir,  client.raycastDist)), 0.0, 0.83, 0.77, 0.25)
 	end
 end
 
@@ -201,6 +200,9 @@ function server.tick(dt)
 			QueryInclude("player")
 			local pHit, pDist = QueryRaycast(laserStartVec, direction, 48, 0.0, true)
 			
+			-- cheap laser is always updated to make up for expensive one sucking
+			DrawLine(laserStartVec, VecAdd(laserStartVec, VecScale(direction, pDist)), 0.0, 0.83, 0.77, 0.25)
+
 			if server.laserDist == nil then
 				server.laserDist = pDist
 			elseif math.abs(server.laserDist - pDist) >= 0.0625 then 
